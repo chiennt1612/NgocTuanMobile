@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "O/T1Fa175ac7kCIJ2hRSTXuRJj8Kz0T6DCj5CLRzEiL8oRCa39V2mU47zr+Dve9Rkye/XMS6++lX7s+d3YvN/g==",
+  "success": true,
+  "projectFilePath": "D:\\00.Data\\Project\\00.NgocTuan\\Project\\AppMobile\\SMSGetway\\SMSGetway.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.extensions.configuration\\5.0.0\\microsoft.extensions.configuration.5.0.0.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\5.0.0\\microsoft.extensions.configuration.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\5.0.0\\microsoft.extensions.logging.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.extensions.primitives\\5.0.0\\microsoft.extensions.primitives.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

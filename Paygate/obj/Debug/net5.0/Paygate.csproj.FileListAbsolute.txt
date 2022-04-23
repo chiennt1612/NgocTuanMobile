@@ -1,0 +1,12 @@
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.csproj.AssemblyReference.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.GeneratedMSBuildEditorConfig.editorconfig
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.AssemblyInfoInputs.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.AssemblyInfo.cs
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.csproj.CoreCompileInputs.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\bin\Debug\net5.0\Paygate.deps.json
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\bin\Debug\net5.0\Paygate.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\bin\Debug\net5.0\ref\Paygate.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\bin\Debug\net5.0\Paygate.pdb
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\ref\Paygate.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\Paygate\obj\Debug\net5.0\Paygate.pdb

@@ -1,0 +1,17 @@
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\bin\Debug\net5.0\LanguageAll.deps.json
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\bin\Debug\net5.0\LanguageAll.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\bin\Debug\net5.0\ref\LanguageAll.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\bin\Debug\net5.0\LanguageAll.pdb
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\bin\Debug\net5.0\en\LanguageAll.resources.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.csproj.AssemblyReference.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.Language.resources
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.Language.en.resources
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.csproj.GenerateResource.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.GeneratedMSBuildEditorConfig.editorconfig
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.AssemblyInfoInputs.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.AssemblyInfo.cs
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.csproj.CoreCompileInputs.cache
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\en\LanguageAll.resources.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\ref\LanguageAll.dll
+D:\00.Data\Project\00.NgocTuan\Project\AppMobile\LanguageAll\obj\Debug\net5.0\LanguageAll.pdb

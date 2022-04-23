@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.API", "EntityFramework.API\EntityFramework.API.csproj", "{A7A5E1FC-C73A-46A5-98C1-ADAB394D9C56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageAll", "LanguageAll\LanguageAll.csproj", "{A5CBD749-CD9D-4B0B-9069-0FCEE1B07693}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Decryptor\Utils.csproj", "{1464E1C6-16DA-47AD-BF63-2418E8D5BCCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth", "Auth\Auth.csproj", "{D0A48CAE-829C-4D3F-AD3C-6CC9D3C887C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paygate", "Paygate\Paygate.csproj", "{95440D28-B730-4FD3-9F77-E8D0CA476DC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSGetway", "SMSGetway\SMSGetway.csproj", "{F7E2BABC-65DE-48BE-B001-91D8816B84D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A7A5E1FC-C73A-46A5-98C1-ADAB394D9C56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7A5E1FC-C73A-46A5-98C1-ADAB394D9C56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7A5E1FC-C73A-46A5-98C1-ADAB394D9C56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7A5E1FC-C73A-46A5-98C1-ADAB394D9C56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5CBD749-CD9D-4B0B-9069-0FCEE1B07693}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5CBD749-CD9D-4B0B-9069-0FCEE1B07693}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5CBD749-CD9D-4B0B-9069-0FCEE1B07693}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5CBD749-CD9D-4B0B-9069-0FCEE1B07693}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1464E1C6-16DA-47AD-BF63-2418E8D5BCCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1464E1C6-16DA-47AD-BF63-2418E8D5BCCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1464E1C6-16DA-47AD-BF63-2418E8D5BCCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1464E1C6-16DA-47AD-BF63-2418E8D5BCCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0A48CAE-829C-4D3F-AD3C-6CC9D3C887C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0A48CAE-829C-4D3F-AD3C-6CC9D3C887C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0A48CAE-829C-4D3F-AD3C-6CC9D3C887C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0A48CAE-829C-4D3F-AD3C-6CC9D3C887C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95440D28-B730-4FD3-9F77-E8D0CA476DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95440D28-B730-4FD3-9F77-E8D0CA476DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95440D28-B730-4FD3-9F77-E8D0CA476DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95440D28-B730-4FD3-9F77-E8D0CA476DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7E2BABC-65DE-48BE-B001-91D8816B84D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7E2BABC-65DE-48BE-B001-91D8816B84D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7E2BABC-65DE-48BE-B001-91D8816B84D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7E2BABC-65DE-48BE-B001-91D8816B84D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4F788F3C-E59E-49A2-95CE-E99768331785}
+	EndGlobalSection
+EndGlobal

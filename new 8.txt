@@ -1,0 +1,3 @@
+PM> Update-Database -Migration 0
+PM> Remove-Migration
+PM> add-migration initial
