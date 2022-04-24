@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Decryptor\Utils.csproj" />
     <ProjectReference Include="..\LanguageAll\LanguageAll.csproj" />
+    <ProjectReference Include="..\Utils\Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

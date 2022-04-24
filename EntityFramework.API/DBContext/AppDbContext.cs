@@ -1,6 +1,7 @@
 ﻿using EntityFramework.API.Constants;
 using EntityFramework.API.DBContext.Interfaces;
 using EntityFramework.API.Entities;
+using EntityFramework.API.Entities.Ordering;
 using Microsoft.EntityFrameworkCore;
 
 namespace EntityFramework.API.DBContext

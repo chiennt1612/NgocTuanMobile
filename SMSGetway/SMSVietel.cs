@@ -11,6 +11,7 @@ namespace SMSGetway
     {
         string CheckBalance();
         string SendSMS(string Mobile, string Content);
+        string FormatMobile(string Mobile);
     }
     public class SMSVietel : ISMSVietel
     {
@@ -54,43 +55,52 @@ namespace SMSGetway
             strKq = GetByWebServiceRequest("checkBalance", ParamName, ParamValue);   // call hàm checkBalance
             return strKq;
         }
-        private string FormatMobile(string Mobile)
+        public string FormatMobile(string Mobile)
         {
-            string strLeft2;
-            Mobile = Mobile.Replace(" ", "");
-            strLeft2 = Mobile.Substring(0, 2);
-            switch (strLeft2)
+            if (double.TryParse(Mobile, out double m))
             {
-                case "01":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 11);
-                    Mobile = "841" + Mobile.Substring(2); break;
-                case "03":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "843" + Mobile.Substring(2); break;
-                case "04":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "844" + Mobile.Substring(2); break;
-                case "05":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "845" + Mobile.Substring(2); break;
-                case "06":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "846" + Mobile.Substring(2); break;
-                case "07":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "847" + Mobile.Substring(2); break;
-                case "08":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "848" + Mobile.Substring(2); break;
-                case "09":
-                    //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
-                    Mobile = "849" + Mobile.Substring(2); break;
-                case "84":
-                    break;
-                default:
-                    Mobile = "84" + Mobile;
-                    break;
+                string strLeft2;
+                Mobile = Mobile.Replace(" ", "");
+                strLeft2 = Mobile.Substring(0, 2);
+                switch (strLeft2)
+                {
+                    case "01":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 11);
+                        Mobile = "841" + Mobile.Substring(2); break;
+                    case "03":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "843" + Mobile.Substring(2); break;
+                    case "04":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "844" + Mobile.Substring(2); break;
+                    case "05":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "845" + Mobile.Substring(2); break;
+                    case "06":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "846" + Mobile.Substring(2); break;
+                    case "07":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "847" + Mobile.Substring(2); break;
+                    case "08":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "848" + Mobile.Substring(2); break;
+                    case "09":
+                        //Mobile = Mobile + "00000000000"; Mobile.Substring (0, 10);
+                        Mobile = "849" + Mobile.Substring(2); break;
+                    case "84":
+                        break;
+                    default:
+                        Mobile = "84" + Mobile;
+                        break;
+                }
+                if (Mobile.Length != 11) Mobile = "";
             }
+            else
+            {
+                Mobile = "";
+            }
+
             return Mobile;
         }
         private string GetByWebServiceRequest(string FuncName, string ParamName, string ParamValue)

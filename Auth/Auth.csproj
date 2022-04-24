@@ -6,8 +6,11 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="5.0.0" />
+    <PackageReference Include="IdentityServer4.Storage" Version="4.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,14 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Decryptor\Utils.csproj" />
+    <ProjectReference Include="..\Utils\Utils.csproj" />
     <ProjectReference Include="..\EntityFramework.API\EntityFramework.API.csproj" />
     <ProjectReference Include="..\LanguageAll\LanguageAll.csproj" />
     <ProjectReference Include="..\SMSGetway\SMSGetway.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Log\" />
   </ItemGroup>
 
 </Project>

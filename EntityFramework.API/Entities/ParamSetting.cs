@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EntityFramework.API.Entities.EntityBase;
+using System.ComponentModel.DataAnnotations;
 
 namespace EntityFramework.API.Entities
 {

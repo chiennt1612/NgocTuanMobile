@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Utils.Models;
+﻿using Utils.Models;
 
 namespace Auth.Models
 {
@@ -15,6 +11,5 @@ namespace Auth.Models
     {
         public string? Token { get; set; }
         public string? RefreshToken { get; set; }
-        public DateTime? Expiration { get; set; }
     }
 }

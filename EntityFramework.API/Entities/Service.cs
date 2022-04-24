@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using EntityFramework.API.Entities.EntityBase;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EntityFramework.API.Entities
