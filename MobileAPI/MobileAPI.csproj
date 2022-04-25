@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Decryptor\Utils.csproj" />
     <ProjectReference Include="..\EntityFramework.API\EntityFramework.API.csproj" />
     <ProjectReference Include="..\LanguageAll\LanguageAll.csproj" />
     <ProjectReference Include="..\Paygate\Paygate.csproj" />

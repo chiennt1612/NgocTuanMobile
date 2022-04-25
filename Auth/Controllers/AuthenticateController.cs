@@ -138,22 +138,32 @@ namespace Auth.Controllers
                 {
                     var userExists = await _userManager.FindByNameAsync(model.Username);
                     if (userExists != null)
-                        return StatusCode(StatusCodes.Status500InternalServerError, new ResponseBase("User already exists!", "User already exists!", "User already exists!"));
-                    AppUser user = new()
+                    //return StatusCode(StatusCodes.Status500InternalServerError, new ResponseBase("User already exists!", "User already exists!", "User already exists!"));
                     {
-                        SecurityStamp = Guid.NewGuid().ToString(),
-                        UserName = model.Username,
-                        PhoneNumber = model.Username,
-                        TwoFactorEnabled = true,
-                    };
-                    var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
-                    if (result.Succeeded)
-                    {
-                        var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
+                        var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, model.Username);
                         var message = $"Your security code is: {code}";
-                        _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
+                        _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
 
                         return Ok(new ResponseBase("Please input OTP!", $"{model.Username}: Please input OTP!", $"OTP!", 1, 200));
+                    }
+                    else
+                    {
+                        AppUser user = new()
+                        {
+                            SecurityStamp = Guid.NewGuid().ToString(),
+                            UserName = model.Username,
+                            PhoneNumber = model.Username,
+                            TwoFactorEnabled = true,
+                        };
+                        var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
+                        if (result.Succeeded)
+                        {
+                            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
+                            var message = $"Your security code is: {code}";
+                            _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
+
+                            return Ok(new ResponseBase("Please input OTP!", $"{model.Username}: Please input OTP!", $"OTP!", 1, 200));
+                        }
                     }
                 }
             }
@@ -206,6 +216,7 @@ namespace Auth.Controllers
         }
 
         [Authorize]
+        [MyAuthorize]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Revoke()
@@ -238,11 +249,17 @@ namespace Auth.Controllers
             _logger.LogInformation($"Logined: {user.UserName}");
             ClaimsPrincipal userClaims = await _userClaimsPrincipalFactory.CreateAsync(user);
             List<Claim> claims = userClaims.Claims.ToList();
-            var userRoles = await _userManager.GetRolesAsync(user);
-            foreach (var userRole in userRoles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, userRole));
-            }
+            //var userRoles = await _userManager.GetRolesAsync(user);
+            //foreach (var userRole in userRoles)
+            //{
+            //    claims.Add(new Claim(ClaimTypes.Role, userRole));
+            //}
+            //var userClaim = await _userManager.GetClaimsAsync(user);
+            ////claims.AddRange(userClaim);
+            //foreach (var claim in userClaim)
+            //{
+            //    claims.Add(claim);
+            //}
             claims.Add(new Claim("username", user.UserName));
             claims.Add(new Claim("aud", _configuration["JWT:ValidAudience"]));
             //claims.Add(new Claim("oldid", user.OldId.ToString()));

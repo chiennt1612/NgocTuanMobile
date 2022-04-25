@@ -75,7 +75,7 @@ namespace Utils.Tokens
             {
                 CreationTime = Clock.UtcNow.UtcDateTime,
                 Issuer = Configuration["JWT:ValidIssuer"],
-                Lifetime = int.Parse(Configuration["JWT:TokenValidityInMinutes"]),
+                Lifetime = int.Parse(Configuration["JWT:TokenValidityInMinutes"]) * 60,
                 Claims = Claims,
                 ClientId = Guid.NewGuid().ToString(),
                 Description = "",
@@ -92,6 +92,37 @@ namespace Utils.Tokens
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
+        }
+
+        public bool ValidateToken(string? token)
+        {
+            TokenValidationParameters tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ClockSkew = TimeSpan.Zero,
+
+                ValidAudience = Configuration["JWT:ValidAudience"],
+                ValidIssuer = Configuration["JWT:ValidIssuer"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token.Substring("Bearer ".Length), tokenValidationParameters, out SecurityToken securityToken);
+                if (securityToken is not JwtSecurityToken jwtSecurityToken || principal == null)
+                    return false;
+            } 
+            catch(Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+                return false;
+            }            
+
+            return true;
+
         }
     }
 }

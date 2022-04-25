@@ -36,7 +36,7 @@ namespace Auth.Helper
             services.AddAuthenticationServices<UserDbContext, AppUser, AppRole>(configuration);
         }
 
-        public static void AddAuthenticationServices<TIdentityDbContext, TUserIdentity, TUserIdentityRole>(this IServiceCollection services, IConfiguration configuration, bool ValidateLifetime = false)
+        public static void AddAuthenticationServices<TIdentityDbContext, TUserIdentity, TUserIdentityRole>(this IServiceCollection services, IConfiguration configuration)
                 where TIdentityDbContext : DbContext
                where TUserIdentity : class
                where TUserIdentityRole : class
@@ -66,12 +66,12 @@ namespace Auth.Helper
             .AddJwtBearer(options =>
             {
                 options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
+                options.RequireHttpsMetadata = true;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = ValidateLifetime,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.Zero,
 
