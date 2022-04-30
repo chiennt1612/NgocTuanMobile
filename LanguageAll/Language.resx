@@ -129,8 +129,14 @@
   <data name="EmailIsNotValid" xml:space="preserve">
     <value>Địa chỉ Email sai định dạng.</value>
   </data>
+  <data name="GetProfileOK" xml:space="preserve">
+    <value>Lấy thông tin tài khoản thành công</value>
+  </data>
   <data name="InvalidCredentialsErrorMessage" xml:space="preserve">
     <value>Tài khoản/ email hoặc mật khẩu không đúng.</value>
+  </data>
+  <data name="ModelStateInValid" xml:space="preserve">
+    <value>Dữ liệu không hợp lệ</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
     <value>Mật khẩu hiện tại</value>
@@ -146,5 +152,14 @@
   </data>
   <data name="RecoveryCode" xml:space="preserve">
     <value>Mã khôi phục</value>
+  </data>
+  <data name="SetProfileFailCompanyName" xml:space="preserve">
+    <value>Tên công ty không để trống</value>
+  </data>
+  <data name="SetProfileFailEmail" xml:space="preserve">
+    <value>Cập nhật email không thành công (Email trùng lặp)</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Không có quyền truy cập hoặc token hết hạn</value>
   </data>
 </root>

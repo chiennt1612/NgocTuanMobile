@@ -114,12 +114,12 @@ namespace Utils.Tokens
                 var principal = tokenHandler.ValidateToken(token.Substring("Bearer ".Length), tokenValidationParameters, out SecurityToken securityToken);
                 if (securityToken is not JwtSecurityToken jwtSecurityToken || principal == null)
                     return false;
-            } 
-            catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Logger.LogError(ex.ToString());
                 return false;
-            }            
+            }
 
             return true;
 

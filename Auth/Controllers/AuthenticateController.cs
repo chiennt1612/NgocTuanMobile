@@ -1,5 +1,6 @@
 ﻿using Auth.Helper;
 using Auth.Models;
+using Auth.Services.Interfaces;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
 using Utils.Tokens.Interfaces;
@@ -25,7 +27,7 @@ namespace Auth.Controllers
     [ApiController]
     [TypeFilter(typeof(ControllerExceptionFilterAttribute))]
     [Produces("application/json", "application/problem+json")]
-    [SecurityHeaders]
+    //[ValidateAntiForgeryToken]
     public class AuthenticateController : ControllerBase
     {
         private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
@@ -37,6 +39,7 @@ namespace Auth.Controllers
         private readonly ITokenCreationService _jwtToken;
         private readonly ILogger<AuthenticateController> _logger;
         private readonly IStringLocalizer<AuthenticateController> _localizer;
+        private readonly IProfile _profile;
 
         public AuthenticateController(
             ILogger<AuthenticateController> logger,
@@ -47,7 +50,8 @@ namespace Auth.Controllers
             ISMSVietel smsVietel,
             ITokenCreationService jwtToken,
             IStringLocalizer<AuthenticateController> localizer,
-            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory)
+            IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
+            IProfile profile)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -58,6 +62,7 @@ namespace Auth.Controllers
             _signInManager = signInManager;
             _localizer = localizer;
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
+            _profile = profile;
         }
 
         [HttpPost]
@@ -194,6 +199,7 @@ namespace Auth.Controllers
         }
 
         [Authorize]
+        [ValidateModel]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> RenewToken([FromBody] RefreshTokenModel model)
@@ -227,6 +233,46 @@ namespace Auth.Controllers
             await _userManager.UpdateAsync(user);
 
             return Ok(new ResponseBase("Revoke OK", $"Revoke OK", "Revoke OK", 1, 200));
+        }
+
+        [Authorize]
+        [MyAuthorize]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var a = await _profile.GetProfile();
+            return Ok(a);
+        }
+
+        [Authorize]
+        [MyAuthorize]
+        [ValidateModel]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SetProfile([FromBody] ProfileInputModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var a = await _profile.SetProfile(model);
+                if (a.Status == 0)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, a);
+                }
+                return Ok(a);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseOK()
+                {
+                    Code = 500,
+                    InternalMessage = LanguageAll.Language.SetProfileFailEmail,
+                    MoreInfo = LanguageAll.Language.SetProfileFailEmail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.SetProfileFailEmail,
+                    data = ModelState.ToList()
+                });
+            }  
         }
 
         //[Authorize]

@@ -16,7 +16,13 @@ namespace Auth.Helper
             var encodedString = context.HttpContext.Request.Headers["Authorization"];
             if (!token.ValidateToken(encodedString))
             {
-                context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
+                context.Result = new JsonResult(
+                    new Utils.Models.ResponseBase(
+                        LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized,
+                        LanguageAll.Language.Unauthorized, 0, StatusCodes.Status401Unauthorized))
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized
+                };
             }
         }
     }

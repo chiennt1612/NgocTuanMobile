@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MobileAPI.Helper;
 using System;
 using System.Linq;
 using Utils.ExceptionHandling;
@@ -14,7 +13,7 @@ namespace MobileAPI.Controllers
     [ApiController]
     [TypeFilter(typeof(ControllerExceptionFilterAttribute))]
     [Produces("application/json", "application/problem+json")]
-    [SecurityHeaders]
+    //[ValidateAntiForgeryToken]
     [Authorize]
     public class WeatherForecastController : ControllerBase
     {

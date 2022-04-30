@@ -25,16 +25,19 @@ namespace MobileAPI
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             services.AddControllers();
-
+            services.AddHttpContextAccessor();
             services.AddServiceLanguage();
 
             services.AddSingleton<IDecryptorProvider, DecryptorProvider>();
 
             services.RegisterDbContexts(Configuration, migrationsAssembly);
+
+            
+
             //services.RegisterAuthentication(Configuration);
             services.AddAuthenticationToken(Configuration);
             services.AddDistributedMemoryCache();
-
+            //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
             services.AddSwaggerGen();
         }
 
@@ -59,6 +62,8 @@ namespace MobileAPI
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            //app.UseAntiforgeryToken();
 
             app.UseEndpoints(endpoints =>
             {

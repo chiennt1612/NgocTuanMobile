@@ -151,6 +151,15 @@ namespace EntityFramework.API.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Trường bắt buộc, không để trống.
+        /// </summary>
+        public static string Required {
+            get {
+                return ResourceManager.GetString("Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tiêu đề.
         /// </summary>
         public static string Title {

@@ -1,9 +1,7 @@
 ﻿using EntityFramework.API.Entities.EntityBase;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EntityFramework.API.Repository.Interfaces

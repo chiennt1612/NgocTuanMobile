@@ -97,11 +97,29 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lấy thông tin tài khoản thành công.
+        /// </summary>
+        public static string GetProfileOK {
+            get {
+                return ResourceManager.GetString("GetProfileOK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tài khoản/ email hoặc mật khẩu không đúng..
         /// </summary>
         public static string InvalidCredentialsErrorMessage {
             get {
                 return ResourceManager.GetString("InvalidCredentialsErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dữ liệu không hợp lệ.
+        /// </summary>
+        public static string ModelStateInValid {
+            get {
+                return ResourceManager.GetString("ModelStateInValid", resourceCulture);
             }
         }
         
@@ -147,6 +165,33 @@ namespace LanguageAll {
         public static string RecoveryCode {
             get {
                 return ResourceManager.GetString("RecoveryCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên công ty không để trống.
+        /// </summary>
+        public static string SetProfileFailCompanyName {
+            get {
+                return ResourceManager.GetString("SetProfileFailCompanyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cập nhật email không thành công (Email trùng lặp).
+        /// </summary>
+        public static string SetProfileFailEmail {
+            get {
+                return ResourceManager.GetString("SetProfileFailEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không có quyền truy cập hoặc token hết hạn.
+        /// </summary>
+        public static string Unauthorized {
+            get {
+                return ResourceManager.GetString("Unauthorized", resourceCulture);
             }
         }
     }

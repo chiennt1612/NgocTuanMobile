@@ -2,12 +2,15 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
+using System.Net.Security;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -491,6 +494,58 @@ namespace Utils
         public static T GetData<T>(this ViewDataDictionary viewData, string Key) where T : class
         {
             return viewData[Key] as T;
+        }
+        #endregion
+
+        #region CalAPI
+        private static void InitiateSSLTrust()
+        {
+            try
+            {
+                ServicePointManager.ServerCertificateValidationCallback =
+                   new RemoteCertificateValidationCallback(
+                        delegate
+                        { return true; }
+                    );
+            }
+            catch
+            {
+
+            }
+        }
+        public static async Task<T> APIRequest<T, T1>(ILogger _logger, string APIUrl, string APIToken, string functionName, T1 pzData)
+        {
+            string result = string.Empty;
+            HttpWebRequest httpWebRequest;
+            httpWebRequest = (HttpWebRequest)WebRequest.Create(APIUrl);
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.Accept = "application/json";
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Headers.Add("Authorization", "Basic " + APIToken);
+            httpWebRequest.Headers.Add("FunctionName", functionName);
+
+            _logger.LogInformation($"APIUrl: {APIUrl}\n APIToken: {APIToken}\n FunctionName: {functionName}");
+
+            if (pzData != null)
+            {
+                _logger.LogInformation($"pzData: {pzData}");
+                using (var streamWriter = new StreamWriter(await httpWebRequest.GetRequestStreamAsync()))
+                {
+                    string json = JsonConvert.SerializeObject(pzData);
+                    await streamWriter.WriteAsync(json);
+                    await streamWriter.FlushAsync();
+                    streamWriter.Close();
+                }
+            }
+            InitiateSSLTrust();//bypass SSL
+            var httpResponse = (HttpWebResponse)await httpWebRequest.GetResponseAsync();
+
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                result = await streamReader.ReadToEndAsync();
+            }
+            _logger.LogInformation($"result: {result}");
+            return JsonConvert.DeserializeObject<T>(result);
         }
         #endregion
     }

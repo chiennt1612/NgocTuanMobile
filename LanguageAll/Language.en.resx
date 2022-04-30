@@ -126,8 +126,14 @@
   <data name="EmailIsNotValid" xml:space="preserve">
     <value>The Email field is not a valid e-mail address.</value>
   </data>
+  <data name="GetProfileOK" xml:space="preserve">
+    <value>GetProfileOK</value>
+  </data>
   <data name="InvalidCredentialsErrorMessage" xml:space="preserve">
     <value>Invalid username or password</value>
+  </data>
+  <data name="ModelStateInValid" xml:space="preserve">
+    <value>ModelState InValid</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
     <value>Older password</value>
@@ -143,5 +149,14 @@
   </data>
   <data name="Remember" xml:space="preserve">
     <value>Remember me?</value>
+  </data>
+  <data name="SetProfileFailCompanyName" xml:space="preserve">
+    <value>Company name is not allow null</value>
+  </data>
+  <data name="SetProfileFailEmail" xml:space="preserve">
+    <value>SetProfileFailEmail</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Unauthorized</value>
   </data>
 </root>

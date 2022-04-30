@@ -1,4 +1,6 @@
-﻿using Decryptor;
+﻿using Auth.Services;
+using Auth.Services.Interfaces;
+using Decryptor;
 using EntityFramework.API.DBContext;
 using EntityFramework.API.Entities.Identity;
 using EntityFramework.API.Helper;
@@ -30,6 +32,11 @@ namespace Auth.Helper
             //services.AddIdSHealthChecks<OrderDbContext>(configuration, decryptor);
         }
         #endregion
+
+        public static void AddServices(this IServiceCollection services)
+        {
+            services.AddScoped<IProfile, Profile>();
+        }
 
         public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
