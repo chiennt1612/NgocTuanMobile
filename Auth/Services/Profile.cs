@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -29,13 +30,23 @@ namespace Auth.Services
             _context = context;
         }
 
-        public async Task<ResponseOK> GetProfile()
+        public async Task<ResponseOK> GetProfile(bool IsFromToken = true)
         {
             var a1 = await _userManager.GetUserAsync(_context.HttpContext.User);
             _logger.LogInformation($"Get profile: {a1.UserName}");
+            IEnumerable<Claim> claims;
+            if (IsFromToken)
+            {
+                claims = _context.HttpContext.User.Claims;
+            }
+            else
+            {
+                claims = await _userManager.GetClaimsAsync(a1);
+            }
+
             ProfileOutputModel a = new ProfileOutputModel();
-            a.Address = _context.HttpContext.User.Claims.Where(u => u.Type == "Address").FirstOrDefault()?.Value;
-            if (DateTime.TryParse(_context.HttpContext.User.Claims.Where(u => u.Type == "Birthday").FirstOrDefault()?.Value, out DateTime _a))
+            a.Address = claims.Where(u => u.Type == "Address").FirstOrDefault()?.Value;
+            if (DateTime.TryParse(claims.Where(u => u.Type == "Birthday").FirstOrDefault()?.Value, out DateTime _a))
             {
                 a.Birthday = _a;
             }
@@ -43,15 +54,15 @@ namespace Auth.Services
             {
                 a.Birthday = default;
             }
-            a.CompanyName = _context.HttpContext.User.Claims.Where(u => u.Type == "CompanyName").FirstOrDefault()?.Value;
-            a.CustomerCode = _context.HttpContext.User.Claims.Where(u => u.Type == "CustomerCode").FirstOrDefault()?.Value;
+            a.CompanyName = claims.Where(u => u.Type == "CompanyName").FirstOrDefault()?.Value;
+            a.CustomerCode = claims.Where(u => u.Type == "CustomerCode").FirstOrDefault()?.Value;
             foreach (var item in _context.HttpContext.User.FindAll("GetInvoice"))
             {
                 a.CustomerCodeList.Add(item.Value);
             }
-            a.Email = _context.HttpContext.User.Claims.Where(u => u.Type == ClaimTypes.Email).FirstOrDefault()?.Value;
-            a.Fullname = _context.HttpContext.User.Claims.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value;
-            if (bool.TryParse(_context.HttpContext.User.Claims.Where(u => u.Type == "IsCompany").FirstOrDefault()?.Value, out bool _b))
+            a.Email = claims.Where(u => u.Type == ClaimTypes.Email).FirstOrDefault()?.Value;
+            a.Fullname = claims.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value;
+            if (bool.TryParse(claims.Where(u => u.Type == "IsCompany").FirstOrDefault()?.Value, out bool _b))
             {
                 a.IsCompany = _b;
             }
@@ -59,7 +70,7 @@ namespace Auth.Services
             {
                 a.IsCompany = false;
             }
-            if (DateTime.TryParse(_context.HttpContext.User.Claims.Where(u => u.Type == "IssueDate").FirstOrDefault()?.Value, out DateTime _c))
+            if (DateTime.TryParse(claims.Where(u => u.Type == "IssueDate").FirstOrDefault()?.Value, out DateTime _c))
             {
                 a.IssueDate = _c;
             }
@@ -67,19 +78,34 @@ namespace Auth.Services
             {
                 a.IssueDate = default;
             }
-            a.IssuePlace = _context.HttpContext.User.Claims.Where(u => u.Type == "IssuePlace").FirstOrDefault()?.Value;
-            a.PersonID = _context.HttpContext.User.Claims.Where(u => u.Type == "PersonID").FirstOrDefault()?.Value;
-            a.PhoneNumber = _context.HttpContext.User.Claims.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value;
+            a.IssuePlace = claims.Where(u => u.Type == "IssuePlace").FirstOrDefault()?.Value;
+            a.PersonID = claims.Where(u => u.Type == "PersonID").FirstOrDefault()?.Value;
+            a.PhoneNumber = claims.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value;
             _logger.LogInformation($"Get profile: {a1.UserName} => {JsonConvert.SerializeObject(a)}");
-            return new ResponseOK()
+            if (IsFromToken)
             {
-                Code = 1,
-                data = a,
-                InternalMessage = LanguageAll.Language.GetProfileOK,
-                MoreInfo = LanguageAll.Language.GetProfileOK,
-                Status = 200,
-                UserMessage = LanguageAll.Language.GetProfileOK
-            };
+                return new ResponseOK()
+                {
+                    Code = 1,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.GetProfileOK,
+                    MoreInfo = LanguageAll.Language.GetProfileOK,
+                    Status = 200,
+                    UserMessage = LanguageAll.Language.GetProfileOK
+                };
+            }
+            else
+            {
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    InternalMessage = LanguageAll.Language.SetProfileSuccess,
+                    MoreInfo = LanguageAll.Language.SetProfileSuccess,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.SetProfileSuccess,
+                    data = a
+                };
+            }
         }
 
         public async Task<ResponseOK> SetProfile(ProfileInputModel inv)
@@ -97,7 +123,7 @@ namespace Auth.Services
                 {
                     return new ResponseOK()
                     {
-                        Code = 500,
+                        Code = 400,
                         InternalMessage = LanguageAll.Language.SetProfileFailEmail,
                         MoreInfo = LanguageAll.Language.SetProfileFailEmail,
                         Status = 0,
@@ -111,7 +137,7 @@ namespace Auth.Services
             {
                 return new ResponseOK()
                 {
-                    Code = 500,
+                    Code = 400,
                     InternalMessage = LanguageAll.Language.SetProfileFailCompanyName,
                     MoreInfo = LanguageAll.Language.SetProfileFailCompanyName,
                     Status = 0,
@@ -120,11 +146,24 @@ namespace Auth.Services
                 };
             }
 
+            if (String.IsNullOrEmpty(inv.Fullname))
+            {
+                return new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.SetProfileFailFullname,
+                    MoreInfo = LanguageAll.Language.SetProfileFailFullname,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.SetProfileFailFullname,
+                    data = null
+                };
+            }
+
             var u = await _userManager.GetUserAsync(_context.HttpContext.User);
             var a = await _userManager.GetClaimsAsync(u);
             if (!String.IsNullOrEmpty(inv.Address))
             {
-                if (!String.IsNullOrEmpty(a.Where(u => u.Type == "Address").FirstOrDefault().Value))
+                if (String.IsNullOrEmpty(a.Where(u => u.Type == "Address").FirstOrDefault()?.Value))
                 {
                     await _userManager.AddClaimAsync(u, new Claim("Address", inv.Address));
                 }
@@ -135,7 +174,7 @@ namespace Auth.Services
             }
             if (!String.IsNullOrEmpty(inv.CompanyName))
             {
-                if (!String.IsNullOrEmpty(a.Where(u => u.Type == "CompanyName").FirstOrDefault().Value))
+                if (String.IsNullOrEmpty(a.Where(u => u.Type == "CompanyName").FirstOrDefault()?.Value))
                 {
                     await _userManager.AddClaimAsync(u, new Claim("CompanyName", inv.CompanyName));
                 }
@@ -144,7 +183,7 @@ namespace Auth.Services
                     await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "CompanyName").FirstOrDefault(), new Claim("CompanyName", inv.CompanyName));
                 }
             }
-            if (!String.IsNullOrEmpty(a.Where(u => u.Type == "Fullname").FirstOrDefault().Value))
+            if (String.IsNullOrEmpty(a.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value))
             {
                 await _userManager.AddClaimAsync(u, new Claim("Fullname", inv.Fullname));
             }
@@ -152,7 +191,7 @@ namespace Auth.Services
             {
                 await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "Fullname").FirstOrDefault(), new Claim("Fullname", inv.Fullname));
             }
-            if (!String.IsNullOrEmpty(a.Where(u => u.Type == "IsCompany").FirstOrDefault().Value))
+            if (String.IsNullOrEmpty(a.Where(u => u.Type == "IsCompany").FirstOrDefault()?.Value))
             {
                 await _userManager.AddClaimAsync(u, new Claim("IsCompany", inv.IsCompany.ToString()));
             }
@@ -162,7 +201,7 @@ namespace Auth.Services
             }
             if (inv.IssueDate.HasValue)
             {
-                if (!String.IsNullOrEmpty(a.Where(u => u.Type == "IssueDate").FirstOrDefault().Value))
+                if (String.IsNullOrEmpty(a.Where(u => u.Type == "IssueDate").FirstOrDefault()?.Value))
                 {
                     await _userManager.AddClaimAsync(u, new Claim("IssueDate", inv.IssueDate.ToString()));
                 }
@@ -173,7 +212,7 @@ namespace Auth.Services
             }
             if (!String.IsNullOrEmpty(inv.IssuePlace))
             {
-                if (!String.IsNullOrEmpty(a.Where(u => u.Type == "IssuePlace").FirstOrDefault().Value))
+                if (String.IsNullOrEmpty(a.Where(u => u.Type == "IssuePlace").FirstOrDefault()?.Value))
                 {
                     await _userManager.AddClaimAsync(u, new Claim("IssuePlace", inv.IssuePlace));
                 }
@@ -184,7 +223,7 @@ namespace Auth.Services
             }
             if (!String.IsNullOrEmpty(inv.PersonID))
             {
-                if (!String.IsNullOrEmpty(a.Where(u => u.Type == "PersonID").FirstOrDefault().Value))
+                if (String.IsNullOrEmpty(a.Where(u => u.Type == "PersonID").FirstOrDefault()?.Value))
                 {
                     await _userManager.AddClaimAsync(u, new Claim("PersonID", inv.PersonID));
                 }
@@ -195,7 +234,7 @@ namespace Auth.Services
             }
             if (!String.IsNullOrEmpty(inv.PhoneNumber))
             {
-                if (!String.IsNullOrEmpty(a.Where(u => u.Type == "PhoneNumber").FirstOrDefault().Value))
+                if (String.IsNullOrEmpty(a.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value))
                 {
                     await _userManager.AddClaimAsync(u, new Claim("PhoneNumber", inv.PhoneNumber));
                 }
@@ -204,15 +243,16 @@ namespace Auth.Services
                     await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "PhoneNumber").FirstOrDefault(), new Claim("PhoneNumber", inv.PhoneNumber));
                 }
             }
-            return new ResponseOK()
-            {
-                Code = 500,
-                InternalMessage = LanguageAll.Language.SetProfileFailEmail,
-                MoreInfo = LanguageAll.Language.SetProfileFailEmail,
-                Status = 0,
-                UserMessage = LanguageAll.Language.SetProfileFailEmail,
-                data = null
-            };
+            return await GetProfile(false);
+            //    new ResponseOK()
+            //{
+            //    Code = 200,
+            //    InternalMessage = LanguageAll.Language.SetProfileSuccess,
+            //    MoreInfo = LanguageAll.Language.SetProfileSuccess,
+            //    Status = 1,
+            //    UserMessage = LanguageAll.Language.SetProfileSuccess,
+            //    data = null
+            //};
         }
     }
 }

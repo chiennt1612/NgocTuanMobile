@@ -156,6 +156,12 @@
   <data name="SetProfileFailEmail" xml:space="preserve">
     <value>SetProfileFailEmail</value>
   </data>
+  <data name="SetProfileFailFullname" xml:space="preserve">
+    <value>Fullname is not allow null</value>
+  </data>
+  <data name="SetProfileSuccess" xml:space="preserve">
+    <value>Success</value>
+  </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Unauthorized</value>
   </data>

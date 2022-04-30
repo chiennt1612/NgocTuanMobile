@@ -21,16 +21,15 @@ namespace Auth.Models
         [StringLength(200, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string Address { get; set; }
 
-        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         [StringLength(128, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string Fullname { get; set; }
 
         public DateTime? Birthday { get; set; }
-        
+
 
         [StringLength(20, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string PersonID { get; set; }
-        
+
 
         public DateTime? IssueDate { get; set; }
 
@@ -60,10 +59,10 @@ namespace Auth.Models
         public string Fullname { get; set; }
 
         public DateTime? Birthday { get; set; }
-        
+
         [StringLength(20, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string PersonID { get; set; }
-        
+
         public DateTime? IssueDate { get; set; }
 
         [StringLength(126, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]

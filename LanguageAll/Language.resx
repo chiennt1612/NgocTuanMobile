@@ -159,6 +159,12 @@
   <data name="SetProfileFailEmail" xml:space="preserve">
     <value>Cập nhật email không thành công (Email trùng lặp)</value>
   </data>
+  <data name="SetProfileFailFullname" xml:space="preserve">
+    <value>Tên người đại diện không bỏ trống</value>
+  </data>
+  <data name="SetProfileSuccess" xml:space="preserve">
+    <value>Cài đặt thông tin cá nhân thành công</value>
+  </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Không có quyền truy cập hoặc token hết hạn</value>
   </data>

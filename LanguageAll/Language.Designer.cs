@@ -187,6 +187,24 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tên người đại diện không bỏ trống.
+        /// </summary>
+        public static string SetProfileFailFullname {
+            get {
+                return ResourceManager.GetString("SetProfileFailFullname", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cài đặt thông tin cá nhân thành công.
+        /// </summary>
+        public static string SetProfileSuccess {
+            get {
+                return ResourceManager.GetString("SetProfileSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không có quyền truy cập hoặc token hết hạn.
         /// </summary>
         public static string Unauthorized {

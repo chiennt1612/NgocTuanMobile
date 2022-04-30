@@ -7,6 +7,6 @@ namespace Auth.Services.Interfaces
     public interface IProfile
     {
         Task<ResponseOK> SetProfile(ProfileInputModel inv);
-        Task<ResponseOK> GetProfile();
+        Task<ResponseOK> GetProfile(bool IsFromToken = true);
     }
 }

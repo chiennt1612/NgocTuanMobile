@@ -32,7 +32,7 @@ namespace MobileAPI
 
             services.RegisterDbContexts(Configuration, migrationsAssembly);
 
-            
+
 
             //services.RegisterAuthentication(Configuration);
             services.AddAuthenticationToken(Configuration);

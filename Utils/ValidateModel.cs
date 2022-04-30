@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Utils
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class ValidateModelAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
@@ -18,7 +16,7 @@ namespace Utils
                 filterContext.Result = new JsonResult(
                     new Utils.Models.ResponseOK()
                     {
-                        Code = StatusCodes.Status401Unauthorized,
+                        Code = StatusCodes.Status400BadRequest,
                         Status = 0,
                         UserMessage = LanguageAll.Language.ModelStateInValid,
                         InternalMessage = LanguageAll.Language.ModelStateInValid,
@@ -26,7 +24,7 @@ namespace Utils
                         data = filterContext.ModelState.ToList()
                     })
                 {
-                    StatusCode = StatusCodes.Status401Unauthorized
+                    StatusCode = StatusCodes.Status400BadRequest
                 };
             }
         }
