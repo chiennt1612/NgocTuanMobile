@@ -1,13 +1,12 @@
 ﻿using Auth.Helper;
 using Auth.Models;
-using Auth.Services.Interfaces;
+using Auth.Services;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using SMSGetway;
 using System;
@@ -15,7 +14,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
 using Utils.Tokens.Interfaces;
@@ -32,38 +30,32 @@ namespace Auth.Controllers
     public class AuthenticateController : ControllerBase
     {
         private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly AppUserManager _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly RoleManager<AppRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ISMSVietel _smsVietel;
         private readonly ITokenCreationService _jwtToken;
         private readonly ILogger<AuthenticateController> _logger;
-        private readonly IStringLocalizer<AuthenticateController> _localizer;
-        private readonly IProfile _profile;
+        private readonly LoginConfiguration _loginConfiguration;
 
         public AuthenticateController(
             ILogger<AuthenticateController> logger,
-            UserManager<AppUser> userManager,
+            AppUserManager userManager,
             SignInManager<AppUser> signInManager,
-            RoleManager<AppRole> roleManager,
             IConfiguration configuration,
             ISMSVietel smsVietel,
             ITokenCreationService jwtToken,
-            IStringLocalizer<AuthenticateController> localizer,
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
-            IProfile profile)
+            LoginConfiguration loginConfiguration)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _configuration = configuration;
             _smsVietel = smsVietel;
             _logger = logger;
             _jwtToken = jwtToken;
             _signInManager = signInManager;
-            _localizer = localizer;
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
-            _profile = profile;
+            _loginConfiguration = loginConfiguration;
         }
 
         [HttpPost]
@@ -85,26 +77,20 @@ namespace Auth.Controllers
                     }
                     else if (result.RequiresTwoFactor)
                     {
-                        //var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
-                        //var message = $"Your security code is: {code}";
-                        //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
-                        var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
-                        var message = $"Your security code is: {code}";
-                        _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
-                        return Ok(new ResponseBase("Please input OTP!", $"{model.Username}: Please input OTP!", $"OTP!", 1, 200));
+                        return await SendSMSOTP(user, model);
                     }
                     else if (result.IsLockedOut)
                     {
                         _logger.LogWarning("User account locked out.");
                         return StatusCode(StatusCodes.Status500InternalServerError,
-                            new ResponseBase("Login fail!", $"{model.Username}: User account locked out!", "Login fail!"));
+                                    new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!"));
                     }
                 }
             }
 
             _logger.LogInformation($"Not found: {model.Username}");
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new ResponseBase("Login fail!", $"{model.Username}: Login fail!", "Login fail!"));
+                new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
         }
 
         //[HttpPost]
@@ -146,11 +132,7 @@ namespace Auth.Controllers
                     if (userExists != null)
                     //return StatusCode(StatusCodes.Status500InternalServerError, new ResponseBase("User already exists!", "User already exists!", "User already exists!"));
                     {
-                        var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, model.Username);
-                        var message = $"Your security code is: {code}";
-                        _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
-
-                        return Ok(new ResponseBase("Please input OTP!", $"{model.Username}: Please input OTP!", $"OTP!", 1, 200));
+                        return await SendSMSOTP(userExists, model);
                     }
                     else
                     {
@@ -164,17 +146,20 @@ namespace Auth.Controllers
                         var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
                         if (result.Succeeded)
                         {
-                            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
+                            userExists.TotalOTP = 1;
+                            userExists.OTPSendTime = DateTime.Now;
+                            await _userManager.UpdateAsync(userExists);
+                            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, model.Username);
                             var message = $"Your security code is: {code}";
-                            _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
-
-                            return Ok(new ResponseBase("Please input OTP!", $"{model.Username}: Please input OTP!", $"OTP!", 1, 200));
+                            _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
+                            return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
                         }
                     }
                 }
             }
+            _logger.LogError($"{model.Username}: {LanguageAll.Language.UserCreateFail}");
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new ResponseBase("User creation failed! Please check user details and try again!", "User creation failed! Please check user details and try again!", "User creation failed! Please check user details and try again!"));
+                new ResponseBase(LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail));
         }
 
         [HttpPost]
@@ -196,7 +181,7 @@ namespace Auth.Controllers
             }
             _logger.LogWarning("Invalid code.");
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new ResponseBase("Invalid code.", $"Invalid code.", "Login fail!"));
+                new ResponseBase(LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid));
         }
 
         [Authorize]
@@ -218,7 +203,7 @@ namespace Auth.Controllers
             }
 
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new ResponseBase("Renew Token fail!", "Renew Token fail!", "Renew Token fail!"));
+                new ResponseBase(LanguageAll.Language.RenewTokenFail, LanguageAll.Language.RenewTokenFail, LanguageAll.Language.RenewTokenFail));
         }
 
         [Authorize]
@@ -232,53 +217,7 @@ namespace Auth.Controllers
             user.RefreshToken = null;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new ResponseBase("Revoke OK", $"Revoke OK", "Revoke OK", 1, 200));
-        }
-
-        [Authorize]
-        [MyAuthorize]
-        [HttpPost]
-        [Route("[action]/{IsToken}")]
-        public async Task<IActionResult> GetProfile(int IsToken)
-        {
-            var a = await _profile.GetProfile(IsToken == 1);
-            return Ok(a);
-        }
-
-        [Authorize]
-        [MyAuthorize]
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> SetProfile([FromBody] ProfileInputModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var a = await _profile.SetProfile(model);
-                if (a.Status == 0)
-                {
-                    switch (a.Code)
-                    {
-                        case 400:
-                            return StatusCode(StatusCodes.Status400BadRequest, a);
-                        default:
-                            return StatusCode(StatusCodes.Status500InternalServerError, a);
-
-                    }
-                }
-                return Ok(a);
-            }
-            else
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.SetProfileFailEmail,
-                    MoreInfo = LanguageAll.Language.SetProfileFailEmail,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.SetProfileFailEmail,
-                    data = ModelState.ToList()
-                });
-            }
+            return Ok(new ResponseBase(LanguageAll.Language.Success, LanguageAll.Language.Success, LanguageAll.Language.Success, 1, 200));
         }
 
         //[Authorize]
@@ -343,6 +282,52 @@ namespace Auth.Controllers
         private Task<AppUser> GetCurrentUserAsync()
         {
             return _userManager.GetUserAsync(HttpContext.User);
+        }
+
+        private async Task<IActionResult> SendSMSOTP(AppUser user, LoginModel model)
+        {
+            int IsNotAllowSend = 0;
+            if (user.OTPSendTime.HasValue)
+            {
+                TimeSpan span = DateTime.Now.Subtract(user.OTPSendTime.Value);
+                if ((int)span.TotalDays == 0)
+                {
+                    if ((int)span.TotalMinutes < _loginConfiguration.OTPTimeLife)
+                    {
+                        IsNotAllowSend = 2;
+                    }
+                    else if (user.TotalOTP >= _loginConfiguration.OTPLimitedOnDay)
+                    {
+                        IsNotAllowSend = 3;
+                    }
+                    else IsNotAllowSend = 1;
+                }
+            }
+            switch (IsNotAllowSend)
+            {
+                case 2:
+                    _logger.LogWarning("You needs request OTP after 3 minutes.");
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                        new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPWait}!", $"{model.Username}: {LanguageAll.Language.OTPWait}!"));
+                case 3:
+                    _logger.LogWarning("You request too more OTP on this day.");
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                        new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPLimited}!", $"{model.Username}: {LanguageAll.Language.OTPLimited}!"));
+                default:
+                    //var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
+                    //var message = $"Your security code is: {code}";
+                    //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
+                    if (IsNotAllowSend == 0)
+                        user.TotalOTP = 1;
+                    else
+                        user.TotalOTP = user.TotalOTP + 1;
+                    user.OTPSendTime = DateTime.Now;
+                    await _userManager.UpdateAsync(user);
+                    var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
+                    var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
+                    _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
+                    return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+            }
         }
     }
 }

@@ -69,7 +69,7 @@ namespace Auth.Models
         public string IssuePlace { get; set; }
 
         [StringLength(30, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
-        public string CustomerCode { get; set; }
+        public string WaterCompany { get; set; }
 
         public List<string> CustomerCodeList { get; set; }
 
@@ -79,4 +79,5 @@ namespace Auth.Models
             IsCompany = false;
         }
     }
+
 }

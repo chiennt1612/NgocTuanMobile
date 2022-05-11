@@ -61,6 +61,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tài khoản của bạn bị tạm khóa, vui lòng đăng nhập sau 1 ngày.
+        /// </summary>
+        public static string AccountLockout {
+            get {
+                return ResourceManager.GetString("AccountLockout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mã bảo mật OTP.
         /// </summary>
         public static string AuthenticatorCode {
@@ -97,6 +106,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Thất bại.
+        /// </summary>
+        public static string Fail {
+            get {
+                return ResourceManager.GetString("Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lấy thông tin tài khoản thành công.
         /// </summary>
         public static string GetProfileOK {
@@ -115,11 +133,56 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mã khách không để trống.
+        /// </summary>
+        public static string LinkInvoiceFailCodeEmpty {
+            get {
+                return ResourceManager.GetString("LinkInvoiceFailCodeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mã khách đã có liên kết, vui lòng liên hệ công ty..
+        /// </summary>
+        public static string LinkInvoiceFailCodeHasLink {
+            get {
+                return ResourceManager.GetString("LinkInvoiceFailCodeHasLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mã khách không có.
+        /// </summary>
+        public static string LinkInvoiceFailCodeNotExitst {
+            get {
+                return ResourceManager.GetString("LinkInvoiceFailCodeNotExitst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gán mã khách nhận hóa đơn thành công.
+        /// </summary>
+        public static string LinkInvoiceSuccess {
+            get {
+                return ResourceManager.GetString("LinkInvoiceSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dữ liệu không hợp lệ.
         /// </summary>
         public static string ModelStateInValid {
             get {
                 return ResourceManager.GetString("ModelStateInValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy.
+        /// </summary>
+        public static string NotFound {
+            get {
+                return ResourceManager.GetString("NotFound", resourceCulture);
             }
         }
         
@@ -138,6 +201,33 @@ namespace LanguageAll {
         public static string OTPCode {
             get {
                 return ResourceManager.GetString("OTPCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OTP không đúng.
+        /// </summary>
+        public static string OTPInvalid {
+            get {
+                return ResourceManager.GetString("OTPInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bạn đăng nhập quá nhiều lần bằng OTP trong ngày.
+        /// </summary>
+        public static string OTPLimited {
+            get {
+                return ResourceManager.GetString("OTPLimited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng đăng nhập lại sau 3 phút.
+        /// </summary>
+        public static string OTPWait {
+            get {
+                return ResourceManager.GetString("OTPWait", resourceCulture);
             }
         }
         
@@ -165,6 +255,33 @@ namespace LanguageAll {
         public static string RecoveryCode {
             get {
                 return ResourceManager.GetString("RecoveryCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Đã hủy gán mã nhận hóa đơn.
+        /// </summary>
+        public static string RemoveInvoiceSuccess {
+            get {
+                return ResourceManager.GetString("RemoveInvoiceSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tạo token mới không thành công.
+        /// </summary>
+        public static string RenewTokenFail {
+            get {
+                return ResourceManager.GetString("RenewTokenFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Đã liên kết công ty nước thành công.
+        /// </summary>
+        public static string SetCompanyInfoSuccess {
+            get {
+                return ResourceManager.GetString("SetCompanyInfoSuccess", resourceCulture);
             }
         }
         
@@ -205,11 +322,38 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Thành công.
+        /// </summary>
+        public static string Success {
+            get {
+                return ResourceManager.GetString("Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không có quyền truy cập hoặc token hết hạn.
         /// </summary>
         public static string Unauthorized {
             get {
                 return ResourceManager.GetString("Unauthorized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không đăng ký được tài khoản, vui lòng kiểm tra số điện thoại hợp lệ.
+        /// </summary>
+        public static string UserCreateFail {
+            get {
+                return ResourceManager.GetString("UserCreateFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng xác thực tài khoản với OTP.
+        /// </summary>
+        public static string VerifyOTP {
+            get {
+                return ResourceManager.GetString("VerifyOTP", resourceCulture);
             }
         }
     }

@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AccountLockout" xml:space="preserve">
+    <value>Tài khoản của bạn bị tạm khóa, vui lòng đăng nhập sau 1 ngày</value>
+  </data>
   <data name="AuthenticatorCode" xml:space="preserve">
     <value>Mã bảo mật OTP</value>
   </data>
@@ -129,20 +132,47 @@
   <data name="EmailIsNotValid" xml:space="preserve">
     <value>Địa chỉ Email sai định dạng.</value>
   </data>
+  <data name="Fail" xml:space="preserve">
+    <value>Thất bại</value>
+  </data>
   <data name="GetProfileOK" xml:space="preserve">
     <value>Lấy thông tin tài khoản thành công</value>
   </data>
   <data name="InvalidCredentialsErrorMessage" xml:space="preserve">
     <value>Tài khoản/ email hoặc mật khẩu không đúng.</value>
   </data>
+  <data name="LinkInvoiceFailCodeEmpty" xml:space="preserve">
+    <value>Mã khách không để trống</value>
+  </data>
+  <data name="LinkInvoiceFailCodeHasLink" xml:space="preserve">
+    <value>Mã khách đã có liên kết, vui lòng liên hệ công ty.</value>
+  </data>
+  <data name="LinkInvoiceFailCodeNotExitst" xml:space="preserve">
+    <value>Mã khách không có</value>
+  </data>
+  <data name="LinkInvoiceSuccess" xml:space="preserve">
+    <value>Gán mã khách nhận hóa đơn thành công</value>
+  </data>
   <data name="ModelStateInValid" xml:space="preserve">
     <value>Dữ liệu không hợp lệ</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Không tìm thấy</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
     <value>Mật khẩu hiện tại</value>
   </data>
   <data name="OTPCode" xml:space="preserve">
     <value>Mã OTP</value>
+  </data>
+  <data name="OTPInvalid" xml:space="preserve">
+    <value>OTP không đúng</value>
+  </data>
+  <data name="OTPLimited" xml:space="preserve">
+    <value>Bạn đăng nhập quá nhiều lần bằng OTP trong ngày</value>
+  </data>
+  <data name="OTPWait" xml:space="preserve">
+    <value>Vui lòng đăng nhập lại sau 3 phút</value>
   </data>
   <data name="Password" xml:space="preserve">
     <value>Mật khẩu</value>
@@ -152,6 +182,15 @@
   </data>
   <data name="RecoveryCode" xml:space="preserve">
     <value>Mã khôi phục</value>
+  </data>
+  <data name="RemoveInvoiceSuccess" xml:space="preserve">
+    <value>Đã hủy gán mã nhận hóa đơn</value>
+  </data>
+  <data name="RenewTokenFail" xml:space="preserve">
+    <value>Tạo token mới không thành công</value>
+  </data>
+  <data name="SetCompanyInfoSuccess" xml:space="preserve">
+    <value>Đã liên kết công ty nước thành công</value>
   </data>
   <data name="SetProfileFailCompanyName" xml:space="preserve">
     <value>Tên công ty không để trống</value>
@@ -165,7 +204,16 @@
   <data name="SetProfileSuccess" xml:space="preserve">
     <value>Cài đặt thông tin cá nhân thành công</value>
   </data>
+  <data name="Success" xml:space="preserve">
+    <value>Thành công</value>
+  </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Không có quyền truy cập hoặc token hết hạn</value>
+  </data>
+  <data name="UserCreateFail" xml:space="preserve">
+    <value>Không đăng ký được tài khoản, vui lòng kiểm tra số điện thoại hợp lệ</value>
+  </data>
+  <data name="VerifyOTP" xml:space="preserve">
+    <value>Vui lòng xác thực tài khoản với OTP</value>
   </data>
 </root>

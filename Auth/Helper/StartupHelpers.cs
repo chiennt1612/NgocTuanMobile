@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
+using Utils.Repository;
+using Utils.Repository.Interfaces;
 
 namespace Auth.Helper
 {
@@ -35,6 +37,7 @@ namespace Auth.Helper
 
         public static void AddServices(this IServiceCollection services)
         {
+            services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IProfile, Profile>();
         }
 
@@ -59,6 +62,7 @@ namespace Auth.Helper
                 .AddScoped<UserResolver<TUserIdentity>>()
                 .AddIdentity<TUserIdentity, TUserIdentityRole>(options => configuration.GetSection(nameof(IdentityOptions)).Bind(options))
                 .AddEntityFrameworkStores<TIdentityDbContext>()
+                .AddUserManager<AppUserManager>()
                 .AddDefaultTokenProviders();
 
             // Adding Authentication
