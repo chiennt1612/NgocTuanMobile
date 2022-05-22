@@ -123,6 +123,9 @@
   <data name="AuthenticatorCode" xml:space="preserve">
     <value>Mã bảo mật OTP</value>
   </data>
+  <data name="CompanyIDInvalid" xml:space="preserve">
+    <value>Mã nhà máy nước không để trống</value>
+  </data>
   <data name="confirmationnotmatch" xml:space="preserve">
     <value>Mật khẩu và xác nhận lại không khớp</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="Fail" xml:space="preserve">
     <value>Thất bại</value>
+  </data>
+  <data name="FormatPhoneNumberFail" xml:space="preserve">
+    <value>Vui lòng nhập đúng số điện thoại</value>
   </data>
   <data name="GetProfileOK" xml:space="preserve">
     <value>Lấy thông tin tài khoản thành công</value>
@@ -182,6 +188,9 @@
   </data>
   <data name="RecoveryCode" xml:space="preserve">
     <value>Mã khôi phục</value>
+  </data>
+  <data name="RefreshTokenInvalid" xml:space="preserve">
+    <value>RefreshToken không hợp lệ</value>
   </data>
   <data name="RemoveInvoiceSuccess" xml:space="preserve">
     <value>Đã hủy gán mã nhận hóa đơn</value>

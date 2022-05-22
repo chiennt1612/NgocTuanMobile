@@ -6,10 +6,11 @@ namespace Utils.Repository.Interfaces
     public interface IInvoiceRepository
     {
         public CompanyConfig companyConfig { get; set; }
-        Task<InvoiceResult> GetInvoice(InvoiceInput inv, int Company = 0);
-        Task<InvoiceAllResult> GetInvoiceAll(InvoiceAllInput inv, int Company = 0);
-        Task<PayResult> PayInvoice(PayInput inv, int Company = 0);
-        Task<PayResult> CheckPayInvoice(CheckPayInput inv, int Company = 0);
-        Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv, int Company = 0);
+        Task<ContractResult> GetContract(ContractInput inv);
+        Task<InvoiceResult> GetInvoice(InvoiceInput inv);
+        Task<InvoiceAllResult> GetInvoiceAll(InvoiceAllInput inv);
+        Task<PayResult> PayInvoice(PayInput inv);
+        Task<PayResult> CheckPayInvoice(CheckPayInput inv);
+        Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv);
     }
 }

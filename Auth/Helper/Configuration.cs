@@ -16,5 +16,7 @@
         public int OTPTimeLife { get; set; } = 3;
         public int OTPLimitedOnDay { get; set; } = 5;
         public string OTPSMSContent { get; set; } = "Your security code is: {OTPCODE}";
+        public string MobileTest { get; set; }
+        public string OTPTest { get; set; }
     }
 }

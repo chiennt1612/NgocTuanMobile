@@ -281,6 +281,18 @@ namespace Auth.Services
 
         public async Task<ResponseOK> LinkInvoice(InvoiceInput inv)
         {
+            if (inv.CompanyID < 0 || inv.CompanyID > 100)
+            {
+                return new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.CompanyIDInvalid,
+                    MoreInfo = LanguageAll.Language.CompanyIDInvalid,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.CompanyIDInvalid,
+                    data = null
+                };
+            }
             if (String.IsNullOrEmpty(inv.CustomerCode))
             {
                 return new ResponseOK()
@@ -308,7 +320,7 @@ namespace Auth.Services
                 };
             }
 
-            var _claim = new Claim("GetInvoice", inv.CustomerCode);
+            var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{inv.CustomerCode}");
             var _u = await _userManager.GetUsersForClaimAsync(_claim);
             if (_u.Count == 0)
             {
@@ -330,6 +342,18 @@ namespace Auth.Services
 
         public async Task<ResponseOK> RemoveInvoice(InvoiceInput inv)
         {
+            if (inv.CompanyID < 0 || inv.CompanyID > 100)
+            {
+                return new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.CompanyIDInvalid,
+                    MoreInfo = LanguageAll.Language.CompanyIDInvalid,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.CompanyIDInvalid,
+                    data = null
+                };
+            }
             if (String.IsNullOrEmpty(inv.CustomerCode))
             {
                 return new ResponseOK()
@@ -357,9 +381,10 @@ namespace Auth.Services
                 };
             }
 
+            var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{inv.CustomerCode}");
             var u = await _userManager.GetUserAsync(_context.HttpContext.User);
             var a = await _userManager.GetClaimsAsync(u);
-            if (String.IsNullOrEmpty(a.Where(u => u.Value == inv.CustomerCode).FirstOrDefault()?.Value))
+            if (!a.Contains(_claim))
             {
                 return new ResponseOK()
                 {
@@ -372,7 +397,7 @@ namespace Auth.Services
                 };
             }
 
-            await _userManager.RemoveClaimAsync(u, new Claim("GetInvoice", inv.CustomerCode));
+            await _userManager.RemoveClaimAsync(u, _claim);
 
             return await GetProfile(4);
         }
@@ -482,5 +507,46 @@ namespace Auth.Services
                 data = r
             };
         }
+
+        public async Task<ResponseOK> GetContractAllList(ContractInput inv)
+        {
+            if (inv.CompanyID < 0 || inv.CompanyID > 100)
+            {
+                return new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.CompanyIDInvalid,
+                    MoreInfo = LanguageAll.Language.CompanyIDInvalid,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.CompanyIDInvalid,
+                    data = null
+                };
+            }
+            if (String.IsNullOrEmpty(inv.Mobile))
+            {
+                return new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.FormatPhoneNumberFail,
+                    MoreInfo = LanguageAll.Language.FormatPhoneNumberFail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.FormatPhoneNumberFail,
+                    data = null
+                };
+            }
+
+            ContractResult ir = await _invoice.GetContract(inv);
+
+            return new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 0,
+                UserMessage = LanguageAll.Language.Success,
+                data = ir
+            };
+        }
+
     }
 }

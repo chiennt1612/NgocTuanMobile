@@ -14,7 +14,8 @@ namespace Auth.Helper
         {
             var token = context.HttpContext.RequestServices.GetService(typeof(ITokenCreationService)) as TokenCreationService;
             var encodedString = context.HttpContext.Request.Headers["Authorization"];
-            if (!token.ValidateToken(encodedString))
+            var a = token.ValidateToken(encodedString);
+            if (a == null || a == default)
             {
                 context.Result = new JsonResult(
                     new Utils.Models.ResponseBase(

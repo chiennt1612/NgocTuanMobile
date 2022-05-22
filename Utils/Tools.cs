@@ -6,17 +6,31 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utils
 {
+    public static class ClaimsPrincipalExtensions
+    {
+        public static string GetUserId(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                return null;
+            }
+            var claim = principal.FindFirst(ClaimTypes.NameIdentifier);
+            return claim != null ? claim.Value : null;
+        }
+    }
     public static class Tools
     {
         public const string NumberSepr = ",";
@@ -33,6 +47,12 @@ namespace Utils
             {
                 return "";
             }
+        }
+
+        public static bool IsValidEmail(this string email)
+        {
+            if (String.IsNullOrEmpty(email)) return false;
+            return new EmailAddressAttribute().IsValid(email);
         }
 
         #region cache dist

@@ -16,7 +16,7 @@ namespace MobileAPI.Helper
 
             // This will succeed.
             var decryptor = sp.GetService<IDecryptorProvider>();
-            services.RegisterDbContexts<AppDbContext>(configuration, decryptor, migrationsAssembly);
+            //services.RegisterDbContexts<AppDbContext>(configuration, decryptor, migrationsAssembly);
             //services.RegisterDbContexts<OrderDbContext>(configuration, decryptor);
 
             services.AddIdSHealthChecks<AppDbContext>(configuration, decryptor);

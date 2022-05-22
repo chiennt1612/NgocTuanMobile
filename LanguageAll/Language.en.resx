@@ -120,6 +120,9 @@
   <data name="AccountLockout" xml:space="preserve">
     <value>User account locked out</value>
   </data>
+  <data name="CompanyIDInvalid" xml:space="preserve">
+    <value>Company invalid</value>
+  </data>
   <data name="Confirmationnotmatch" xml:space="preserve">
     <value>The password and confirmation password do not match.</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="Fail" xml:space="preserve">
     <value>Fail</value>
+  </data>
+  <data name="FormatPhoneNumberFail" xml:space="preserve">
+    <value>Phone number invalid</value>
   </data>
   <data name="GetProfileOK" xml:space="preserve">
     <value>GetProfileOK</value>
@@ -176,6 +182,9 @@
   </data>
   <data name="RecoveryCode" xml:space="preserve">
     <value>Recovery code</value>
+  </data>
+  <data name="RefreshTokenInvalid" xml:space="preserve">
+    <value>RefreshToken invalid</value>
   </data>
   <data name="Remember" xml:space="preserve">
     <value>Remember me?</value>

@@ -14,8 +14,15 @@ namespace Utils.Models
         public bool IsAgree { get; set; } = true;
     }
 
+    public class ContractInput
+    {
+        public int CompanyID { get; set; } = 0;
+        public string Mobile { get; set; }
+    }
+
     public class InvoiceInput
     {
+        public int CompanyID { get; set; } = 0;
         public string CustomerCode { get; set; }
     }
 
@@ -36,11 +43,13 @@ namespace Utils.Models
 
     public class CheckPayInput
     {
+        public int CompanyID { get; set; } = 0;
         public string OnePayID { get; set; }
     }
 
     public class PayInput
     {
+        public int CompanyID { get; set; } = 0;
         public string OnePayID { get; set; }
         public string CustomerCode { get; set; }
         public string InvoiceNo { get; set; }
@@ -51,6 +60,7 @@ namespace Utils.Models
 
     public class InvoiceAllInput
     {
+        public int CompanyID { get; set; } = 0;
         public string CustomerCode { get; set; }
         public int Page { get; set; }
     }
@@ -104,5 +114,25 @@ namespace Utils.Models
         public string Address { get; set; }
         public string WaterIndexCode { get; set; }
         public List<InvListAll> InvList { get; set; }
+    }
+
+    public class ContractList
+    {
+        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
+    }
+
+    public class ItemsList
+    {
+        public string Mobile { get; set; }
+        public List<ContractList> ContractList { get; set; }
+    }
+
+    public class ContractResult
+    {
+        public ItemsList ItemsData { get; set; }
+        public string DataStatus { get; set; }
+        public string Message { get; set; }
+        public string ResponseStatus { get; set; }
     }
 }

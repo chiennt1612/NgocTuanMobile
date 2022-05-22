@@ -21,15 +21,15 @@ namespace Utils.Repository
             companyConfig = this.configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
         }
 
-        public async Task<PayResult> CheckPayInvoice(CheckPayInput inv, int Company = 0)
+        public async Task<PayResult> CheckPayInvoice(CheckPayInput inv)
         {
             PayResult a = default;
             try
             {
                 a = await Tools.APIRequest<PayResult, CheckPayInput>(ilogger,
-                    companyConfig.Companys[Company].Config.APIUrl,
-                    companyConfig.Companys[Company].Config.APIToken,
-                    companyConfig.Companys[Company].Config.APIFunctions[2], inv);
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[2], inv);
                 ilogger.LogInformation($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
@@ -39,15 +39,15 @@ namespace Utils.Repository
             return a;
         }
 
-        public async Task<InvoiceResult> GetInvoice(InvoiceInput inv, int Company = 0)
+        public async Task<InvoiceResult> GetInvoice(InvoiceInput inv)
         {
             InvoiceResult a = default;
             try
             {
                 a = await Tools.APIRequest<InvoiceResult, InvoiceInput>(ilogger,
-                    companyConfig.Companys[Company].Config.APIUrl,
-                    companyConfig.Companys[Company].Config.APIToken,
-                    companyConfig.Companys[Company].Config.APIFunctions[0], inv);
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[0], inv);
                 ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
@@ -57,15 +57,15 @@ namespace Utils.Repository
             return a;
         }
 
-        public async Task<InvoiceAllResult> GetInvoiceAll(InvoiceAllInput inv, int Company = 0)
+        public async Task<InvoiceAllResult> GetInvoiceAll(InvoiceAllInput inv)
         {
             InvoiceAllResult a = default;
             try
             {
                 a = await Tools.APIRequest<InvoiceAllResult, InvoiceAllInput>(ilogger,
-                    companyConfig.Companys[Company].Config.APIUrl,
-                    companyConfig.Companys[Company].Config.APIToken,
-                    companyConfig.Companys[Company].Config.APIFunctions[4], inv);
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[4], inv);
                 ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
@@ -75,15 +75,15 @@ namespace Utils.Repository
             return a;
         }
 
-        public async Task<PayResult> PayInvoice(PayInput inv, int Company = 0)
+        public async Task<PayResult> PayInvoice(PayInput inv)
         {
             PayResult a = default;
             try
             {
                 a = await Tools.APIRequest<PayResult, PayInput>(ilogger,
-                    companyConfig.Companys[Company].Config.APIUrl,
-                    companyConfig.Companys[Company].Config.APIToken,
-                    companyConfig.Companys[Company].Config.APIFunctions[1], inv);
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[1], inv);
                 ilogger.LogInformation($"PayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
@@ -93,15 +93,15 @@ namespace Utils.Repository
             return a;
         }
 
-        public async Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv, int Company = 0)
+        public async Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv)
         {
             UndoPayResult a = default;
             try
             {
                 a = await Tools.APIRequest<UndoPayResult, InvoiceInput>(ilogger,
-                    companyConfig.Companys[Company].Config.APIUrl,
-                    companyConfig.Companys[Company].Config.APIToken,
-                    companyConfig.Companys[Company].Config.APIFunctions[2], inv);
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[2], inv);
                 ilogger.LogInformation($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
@@ -111,5 +111,22 @@ namespace Utils.Repository
             return a;
         }
 
+        public async Task<ContractResult> GetContract(ContractInput inv)
+        {
+            ContractResult a = default;
+            try
+            {
+                a = await Tools.APIRequest<ContractResult, ContractInput>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[5], inv);
+                ilogger.LogInformation($"getContractAllList {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                ilogger.LogError($"getContractAllList {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
     }
 }

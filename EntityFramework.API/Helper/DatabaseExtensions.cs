@@ -7,17 +7,16 @@ namespace EntityFramework.API.Helper
 {
     public static class DatabaseExtensions
     {
-        public static void RegisterDbContexts<TDbContext>
+        public static void RegisterDbContexts<TUserDbContext, TDbContext>
                    (this IServiceCollection services, IConfiguration configuration, IDecryptorProvider decryptor, string migrationsAssembly)
-               where TDbContext : DbContext
+            where TDbContext : DbContext
+            where TUserDbContext : DbContext
         {
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            //string connectionString = decryptor.Decrypt(Environment.GetEnvironmentVariable("CONNECTION_STRING"));
-
-            //var migrationsAssembly = typeof(DatabaseExtensions).GetTypeInfo().Assembly.GetName().Name;
-
             // Config DB for identity
-            services.AddDbContext<TDbContext>(options => options.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly)));
+            services.AddDbContext<TUserDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), sql => sql.MigrationsAssembly(migrationsAssembly)));
+
+            // Config DB for App
+            services.AddDbContext<TDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("AppConnection"), sql => sql.MigrationsAssembly(migrationsAssembly)));
         }
 
         public static void AddIdSHealthChecks<TDbContext>

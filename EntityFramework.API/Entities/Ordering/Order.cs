@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -6,7 +7,7 @@ namespace EntityFramework.API.Entities.Ordering
 {
     public class Order
     {
-        [StringLength(50)]
+        //[StringLength(50)]
         public string CookieID { get; set; }
         public long Id { get; set; }
 
@@ -29,6 +30,8 @@ namespace EntityFramework.API.Entities.Ordering
         [ForeignKey("OrderStatus")]
         public int StatusId { get; set; }
         public OrderStatus OrderStatus { get; set; }
+
+        public List<OrderItem> OrderItems { get; set; }
 
         /// <Order contact info >
         [StringLength(128, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
@@ -59,6 +62,7 @@ namespace EntityFramework.API.Entities.Ordering
 
         public Order()
         {
+            OrderItems = new List<OrderItem>();
             StatusId = 0;
             PaymentMethod = 1;
             Total = 0;

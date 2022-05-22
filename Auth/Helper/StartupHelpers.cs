@@ -1,4 +1,6 @@
-﻿using Auth.Services;
+﻿using Auth.Repository;
+using Auth.Repository.Interfaces;
+using Auth.Services;
 using Auth.Services.Interfaces;
 using Decryptor;
 using EntityFramework.API.DBContext;
@@ -10,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Paygate.OnePay;
 using System;
 using System.Text;
 using Utils.Repository;
@@ -27,7 +30,7 @@ namespace Auth.Helper
 
             // This will succeed.
             var decryptor = sp.GetService<IDecryptorProvider>();
-            services.RegisterDbContexts<UserDbContext>(configuration, decryptor, migrationsAssembly);
+            services.RegisterDbContexts<UserDbContext, AppDbContext>(configuration, decryptor, migrationsAssembly);
             //services.RegisterDbContexts<OrderDbContext>(configuration, decryptor);
 
             services.AddIdSHealthChecks<UserDbContext>(configuration, decryptor);
@@ -35,10 +38,36 @@ namespace Auth.Helper
         }
         #endregion
 
+        public static void RegisterPaygateService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Paygate config
+            var paygateInfo = configuration.GetSection(nameof(PaygateInfo)).Get<PaygateInfo>();
+
+            if (paygateInfo == null)
+            {
+                paygateInfo = new PaygateInfo();
+            }
+
+            services.AddSingleton(paygateInfo);
+            services.AddSingleton<IVPCRequest, VPCRequest>();
+        }
+
         public static void AddServices(this IServiceCollection services)
         {
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IProfile, Profile>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IArticleServices, ArticleServices>();
+            services.AddScoped<ICategoriesServices, CategoriesServices>();
+            services.AddScoped<INewsCategoriesServices, NewsCategoriesServices>();
+            services.AddScoped<IParamSettingServices, ParamSettingServices>();
+            services.AddScoped<IProductServices, ProductServices>();
+            services.AddScoped<IAboutServices, AboutServices>();
+            services.AddScoped<IContactServices, ContactServices>();
+            services.AddScoped<IAdvServices, AdvServices>();
+            services.AddScoped<IServiceServices, ServiceServices>();
+            services.AddScoped<IFAQServices, FAQServices>();
+            services.AddScoped<IAllService, AllService>();
         }
 
         public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
@@ -82,7 +111,7 @@ namespace Auth.Helper
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = false,
+                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.Zero,
 

@@ -94,13 +94,13 @@ namespace Utils.Tokens
             return Convert.ToBase64String(randomNumber);
         }
 
-        public bool ValidateToken(string? token)
+        public ClaimsPrincipal ValidateToken(string? token)
         {
             TokenValidationParameters tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
                 ClockSkew = TimeSpan.Zero,
 
@@ -113,16 +113,15 @@ namespace Utils.Tokens
             {
                 var principal = tokenHandler.ValidateToken(token.Substring("Bearer ".Length), tokenValidationParameters, out SecurityToken securityToken);
                 if (securityToken is not JwtSecurityToken jwtSecurityToken || principal == null)
-                    return false;
+                    return default;
+                else
+                    return principal;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.ToString());
-                return false;
+                return default;
             }
-
-            return true;
-
         }
     }
 }

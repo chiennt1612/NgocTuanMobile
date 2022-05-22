@@ -79,6 +79,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mã nhà máy nước không để trống.
+        /// </summary>
+        public static string CompanyIDInvalid {
+            get {
+                return ResourceManager.GetString("CompanyIDInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mật khẩu và xác nhận lại không khớp.
         /// </summary>
         public static string confirmationnotmatch {
@@ -111,6 +120,15 @@ namespace LanguageAll {
         public static string Fail {
             get {
                 return ResourceManager.GetString("Fail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng nhập đúng số điện thoại.
+        /// </summary>
+        public static string FormatPhoneNumberFail {
+            get {
+                return ResourceManager.GetString("FormatPhoneNumberFail", resourceCulture);
             }
         }
         
@@ -255,6 +273,15 @@ namespace LanguageAll {
         public static string RecoveryCode {
             get {
                 return ResourceManager.GetString("RecoveryCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RefreshToken không hợp lệ.
+        /// </summary>
+        public static string RefreshTokenInvalid {
+            get {
+                return ResourceManager.GetString("RefreshTokenInvalid", resourceCulture);
             }
         }
         

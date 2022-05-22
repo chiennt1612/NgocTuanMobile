@@ -10,6 +10,6 @@ namespace Utils.Tokens.Interfaces
         Task<string> CreateTokenAsync(Token token);
         Token CreateAccessTokenAsync(IList<Claim> Claims);
         string GenerateRefreshToken();
-        bool ValidateToken(string? token);
+        ClaimsPrincipal ValidateToken(string? token);
     }
 }
