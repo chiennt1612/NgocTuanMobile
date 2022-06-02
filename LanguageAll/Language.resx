@@ -198,6 +198,9 @@
   <data name="RenewTokenFail" xml:space="preserve">
     <value>Tạo token mới không thành công</value>
   </data>
+  <data name="ServiceNotFound" xml:space="preserve">
+    <value>Dịch vụ bạn chọn không có</value>
+  </data>
   <data name="SetCompanyInfoSuccess" xml:space="preserve">
     <value>Đã liên kết công ty nước thành công</value>
   </data>

@@ -4,8 +4,11 @@ using Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
+using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
 
@@ -23,11 +26,14 @@ namespace Auth.Controllers
     {
         private readonly IProfile _profile;
         private readonly AppUserManager _userManager;
+        private readonly ILogger<ProfileController> _logger;
 
-        public ProfileController(IProfile profile, AppUserManager userManager)
+        public ProfileController(IProfile profile, AppUserManager userManager, ILogger<ProfileController> logger)
         {
             _profile = profile;
             _userManager = userManager;
+            _logger = logger;
+            _logger.WriteLog("Starting profile");
         }
 
         [HttpGet]
@@ -35,6 +41,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> GetCompanyList()
         {
             var a = await _profile.GetCompanyList();
+            _logger.WriteLog($"GetCompanyList: {JsonConvert.SerializeObject(a)}", "GetCompanyList");
             return Ok(a);
         }
 
@@ -48,6 +55,7 @@ namespace Auth.Controllers
                 Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName
             };
             var a = await _profile.GetContractAllList(inv);
+            _logger.WriteLog($"GetContractList {inv.CompanyID}/ {inv.Mobile}: {JsonConvert.SerializeObject(a)}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
             return Ok(a);
         }
 
@@ -98,6 +106,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> GetProfile(int IsToken)
         {
             var a = await _profile.GetProfile(IsToken);
+            _logger.WriteLog($"GetProfile {IsToken}: {JsonConvert.SerializeObject(a)}", $"GetProfile {IsToken}");
             return Ok(a);
         }
 
@@ -108,6 +117,7 @@ namespace Auth.Controllers
             if (ModelState.IsValid)
             {
                 var a = await _profile.SetProfile(model);
+                _logger.WriteLog($"SetProfile: {JsonConvert.SerializeObject(a)}", $"SetProfile");
                 if (a.Status == 0)
                 {
                     switch (a.Code)
@@ -140,6 +150,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> LinkContract([FromBody] InvoiceInput inv)
         {
             var a = await _profile.LinkInvoice(inv);
+            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {JsonConvert.SerializeObject(a)}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
             if (a.Status == 0)
             {
                 switch (a.Code)
@@ -159,6 +170,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> RemoveContract([FromBody] InvoiceInput inv)
         {
             var a = await _profile.RemoveInvoice(inv);
+            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {JsonConvert.SerializeObject(a)}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
             if (a.Status == 0)
             {
                 switch (a.Code)

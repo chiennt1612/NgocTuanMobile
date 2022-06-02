@@ -98,6 +98,7 @@
 
     public class PaygateInfo //: IPaygateInfo
     {
+        public string Domain { get; set; }
         public string _PaygateURL { get; set; }
         public int _PaygateVersion { get; set; }
         public string _PaygateLanguage { get; set; }

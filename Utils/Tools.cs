@@ -31,6 +31,37 @@ namespace Utils
             return claim != null ? claim.Value : null;
         }
     }
+
+    public static class IloggerExtensions
+    {
+        public static void WriteLog(this ILogger _logger, string OK, string Error = "", int type = 0)
+        {
+            switch (type)
+            {
+                case 0:
+                    try
+                    {
+                        _logger.LogInformation(OK);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogInformation($"{Error} Is {ex.Message}");
+                    }
+                    break;
+                case 1:
+                    try
+                    {
+                        _logger.LogError(OK);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"{Error} Is {ex.Message}");
+                    }
+                    break;
+            }
+        }
+    }
+
     public static class Tools
     {
         public const string NumberSepr = ",";

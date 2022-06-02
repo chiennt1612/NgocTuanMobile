@@ -195,6 +195,9 @@
   <data name="RenewTokenFail" xml:space="preserve">
     <value>Renew token fail</value>
   </data>
+  <data name="ServiceNotFound" xml:space="preserve">
+    <value>Service id not found</value>
+  </data>
   <data name="SetCompanyInfoSuccess" xml:space="preserve">
     <value>Set Company-info Success</value>
   </data>

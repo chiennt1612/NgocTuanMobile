@@ -16,6 +16,7 @@ namespace Utils.Models
 
     public class CompanyInfo
     {
+        public int CompanyId { get; set; } = 0;
         public string CompanyCode { get; set; }
         public string CompanyName { get; set; }
         public string CompanyNameEn { get; set; }

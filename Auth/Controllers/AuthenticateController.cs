@@ -227,10 +227,10 @@ namespace Auth.Controllers
             {
                 //var user = await GetCurrentUserAsync();
                 var user = await _userManager.FindByNameAsync(model.Username);
-                if(user != null)
+                if (user != null)
                 {
                     string PhoneNumber = user.UserName;
-                    if (model.Username == _loginConfiguration.MobileTest)
+                    if (_loginConfiguration.MobileTest.Contains(model.Username))
                     {
                         _logger.LogInformation($"Validating OTP: {model.Code} with phone number: {model.Username}; [TEST]");
                         if (model.Code == _loginConfiguration.OTPTest)
@@ -260,7 +260,7 @@ namespace Auth.Controllers
                         UserMessage = LanguageAll.Language.NotFound,
                         data = null
                     });
-                }              
+                }
             }
             _logger.LogWarning("Invalid code.");
             return StatusCode(StatusCodes.Status500InternalServerError,
@@ -394,7 +394,7 @@ namespace Auth.Controllers
                 }
             }
             // For test
-            if (user.UserName == _loginConfiguration.MobileTest) IsNotAllowSend = 4;
+            if (_loginConfiguration.MobileTest.Contains(user.UserName)) IsNotAllowSend = 4;
             switch (IsNotAllowSend)
             {
                 case 2:

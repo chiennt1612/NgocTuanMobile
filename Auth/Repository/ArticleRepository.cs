@@ -49,6 +49,8 @@ namespace Auth.Repository
         {
             var a = new BaseEntityList<Article>();
             a.totalRecords = await CountAsync(expression);
+            a.page = page;
+            a.pageSize = pageSize;
             int skipRows = (page - 1) * pageSize;
             if (desc)
                 a.list = (await _context.Articles

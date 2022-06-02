@@ -304,6 +304,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dịch vụ bạn chọn không có.
+        /// </summary>
+        public static string ServiceNotFound {
+            get {
+                return ResourceManager.GetString("ServiceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Đã liên kết công ty nước thành công.
         /// </summary>
         public static string SetCompanyInfoSuccess {

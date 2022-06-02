@@ -17,6 +17,16 @@ namespace Paygate.OnePay
             return context.Request.Scheme + "://" + context.Request.Host;
         }
 
+        public static string MerchantUrl(this PaygateInfo paygateInfo, string MerchantPath)
+        {
+            return paygateInfo.Domain + MerchantPath;
+        }
+
+        public static string MerchantUrl(this PaygateInfo paygateInfo)
+        {
+            return paygateInfo.Domain;
+        }
+
         // vpc_ticket
         public static string GetRemoteIp(this HttpContext context)
         {
@@ -29,7 +39,7 @@ namespace Paygate.OnePay
             conn.SetSecureSecret(paygateInfo._SECURE_SECRET);
             // Add the Digital Order Fields for the functionality you wish to use
             // Core Transaction Fields
-            conn.AddDigitalOrderField("AgainLink", context.MerchantUrl());
+            conn.AddDigitalOrderField("AgainLink", paygateInfo.MerchantUrl());
             conn.AddDigitalOrderField("Title", paygateInfo._Title);
             conn.AddDigitalOrderField("vpc_Locale", paygateInfo._PaygateLanguage);//Chon ngon ngu hien thi tren cong thanh toan (vn/en)
             conn.AddDigitalOrderField("vpc_Version", paygateInfo._PaygateVersion.ToString());
@@ -39,7 +49,7 @@ namespace Paygate.OnePay
             conn.AddDigitalOrderField("vpc_MerchTxnRef", t.vpc_MerchTxnRef);//new Random().NextDouble().ToString()
             conn.AddDigitalOrderField("vpc_OrderInfo", t.vpc_OrderInfo);
             conn.AddDigitalOrderField("vpc_Amount", t.vpc_Amount + "00");
-            conn.AddDigitalOrderField("vpc_ReturnURL", context.MerchantUrl(paygateInfo._MerchantUrl));
+            conn.AddDigitalOrderField("vpc_ReturnURL", paygateInfo.MerchantUrl(paygateInfo._MerchantUrl));
 
             //// Thong tin them ve khach hang. De trong neu khong co thong tin
             //conn.AddDigitalOrderField("vpc_SHIP_Street01", t.vpc_SHIP_Street01);

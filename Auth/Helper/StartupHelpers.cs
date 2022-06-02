@@ -138,6 +138,21 @@ namespace Auth.Helper
             //});
         }
 
+        public static void AddSenders(this IServiceCollection services, IConfiguration configuration)
+        {
+            var smtpConfiguration = configuration.GetSection(nameof(SmtpConfiguration)).Get<SmtpConfiguration>();
+
+            if (smtpConfiguration != null && !string.IsNullOrWhiteSpace(smtpConfiguration.Host))
+            {
+                services.AddSingleton(smtpConfiguration);
+                services.AddSingleton<IEmailSender, SmtpEmailSender>();
+            }
+            else
+            {
+                services.AddSingleton<IEmailSender, EmailSender>();
+            }
+        }
+
         private static LoginConfiguration GetLoginConfiguration(IConfiguration configuration)
         {
             var loginConfiguration = configuration.GetSection(nameof(LoginConfiguration)).Get<LoginConfiguration>();

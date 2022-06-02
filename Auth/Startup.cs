@@ -31,6 +31,7 @@ namespace Auth
             services.AddHttpContextAccessor();
             services.AddServiceLanguage();
 
+            services.AddSenders(Configuration);
             services.AddSingleton<IDecryptorProvider, DecryptorProvider>();
             services.AddSingleton<ISMSVietel, SMSVietel>();
             services.AddSingleton<ITokenCreationService, TokenCreationService>();
@@ -72,7 +73,7 @@ namespace Auth
                 endpoints.MapHealthChecks("/health", new HealthCheckOptions
                 {
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                }).RequireAuthorization();
+                });
             });
         }
     }
