@@ -83,14 +83,14 @@ namespace Auth.Controllers
                     else if (result.IsLockedOut)
                     {
                         _logger.LogWarning("User account locked out.");
-                        return StatusCode(StatusCodes.Status400BadRequest,
-                                    new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!"));
+                        return StatusCode(StatusCodes.Status200OK,
+                                    new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!", 0, 400));
                     }
                 }
                 else
                 {
                     _logger.LogInformation($"Not found: {model.Username}");
-                    return StatusCode(StatusCodes.Status400BadRequest, new ResponseOK()
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
                         InternalMessage = LanguageAll.Language.NotFound,
@@ -103,7 +103,7 @@ namespace Auth.Controllers
             }
 
             _logger.LogInformation($"Not found: {model.Username}");
-            return StatusCode(StatusCodes.Status500InternalServerError,
+            return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
         }
 
@@ -124,12 +124,12 @@ namespace Auth.Controllers
         //        if (result.IsLockedOut)
         //        {
         //            _logger.LogWarning("User account locked out.");
-        //            return StatusCode(StatusCodes.Status500InternalServerError,
+        //            return StatusCode(StatusCodes.Status200OK,
         //                new ResponseBase("Login fail!", $"User account locked out!", "Login fail!"));
         //        }
         //    }
         //    _logger.LogWarning("Invalid code.");
-        //    return StatusCode(StatusCodes.Status500InternalServerError,
+        //    return StatusCode(StatusCodes.Status200OK,
         //        new ResponseBase("Invalid code.", $"Invalid code.", "Login fail!"));
         //}
 
@@ -202,7 +202,7 @@ namespace Auth.Controllers
                 }
                 else
                 {
-                    return StatusCode(StatusCodes.Status400BadRequest, new ResponseOK()
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
                         InternalMessage = LanguageAll.Language.FormatPhoneNumberFail,
@@ -214,7 +214,7 @@ namespace Auth.Controllers
                 }
             }
             _logger.LogError($"{model.Username}: {LanguageAll.Language.UserCreateFail}");
-            return StatusCode(StatusCodes.Status500InternalServerError,
+            return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail));
         }
 
@@ -251,7 +251,7 @@ namespace Auth.Controllers
                 else
                 {
                     _logger.LogInformation($"Not found: {model.Username}");
-                    return StatusCode(StatusCodes.Status400BadRequest, new ResponseOK()
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
                         InternalMessage = LanguageAll.Language.NotFound,
@@ -263,7 +263,7 @@ namespace Auth.Controllers
                 }
             }
             _logger.LogWarning("Invalid code.");
-            return StatusCode(StatusCodes.Status500InternalServerError,
+            return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid));
         }
 
@@ -278,8 +278,8 @@ namespace Auth.Controllers
                 var a = _jwtToken.ValidateToken(encodedString);
                 if (a == null || a == default)
                 {
-                    return StatusCode(StatusCodes.Status401Unauthorized,
-                        new ResponseBase(LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized));
+                    return StatusCode(StatusCodes.Status200OK,
+                        new ResponseBase(LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized, 0, 401));
                 }
                 var user = await GetCurrentUserAsync(a);
                 if (!String.IsNullOrEmpty(user.RefreshToken))
@@ -289,11 +289,11 @@ namespace Auth.Controllers
                         return await LoginOK(user);
                     }
                 }
-                return StatusCode(StatusCodes.Status400BadRequest,
-                    new ResponseBase(LanguageAll.Language.RefreshTokenInvalid, LanguageAll.Language.RefreshTokenInvalid, LanguageAll.Language.RefreshTokenInvalid));
+                return StatusCode(StatusCodes.Status200OK,
+                    new ResponseBase(LanguageAll.Language.RefreshTokenInvalid, LanguageAll.Language.RefreshTokenInvalid, LanguageAll.Language.RefreshTokenInvalid, 0, 400));
             }
 
-            return StatusCode(StatusCodes.Status500InternalServerError,
+            return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.RenewTokenFail, LanguageAll.Language.RenewTokenFail, LanguageAll.Language.RenewTokenFail));
         }
 
@@ -399,11 +399,11 @@ namespace Auth.Controllers
             {
                 case 2:
                     _logger.LogWarning("You needs request OTP after 3 minutes.");
-                    return StatusCode(StatusCodes.Status500InternalServerError,
+                    return StatusCode(StatusCodes.Status200OK,
                         new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPWait}!", $"{model.Username}: {LanguageAll.Language.OTPWait}!"));
                 case 3:
                     _logger.LogWarning("You request too more OTP on this day.");
-                    return StatusCode(StatusCodes.Status500InternalServerError,
+                    return StatusCode(StatusCodes.Status200OK,
                         new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPLimited}!", $"{model.Username}: {LanguageAll.Language.OTPLimited}!"));
                 case 4:
                     user.TotalOTP = user.TotalOTP + 1;

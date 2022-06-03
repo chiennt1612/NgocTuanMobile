@@ -71,9 +71,9 @@ namespace Auth.Controllers
         //            switch (a.Code)
         //            {
         //                case 400:
-        //                    return StatusCode(StatusCodes.Status400BadRequest, a);
+        //                    return StatusCode(StatusCodes.Status200OK, a);
         //                default:
-        //                    return StatusCode(StatusCodes.Status500InternalServerError, a);
+        //                    return StatusCode(StatusCodes.Status200OK, a);
 
         //            }
         //        }
@@ -81,7 +81,7 @@ namespace Auth.Controllers
         //    }
         //    else
         //    {
-        //        return StatusCode(StatusCodes.Status400BadRequest, new ResponseOK()
+        //        return StatusCode(StatusCodes.Status200OK, new ResponseOK()
         //        {
         //            Code = 400,
         //            InternalMessage = LanguageAll.Language.SetProfileFailEmail,
@@ -123,9 +123,9 @@ namespace Auth.Controllers
                     switch (a.Code)
                     {
                         case 400:
-                            return StatusCode(StatusCodes.Status400BadRequest, a);
+                            return StatusCode(StatusCodes.Status200OK, a);
                         default:
-                            return StatusCode(StatusCodes.Status500InternalServerError, a);
+                            return StatusCode(StatusCodes.Status200OK, a);
 
                     }
                 }
@@ -133,7 +133,7 @@ namespace Auth.Controllers
             }
             else
             {
-                return StatusCode(StatusCodes.Status400BadRequest, new ResponseOK()
+                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                 {
                     Code = 400,
                     InternalMessage = LanguageAll.Language.SetProfileFailEmail,
@@ -156,9 +156,9 @@ namespace Auth.Controllers
                 switch (a.Code)
                 {
                     case 400:
-                        return StatusCode(StatusCodes.Status400BadRequest, a);
+                        return StatusCode(StatusCodes.Status200OK, a);
                     default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, a);
+                        return StatusCode(StatusCodes.Status200OK, a);
 
                 }
             }
@@ -176,9 +176,9 @@ namespace Auth.Controllers
                 switch (a.Code)
                 {
                     case 400:
-                        return StatusCode(StatusCodes.Status400BadRequest, a);
+                        return StatusCode(StatusCodes.Status200OK, a);
                     default:
-                        return StatusCode(StatusCodes.Status500InternalServerError, a);
+                        return StatusCode(StatusCodes.Status200OK, a);
 
                 }
             }

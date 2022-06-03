@@ -20,9 +20,9 @@ namespace Auth.Helper
                 context.Result = new JsonResult(
                     new Utils.Models.ResponseBase(
                         LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized,
-                        LanguageAll.Language.Unauthorized, 0, StatusCodes.Status401Unauthorized))
+                        LanguageAll.Language.Unauthorized, 0, 401))
                 {
-                    StatusCode = StatusCodes.Status401Unauthorized
+                    StatusCode = StatusCodes.Status200OK
                 };
             }
         }
