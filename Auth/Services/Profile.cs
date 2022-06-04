@@ -384,7 +384,7 @@ namespace Auth.Services
             var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{inv.CustomerCode}");
             var u = await _userManager.GetUserAsync(_context.HttpContext.User);
             var a = await _userManager.GetClaimsAsync(u);
-            if (!a.Contains(_claim))
+            if (a.Where(u => u.Type == _claim.Type && u.Value == _claim.Value).FirstOrDefault() == default)
             {
                 return new ResponseOK()
                 {
