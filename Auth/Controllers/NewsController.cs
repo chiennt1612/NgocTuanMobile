@@ -57,7 +57,7 @@ namespace Auth.Controllers
                      }).ToList();
                 await _cache.SetAsync<List<CategoryNewsModel>>($"CategoryNews_{language}", r);
             }
-            _logger.WriteLog($"Category {language}: {JsonConvert.SerializeObject(r)}", $"Category {language}");
+            _logger.WriteLog($"Category {language}:", $"Category {language}");
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -102,8 +102,8 @@ namespace Auth.Controllers
             var a = new NewsDetails()
             {
                 article = article,
-                articles = await _Service.articleServices.GetTopAsync(sqlWhereNew, 7),
-                articleRelated = await _Service.articleServices.GetTopAsync(sqlWhere, 10)
+                articles = null,// await _Service.articleServices.GetTopAsync(sqlWhereNew, 7),
+                articleRelated = null//await _Service.articleServices.GetTopAsync(sqlWhere, 10)
             };
             _logger.WriteLog($"Details {Id}", $"Details {Id}");
             return Ok(new ResponseOK()

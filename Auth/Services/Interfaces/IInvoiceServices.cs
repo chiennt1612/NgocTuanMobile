@@ -10,5 +10,6 @@ namespace Auth.Services.Interfaces
         Task<ResponseOK> PayInvoice(PayInput inv);
         Task<ResponseOK> CheckPayInvoice(CheckPayInput inv);
         Task<ResponseOK> UndoPayInvoice(InvoiceInput inv);
+        Task<InvoiceResult> CheckInvoice(InvoiceInput inv);
     }
 }

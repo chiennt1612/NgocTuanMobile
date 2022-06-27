@@ -23,12 +23,12 @@ namespace Auth.Services
             {
                 var a = await unitOfWork.contactRepository.AddAsync(contact);
                 await unitOfWork.SaveAsync();
-                ilogger.LogInformation($"Save object  Is OK");//{JsonConvert.SerializeObject(article)}
+                ilogger.LogInformation($"Save object  Is OK");
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Save object Is Fail {ex.Message}");//{JsonConvert.SerializeObject(article)}
+                ilogger.LogError($"Save object Is Fail {ex.Message}");
                 return default;
             }
         }
@@ -40,7 +40,7 @@ namespace Auth.Services
                 var a = await unitOfWork.contactRepository.GetByIdAsync(Id);
                 try
                 {
-                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {JsonConvert.SerializeObject(a)}");
+                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Fullname}");
                 }
                 catch (Exception ex)
                 {

@@ -80,6 +80,10 @@ namespace Utils
             }
         }
 
+        public static string GetUrlById(string SubFolder, long Id)
+        {
+            return $"https://nuocngoctuan.com/{SubFolder}/{Id}";
+        }
         public static bool IsValidEmail(this string email)
         {
             if (String.IsNullOrEmpty(email)) return false;

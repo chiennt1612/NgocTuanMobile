@@ -21,7 +21,7 @@ namespace Auth.Controllers
     [ApiController]
     [TypeFilter(typeof(ControllerExceptionFilterAttribute))]
     [Produces("application/json", "application/problem+json")]
-    [Authorize]
+    //[Authorize]
     public class AboutController : ControllerBase
     {
         private readonly IDistributedCache _cache;
@@ -40,6 +40,38 @@ namespace Auth.Controllers
 
         [HttpGet]
         [Route("[action]/{language}")]
+        public async Task<IActionResult> ExtendList(string language = "Vi")
+        {
+            List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"GuideList_{language}");
+            if (r == null)
+            {
+                var _guide = _configuration.GetSection(nameof(AboutPage)).Get<AboutPage>();
+                var a = language == "Vi" ? _guide.ExtendID.Vi : _guide.ExtendID.En;
+                var i = 0;
+                r = (from b in ((await _Service.aboutServices.GetAllAsync()).Where(u => a.Contains(u.Id)).OrderBy(u => u.Title))
+                     select new AboutModel()
+                     {
+                         Id = b.Id,
+                         Description = b.Description,
+                         Url = Tools.GetUrlById("About", b.Id),
+                         Sort = i++,
+                         Title = b.Title
+                     }).ToList();
+                await _cache.SetAsync<List<AboutModel>>($"GuideList_{language}", r);
+            }
+            _logger.WriteLog($"GuideList: ", "GuideList");
+            return Ok(new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 1,
+                UserMessage = LanguageAll.Language.Success,
+                data = r
+            });
+        }
+        [HttpGet]
+        [Route("[action]/{language}")]
         public async Task<IActionResult> GuideList(string language = "Vi")
         {
             List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"GuideList_{language}");
@@ -53,12 +85,13 @@ namespace Auth.Controllers
                      {
                          Id = b.Id,
                          Description = b.Description,
+                         Url = Tools.GetUrlById("About", b.Id),
                          Sort = i++,
                          Title = b.Title
                      }).ToList();
                 await _cache.SetAsync<List<AboutModel>>($"GuideList_{language}", r);
             }
-            _logger.WriteLog($"GuideList: {JsonConvert.SerializeObject(r)}", "GuideList");
+            _logger.WriteLog($"GuideList: ", "GuideList");
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -83,12 +116,13 @@ namespace Auth.Controllers
                 {
                     Id = b.Id,
                     Description = b.Description,
+                    Url = Tools.GetUrlById("About", b.Id),
                     Sort = 0,
                     Title = b.Title
                 };
                 await _cache.SetAsync<AboutModel>($"AboutPage_{language}", r);
             }
-            _logger.WriteLog($"About: {JsonConvert.SerializeObject(r)}", "About");
+            _logger.WriteLog($"About: ", "About");
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -112,12 +146,13 @@ namespace Auth.Controllers
                 {
                     Id = b.Id,
                     Description = b.Description,
+                    Url = Tools.GetUrlById("About", b.Id),
                     Sort = 0,
                     Title = b.Title
                 };
                 await _cache.SetAsync<AboutModel>($"PageInfo_{pageId}", r);
             }
-            _logger.WriteLog($"PageInfo {pageId}: {JsonConvert.SerializeObject(r)}", $"PageInfo {pageId}");
+            _logger.WriteLog($"PageInfo {pageId}: ", $"PageInfo {pageId}");
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -148,7 +183,7 @@ namespace Auth.Controllers
                      }).ToList();
                 await _cache.SetAsync<List<AdvModel>>($"Advs", r);
             }
-            _logger.WriteLog($"Advs: {JsonConvert.SerializeObject(r)}", $"Advs");
+            _logger.WriteLog($"Advs: ", $"Advs");
             return Ok(new ResponseOK()
             {
                 Code = 200,

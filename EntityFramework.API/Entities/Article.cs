@@ -2,6 +2,7 @@
 using EntityFramework.API.Entities.EntityBase;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EntityFramework.API.Entities
 {
@@ -11,6 +12,7 @@ namespace EntityFramework.API.Entities
         [Display(Name = "CateMain", ResourceType = typeof(Resources.EntityValidation))]
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
         public long CategoryMain { get; set; }
+        [JsonIgnore]
         [Display(Name = "NewsCategories", ResourceType = typeof(Resources.EntityValidation))]
         public NewsCategories MainCategories { get; set; }
 
@@ -18,6 +20,7 @@ namespace EntityFramework.API.Entities
         //[StringLength(1000, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
         [Display(Name = "CateRefer", ResourceType = typeof(Resources.EntityValidation))]
         public long? CategoryReference { get; set; }
+        [JsonIgnore]
         public NewsCategories ReferCategories { get; set; }
         // For Company
         //[StringLength(500, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]

@@ -56,6 +56,7 @@ namespace Auth.Helper
         {
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IProfile, Profile>();
+            services.AddScoped<IInvoiceServices, InvoiceServices>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IArticleServices, ArticleServices>();
             services.AddScoped<ICategoriesServices, CategoriesServices>();

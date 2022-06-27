@@ -41,7 +41,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> GetCompanyList()
         {
             var a = await _profile.GetCompanyList();
-            _logger.WriteLog($"GetCompanyList: {JsonConvert.SerializeObject(a)}", "GetCompanyList");
+            _logger.WriteLog($"GetCompanyList: {a.UserMessage}", "GetCompanyList");
             return Ok(a);
         }
 
@@ -55,7 +55,7 @@ namespace Auth.Controllers
                 Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName
             };
             var a = await _profile.GetContractAllList(inv);
-            _logger.WriteLog($"GetContractList {inv.CompanyID}/ {inv.Mobile}: {JsonConvert.SerializeObject(a)}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
+            _logger.WriteLog($"GetContractList {inv.CompanyID}/ {inv.Mobile}: {a.UserMessage}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
             return Ok(a);
         }
 
@@ -106,7 +106,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> GetProfile(int IsToken)
         {
             var a = await _profile.GetProfile(IsToken);
-            _logger.WriteLog($"GetProfile {IsToken}: {JsonConvert.SerializeObject(a)}", $"GetProfile {IsToken}");
+            _logger.WriteLog($"GetProfile {IsToken}: {a.UserMessage}", $"GetProfile {IsToken}");
             return Ok(a);
         }
 
@@ -117,7 +117,7 @@ namespace Auth.Controllers
             if (ModelState.IsValid)
             {
                 var a = await _profile.SetProfile(model);
-                _logger.WriteLog($"SetProfile: {JsonConvert.SerializeObject(a)}", $"SetProfile");
+                _logger.WriteLog($"SetProfile: {a.UserMessage}", $"SetProfile");
                 if (a.Status == 0)
                 {
                     switch (a.Code)
@@ -150,7 +150,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> LinkContract([FromBody] InvoiceInput inv)
         {
             var a = await _profile.LinkInvoice(inv);
-            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {JsonConvert.SerializeObject(a)}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
             if (a.Status == 0)
             {
                 switch (a.Code)
@@ -170,7 +170,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> RemoveContract([FromBody] InvoiceInput inv)
         {
             var a = await _profile.RemoveInvoice(inv);
-            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {JsonConvert.SerializeObject(a)}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
             if (a.Status == 0)
             {
                 switch (a.Code)

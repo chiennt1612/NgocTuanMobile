@@ -55,7 +55,7 @@ namespace Auth
             //    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth v1"));
             //}
 
-            app.UseSwagger("Nuoc Ngoc Tuan Mobile/ Auth v1");
+            app.UseSwagger("Nuoc Ngoc Tuan Mobile v1.0");
 
             app.UseHttpsRedirection();
 

@@ -72,11 +72,7 @@ namespace Auth.Controllers
                 {
                     _logger.LogInformation($"Found: {model.Username}");
                     var result = await _signInManager.PasswordSignInAsync(user.UserName, _configuration["Password:Default"], bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
-                    if (result.Succeeded)
-                    {
-                        return await LoginOK(user);
-                    }
-                    else if (result.RequiresTwoFactor)
+                    if (result.Succeeded || result.RequiresTwoFactor)
                     {
                         return await SendSMSOTP(user, model);
                     }

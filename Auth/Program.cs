@@ -21,7 +21,7 @@ namespace Auth
                       .Enrich.FromLogContext()
                       // uncomment to write to Azure diagnostics stream
                       .WriteTo.File(
-                          Directory.GetCurrentDirectory() + @"\Log\Auth.txt",
+                          Directory.GetCurrentDirectory() + @"\Log\API.txt",
                           fileSizeLimitBytes: 10000000,
                           rollOnFileSizeLimit: true,
                           rollingInterval: RollingInterval.Hour,

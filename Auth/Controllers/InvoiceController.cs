@@ -38,11 +38,10 @@ namespace Auth.Controllers
         private IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
         private readonly IInvoiceServices _iInvoiceServices;
-        private readonly IInvoiceRepository _iInvoiceRepository;
         #endregion
 
         public InvoiceController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
-            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IInvoiceServices _iInvoiceServices, IAllService _Service, IInvoiceRepository _iInvoiceRepository)
+            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IInvoiceServices _iInvoiceServices, IAllService _Service)
         {
             this._logger = _logger;
             this._iInvoiceServices = _iInvoiceServices;
@@ -51,7 +50,6 @@ namespace Auth.Controllers
             this._cache = _cache;
             this._emailSender = _emailSender;
             this._configuration = _configuration;
-            this._iInvoiceRepository = _iInvoiceRepository;
             paygateInfo = this._configuration.GetSection(nameof(PaygateInfo)).Get<PaygateInfo>();
             this._logger.WriteLog("Starting invoice page");
         }
@@ -61,7 +59,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> ListAll(InvoiceAllInput inv)
         {
             var a = await _iInvoiceServices.GetInvoiceAll(inv);
-            _logger.WriteLog($"ListAll {JsonConvert.SerializeObject(inv)}: {JsonConvert.SerializeObject(a)}", "ListAll");
+            _logger.WriteLog($"ListAll {JsonConvert.SerializeObject(inv)}: {a.UserMessage}", "ListAll");
             return Ok(a);
         }
 
@@ -70,7 +68,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> List(InvoiceInput inv)
         {
             var a = await _iInvoiceServices.GetInvoice(inv);
-            _logger.WriteLog($"List {JsonConvert.SerializeObject(inv)}: {JsonConvert.SerializeObject(a)}", "List");
+            _logger.WriteLog($"List {JsonConvert.SerializeObject(inv)}: {a.UserMessage}", "List");
             return Ok(a);
         }
 
@@ -86,7 +84,7 @@ namespace Auth.Controllers
                     CompanyID = inv.CompanyID,
                     CustomerCode = inv.CustomerCode
                 };
-                var a = await _iInvoiceRepository.GetInvoice(invInput);
+                var a = await _iInvoiceServices.CheckInvoice(invInput);
                 if (a != null)
                 {
                     var invq = a.ItemsData.InvList.Where(u => u.InvCode == inv.InvoiceNo).FirstOrDefault();
@@ -116,7 +114,7 @@ namespace Auth.Controllers
 
                             if (r != null)
                             {
-                                _logger.LogInformation($"Send payment-invoice is success: {JsonConvert.SerializeObject(_contact)}");
+                                _logger.LogInformation($"Send payment-invoice is success: {_contact.Fullname}");
                                 PaymentIn t = new PaymentIn()
                                 {
                                     vpc_Amount = _contact.Price.ToString(),

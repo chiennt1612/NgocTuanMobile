@@ -85,7 +85,7 @@ namespace Auth.Services
             a.IssuePlace = claims.Where(u => u.Type == "IssuePlace").FirstOrDefault()?.Value;
             a.PersonID = claims.Where(u => u.Type == "PersonID").FirstOrDefault()?.Value;
             a.PhoneNumber = claims.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value;
-            _logger.LogInformation($"Get profile: {a1.UserName} => {JsonConvert.SerializeObject(a)}");
+            _logger.LogInformation($"Get profile: {a1.UserName} => {a.Fullname}");
             switch (profileType)
             {
                 case 1:
@@ -510,7 +510,8 @@ namespace Auth.Services
 
         public async Task<ResponseOK> GetContractAllList(ContractInput inv)
         {
-            if (inv.CompanyID < 0 || inv.CompanyID > 100)
+            var _company = _invoice.companyConfig.Companys.Where(u => u.Info.CompanyId == inv.CompanyID).FirstOrDefault();
+            if (_company == null)
             {
                 return new ResponseOK()
                 {
@@ -536,6 +537,7 @@ namespace Auth.Services
             }
 
             ContractResult ir = await _invoice.GetContract(inv);
+            ir.CompanyInfo = _company.Info;
 
             return new ResponseOK()
             {

@@ -36,7 +36,7 @@ namespace Auth.Services
             try
             {
                 var a = await unitOfWork.paramSettingRepository.GetByIdAsync(Id);
-                ilogger.LogInformation($"Get by id {Id.ToString()} Is {JsonConvert.SerializeObject(a)}");
+                ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.ParamKey}");
                 return a;
             }
             catch (Exception ex)

@@ -120,6 +120,10 @@ namespace Utils.Models
     {
         public string CustomerCode { get; set; }
         public string CustomerName { get; set; }
+        public string CustomerType { get; set; }
+        public string Address { get; set; }
+        public string WaterCode { get; set; }
+        public string TaxCode { get; set; }
     }
 
     public class ItemsList
@@ -134,5 +138,6 @@ namespace Utils.Models
         public string DataStatus { get; set; }
         public string Message { get; set; }
         public string ResponseStatus { get; set; }
+        public CompanyInfo CompanyInfo { get; set; }
     }
 }

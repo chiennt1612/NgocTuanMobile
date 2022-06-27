@@ -32,6 +32,7 @@ namespace Auth.Helper
     {
         public AboutID AboutID { get; set; }
         public GuideID GuideID { get; set; }
+        public GuideID ExtendID { get; set; }
     }
 
     public class GuideID

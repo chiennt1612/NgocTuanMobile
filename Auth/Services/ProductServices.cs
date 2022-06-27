@@ -28,7 +28,7 @@ namespace Auth.Services
                 var a = await unitOfWork.productRepository.GetByIdAsync(Id);
                 try
                 {
-                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {JsonConvert.SerializeObject(a)}");
+                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Name}");
                 }
                 catch (Exception ex)
                 {
