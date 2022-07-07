@@ -139,10 +139,10 @@ namespace Auth.Controllers
                     };
                     if (User.Identity.IsAuthenticated)
                     {
-                        _contact.Fullname = User.Claims.GetClaimValue("name");
-                        _contact.Email = User.Claims.GetClaimValue("email");
-                        _contact.Mobile = User.Claims.GetClaimValue("phone_number");
-                        _contact.Address = User.Claims.GetClaimValue("address");
+                        _contact.Fullname = User.Claims.GetClaimValue("Fullname");
+                        _contact.Email = User.Claims.GetClaimValue(ClaimTypes.Email);
+                        _contact.Mobile = User.Claims.GetClaimValue(ClaimTypes.Name);
+                        _contact.Address = User.Claims.GetClaimValue("Address");
                         _contact.UserId = long.Parse(User.Claims.GetClaimValue(ClaimTypes.NameIdentifier));
                     }
                     if (!string.IsNullOrEmpty(contact.Address)) _contact.Address = contact.Address;

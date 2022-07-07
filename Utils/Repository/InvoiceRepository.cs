@@ -57,6 +57,23 @@ namespace Utils.Repository
             return a;
         }
 
+        public async Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv)
+        {
+            InvoiceDataResult a = default;
+            try
+            {
+                a = await Tools.APIRequest<InvoiceDataResult, InvoiceInput>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[7], inv);
+                //ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
         public async Task<InvoiceAllResult> GetInvoiceAll(InvoiceAllInput inv)
         {
             InvoiceAllResult a = default;
@@ -65,7 +82,7 @@ namespace Utils.Repository
                 a = await Tools.APIRequest<InvoiceAllResult, InvoiceAllInput>(ilogger,
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
-                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[4], inv);
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[6], inv);
                 ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
@@ -125,6 +142,42 @@ namespace Utils.Repository
             catch (Exception ex)
             {
                 ilogger.LogError($"getContractAllList {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
+
+        public async Task<CustomerInfoResult> getCustomerInfo(EVNCodeInput inv)
+        {
+            CustomerInfoResult a = default;
+            try
+            {
+                a = await Tools.APIRequest<CustomerInfoResult, EVNCodeInput>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[8], inv);
+                ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
+
+        public async Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv)
+        {
+            InvoiceQRCode a = default;
+            try
+            {
+                a = await Tools.APIRequest<InvoiceQRCode, InvQrCodeInput>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[9], inv);
+                ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }

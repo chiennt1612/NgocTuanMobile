@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EntityFramework.API.Entities
 {
@@ -43,8 +44,11 @@ namespace EntityFramework.API.Entities
         [ForeignKey("Services")]
         [Display(Name = "ServiceName", ResourceType = typeof(Resources.EntityValidation))]
         public long? ServiceId { get; set; }
+
+        [JsonIgnore]
         [Display(Name = "ServiceName", ResourceType = typeof(Resources.EntityValidation))]
         public Service Services { get; set; }
+
         [Display(Name = "OrderDate", ResourceType = typeof(Resources.EntityValidation))]
         public DateTime? ContactDate { get; set; }
         public long? UserId { get; set; }
@@ -52,6 +56,7 @@ namespace EntityFramework.API.Entities
         [Display(Name = "OrderStatus", ResourceType = typeof(Resources.EntityValidation))]
         [ForeignKey("OrderStatus")]
         public int? StatusId { get; set; }
+        [JsonIgnore]
         public OrderStatus OrderStatus { get; set; }
 
         [Display(Name = "Price", ResourceType = typeof(Resources.EntityValidation))]
@@ -60,8 +65,11 @@ namespace EntityFramework.API.Entities
         public int? PaymentMethod { get; set; }
 
         [StringLength(50, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
+        [JsonIgnore]
         public string CookieID { get; set; }
-
+        [JsonIgnore]
         public bool? IsAgree { get; set; }
+        [JsonIgnore]
+        public bool? IsSave { get; set; }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Auth.Repository.Interfaces;
 using Auth.Services.Interfaces;
 using EntityFramework.API.Entities;
+using EntityFramework.API.Entities.EntityBase;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Auth.Services
@@ -67,6 +69,24 @@ namespace Auth.Services
             catch (Exception ex)
             {
                 ilogger.LogError($"Update Contact is error {ex.Message}");
+                return default;
+            }
+        }
+
+        public async Task<BaseEntityList<Contact>> GetListAsync(
+            Expression<Func<Contact, bool>> expression,
+            Func<Contact, object> sort, bool desc,
+            int page, int pageSize)
+        {
+            try
+            {
+                var a = await unitOfWork.contactRepository.GetListAsync(expression, sort, desc, page, pageSize);
+                ilogger.LogInformation($"GetListAsync expression, sort {desc} {page} {pageSize}");
+                return a;
+            }
+            catch (Exception ex)
+            {
+                ilogger.LogError($"GetListAsync expression, sort {desc} {page} {pageSize} Is Fail {ex.Message}");
                 return default;
             }
         }

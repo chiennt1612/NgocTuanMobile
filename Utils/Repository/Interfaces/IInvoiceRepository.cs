@@ -12,5 +12,8 @@ namespace Utils.Repository.Interfaces
         Task<PayResult> PayInvoice(PayInput inv);
         Task<PayResult> CheckPayInvoice(CheckPayInput inv);
         Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv);
+        Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv);
+        Task<CustomerInfoResult> getCustomerInfo(EVNCodeInput inv);
+        Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv);
     }
 }

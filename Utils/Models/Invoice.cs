@@ -38,6 +38,12 @@ namespace Utils.Models
     {
         public string InvCode { get; set; }
         public string InvRemarks { get; set; }
+        public string MaSoBiMat { get; set; }
+        public string InvNumber { get; set; }
+        public string InvSerial { get; set; }
+        public DateTime InvDate { get; set; }
+        public double TaxPer { get; set; }
+        public double InvAmountWithoutTax { get; set; }
         public int InvAmount { get; set; }
     }
 
@@ -63,6 +69,9 @@ namespace Utils.Models
         public int CompanyID { get; set; } = 0;
         public string CustomerCode { get; set; }
         public int Page { get; set; }
+        public string FromDate { get; set; }
+        public string ToDate { get; set; }
+        public string PaymentStatus { get; set; }
     }
 
     public class UndoPayResult
@@ -139,5 +148,87 @@ namespace Utils.Models
         public string Message { get; set; }
         public string ResponseStatus { get; set; }
         public CompanyInfo CompanyInfo { get; set; }
+    }
+
+    public class ItemsDatum
+    {
+        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
+        public string Address { get; set; }
+        public string InvCode { get; set; }
+        public string InvRemarks { get; set; }
+        public string MaSoBiMat { get; set; }
+        public string InvNumber { get; set; }
+        public string InvSerial { get; set; }
+        public DateTime InvDate { get; set; }
+        public double TaxPer { get; set; }
+        public double InvAmountWithoutTax { get; set; }
+        public int InvAmount { get; set; }
+    }
+
+    public class InvoiceDataResult
+    {
+        public List<ItemsDatum> ItemsData { get; set; }
+        public string DataStatus { get; set; }
+        public string Message { get; set; }
+        public string ResponseStatus { get; set; }
+    }
+
+    public class InvQrCode
+    {
+        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
+        public string Address { get; set; }
+        public string MaSoBiMat { get; set; }
+        public string InvSerial { get; set; }
+        public string InvNumber { get; set; }
+        public string InvDate { get; set; }
+        public double TaxPer { get; set; }
+        public double InvAmountWithoutTax { get; set; }
+        public string InvCode { get; set; }
+        public string InvRemarks { get; set; }
+        public int InvAmount { get; set; }
+        public int PaymentStatus { get; set; }
+    }
+
+    public class InvoiceQRCode
+    {
+        public InvQrCode ItemsData { get; set; }
+        public string DataStatus { get; set; }
+        public string Message { get; set; }
+        public string ResponseStatus { get; set; }
+    }
+
+    public class CustomerInfo
+    {
+        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerType { get; set; }
+        public string Address { get; set; }
+        public string Email { get; set; }
+        public string WaterCode { get; set; }
+        public string Mobile { get; set; }
+        public string TaxCode { get; set; }
+    }
+
+    public class CustomerInfoResult
+    {
+        public CustomerInfo ItemsData { get; set; }
+        public string DataStatus { get; set; }
+        public string Message { get; set; }
+        public string ResponseStatus { get; set; }
+    }
+
+    public class EVNCodeInput
+    {
+        public int CompanyID { get; set; } = 0;
+        public string EVNCode { get; set; }
+    }
+
+    public class InvQrCodeInput
+    {
+        public int CompanyID { get; set; } = 0;
+        public string InvoiceSerial { get; set; }
+        public string InvoiceNumber { get; set; }
     }
 }

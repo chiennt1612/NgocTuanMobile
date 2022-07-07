@@ -18,6 +18,7 @@ namespace Auth.Repository.Interfaces
         IProductRepository productRepository { get; }
         IAdvRepository advRepository { get; }
         IContactRepository contactRepository { get; }
+        IInvoiceSaveRepository invoiceSaveRepository { get; }
         IOrderStatusRepository orderStatusRepository { get; }
 
         void Save();

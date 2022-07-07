@@ -82,6 +82,7 @@ namespace Auth.Services
             {
                 a.IssueDate = default;
             }
+            a.Avatar = claims.Where(u => u.Type == "Avatar").FirstOrDefault()?.Value;
             a.IssuePlace = claims.Where(u => u.Type == "IssuePlace").FirstOrDefault()?.Value;
             a.PersonID = claims.Where(u => u.Type == "PersonID").FirstOrDefault()?.Value;
             a.PhoneNumber = claims.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value;
@@ -91,11 +92,11 @@ namespace Auth.Services
                 case 1:
                     return new ResponseOK()
                     {
-                        Code = 1,
+                        Code = 200,
                         data = a,
                         InternalMessage = LanguageAll.Language.GetProfileOK,
                         MoreInfo = LanguageAll.Language.GetProfileOK,
-                        Status = 200,
+                        Status = 1,
                         UserMessage = LanguageAll.Language.GetProfileOK
                     };
                 case 2:
@@ -111,31 +112,31 @@ namespace Auth.Services
                 case 3:
                     return new ResponseOK()
                     {
-                        Code = 1,
+                        Code = 200,
                         data = a,
                         InternalMessage = LanguageAll.Language.LinkInvoiceSuccess,
                         MoreInfo = LanguageAll.Language.LinkInvoiceSuccess,
-                        Status = 200,
+                        Status = 1,
                         UserMessage = LanguageAll.Language.LinkInvoiceSuccess
                     };
                 case 4:
                     return new ResponseOK()
                     {
-                        Code = 1,
+                        Code = 200,
                         data = a,
                         InternalMessage = LanguageAll.Language.RemoveInvoiceSuccess,
                         MoreInfo = LanguageAll.Language.RemoveInvoiceSuccess,
-                        Status = 200,
+                        Status = 1,
                         UserMessage = LanguageAll.Language.RemoveInvoiceSuccess
                     };
                 default:
                     return new ResponseOK()
                     {
-                        Code = 1,
+                        Code = 200,
                         data = a,
                         InternalMessage = LanguageAll.Language.SetCompanyInfoSuccess,
                         MoreInfo = LanguageAll.Language.SetCompanyInfoSuccess,
-                        Status = 200,
+                        Status = 1,
                         UserMessage = LanguageAll.Language.SetCompanyInfoSuccess
                     };
             }
@@ -152,18 +153,18 @@ namespace Auth.Services
                     a1.Email = inv.Email;
                     await _userManager.UpdateAsync(a1);
                 }
-                else
-                {
-                    return new ResponseOK()
-                    {
-                        Code = 400,
-                        InternalMessage = LanguageAll.Language.SetProfileFailEmail,
-                        MoreInfo = LanguageAll.Language.SetProfileFailEmail,
-                        Status = 0,
-                        UserMessage = LanguageAll.Language.SetProfileFailEmail,
-                        data = null
-                    };
-                }
+                //else
+                //{
+                //    return new ResponseOK()
+                //    {
+                //        Code = 400,
+                //        InternalMessage = LanguageAll.Language.SetProfileFailEmail,
+                //        MoreInfo = LanguageAll.Language.SetProfileFailEmail,
+                //        Status = 0,
+                //        UserMessage = LanguageAll.Language.SetProfileFailEmail,
+                //        data = null
+                //    };
+                //}
             }
 
             if (String.IsNullOrEmpty(inv.CompanyName) && inv.IsCompany)
@@ -215,6 +216,14 @@ namespace Auth.Services
                 {
                     await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "CompanyName").FirstOrDefault(), new Claim("CompanyName", inv.CompanyName));
                 }
+            }
+            if (String.IsNullOrEmpty(a.Where(u => u.Type == "Avatar").FirstOrDefault()?.Value))
+            {
+                await _userManager.AddClaimAsync(u, new Claim("Avatar", inv.Avatar));
+            }
+            else
+            {
+                await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "Avatar").FirstOrDefault(), new Claim("Avatar", inv.Avatar));
             }
             if (String.IsNullOrEmpty(a.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value))
             {

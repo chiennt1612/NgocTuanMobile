@@ -8,6 +8,12 @@ namespace Auth.Models
         public string Username { get; set; }
     }
 
+    public class LoginEVNModel
+    {
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string EVNCode { get; set; }
+    }
+
     public class RegisterModel
     {
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]

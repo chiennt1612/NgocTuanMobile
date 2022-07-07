@@ -11,7 +11,7 @@ namespace Auth.Models
         public string CustomerCode { get; set; }
         public string InvoiceNo { get; set; }
         public int InvoiceAmount { get; set; }
-
+        public bool IsSave { get; set; } = false;
         public bool IsAgree { get; set; } = true;
     }
 }

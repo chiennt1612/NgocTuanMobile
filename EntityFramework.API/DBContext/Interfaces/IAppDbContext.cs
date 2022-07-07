@@ -9,6 +9,7 @@ namespace EntityFramework.API.DBContext.Interfaces
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderStatus> Status { get; set; }
 
+        public DbSet<InvoiceSave> InvoiceSaves { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<About> Abouts { get; set; }
         public DbSet<Service> Services { get; set; }

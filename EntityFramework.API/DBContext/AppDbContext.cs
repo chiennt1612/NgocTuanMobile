@@ -14,6 +14,7 @@ namespace EntityFramework.API.DBContext
         public DbSet<OrderStatus> Status { get; set; }
 
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<InvoiceSave> InvoiceSaves { get; set; }
         public DbSet<About> Abouts { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -48,6 +49,12 @@ namespace EntityFramework.API.DBContext
             builder.Entity<AdvPosition>(log =>
             {
                 log.ToTable(TableConsts.AdvPosition);
+                log.HasKey(x => x.Id);
+            });
+
+            builder.Entity<InvoiceSave>(log =>
+            {
+                log.ToTable(TableConsts.InvoiceSave);
                 log.HasKey(x => x.Id);
             });
 

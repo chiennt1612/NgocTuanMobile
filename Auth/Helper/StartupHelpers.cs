@@ -55,6 +55,7 @@ namespace Auth.Helper
         public static void AddServices(this IServiceCollection services)
         {
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddScoped<IInvoiceSaveRepository, InvoiceSaveRepository>();
             services.AddScoped<IProfile, Profile>();
             services.AddScoped<IInvoiceServices, InvoiceServices>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -69,6 +70,7 @@ namespace Auth.Helper
             services.AddScoped<IServiceServices, ServiceServices>();
             services.AddScoped<IFAQServices, FAQServices>();
             services.AddScoped<IAllService, AllService>();
+            services.AddScoped<IInvoiceSaveServices, InvoiceSaveServices>();
         }
 
         public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)

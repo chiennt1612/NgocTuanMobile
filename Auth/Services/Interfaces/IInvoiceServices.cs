@@ -11,5 +11,8 @@ namespace Auth.Services.Interfaces
         Task<ResponseOK> CheckPayInvoice(CheckPayInput inv);
         Task<ResponseOK> UndoPayInvoice(InvoiceInput inv);
         Task<InvoiceResult> CheckInvoice(InvoiceInput inv);
+        Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv);
+        Task<CustomerInfoResult> getCustomerInfo(EVNCodeInput inv);
+        Task<ResponseOK> getInvoiceByQRCode(InvQrCodeInput inv);
     }
 }

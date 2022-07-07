@@ -27,6 +27,7 @@
 
         public const string Adv = "Adv";
         public const string AdvPosition = "AdvPosition";
+        public const string InvoiceSave = "InvoiceSave";
     }
 
     public static class CommonFields

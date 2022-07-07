@@ -21,6 +21,7 @@ namespace Utils.Models
         public string CompanyName { get; set; }
         public string CompanyNameEn { get; set; }
         public string CompanyLogo { get; set; }
+        public string Taxcode { get; set; }
     }
 
     public class CompanyInfoInput

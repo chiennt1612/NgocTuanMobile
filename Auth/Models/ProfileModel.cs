@@ -35,6 +35,8 @@ namespace Auth.Models
 
         [StringLength(126, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string IssuePlace { get; set; }
+
+        public string Avatar { get; set; }
     }
 
     public class ProfileOutputModel
@@ -73,6 +75,7 @@ namespace Auth.Models
 
         public List<string> CustomerCodeList { get; set; }
 
+        public string Avatar { get; set; }
         public ProfileOutputModel()
         {
             CustomerCodeList = new List<string>();

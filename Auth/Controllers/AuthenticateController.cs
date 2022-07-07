@@ -1,6 +1,7 @@
 ﻿using Auth.Helper;
 using Auth.Models;
 using Auth.Services;
+using Auth.Services.Interfaces;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -38,6 +39,8 @@ namespace Auth.Controllers
         private readonly ITokenCreationService _jwtToken;
         private readonly ILogger<AuthenticateController> _logger;
         private readonly LoginConfiguration _loginConfiguration;
+        private readonly IInvoiceServices _iInvoiceServices;
+        public CompanyConfig companyConfig { get; set; }
 
         public AuthenticateController(
             ILogger<AuthenticateController> logger,
@@ -47,7 +50,7 @@ namespace Auth.Controllers
             ISMSVietel smsVietel,
             ITokenCreationService jwtToken,
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
-            LoginConfiguration loginConfiguration)
+            LoginConfiguration loginConfiguration, IInvoiceServices iInvoiceServices)
         {
             _userManager = userManager;
             _configuration = configuration;
@@ -57,6 +60,8 @@ namespace Auth.Controllers
             _signInManager = signInManager;
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
             _loginConfiguration = loginConfiguration;
+            _iInvoiceServices = iInvoiceServices;
+            companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
         }
 
         [HttpPost]
@@ -186,13 +191,14 @@ namespace Auth.Controllers
                                 }
                             }
                             // Send SMS
-                            userExists.TotalOTP = 1;
-                            userExists.OTPSendTime = DateTime.Now;
-                            await _userManager.UpdateAsync(userExists);
-                            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, model.Username);
-                            var message = $"Your security code is: {code}";
-                            _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
-                            return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                            //userExists.TotalOTP = 1;
+                            //userExists.OTPSendTime = DateTime.Now;
+                            //await _userManager.UpdateAsync(userExists);
+                            //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, model.Username);
+                            //var message = $"Your security code is: {code}";
+                            //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
+                            //return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                            return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
                         }
                     }
                 }
@@ -405,7 +411,16 @@ namespace Auth.Controllers
                     user.TotalOTP = user.TotalOTP + 1;
                     user.OTPSendTime = DateTime.Now;
                     await _userManager.UpdateAsync(user);
-                    return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                    {
+                        Code = 200,
+                        InternalMessage = LanguageAll.Language.VerifyOTP,
+                        MoreInfo = LanguageAll.Language.VerifyOTP,
+                        Status = 1,
+                        UserMessage = LanguageAll.Language.VerifyOTP,
+                        data = model
+                    });
+                //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
                 default:
                     //var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
                     //var message = $"Your security code is: {code}";
@@ -419,8 +434,135 @@ namespace Auth.Controllers
                     var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
                     var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
                     _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
-                    return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                    {
+                        Code = 200,
+                        InternalMessage = LanguageAll.Language.VerifyOTP,
+                        MoreInfo = LanguageAll.Language.VerifyOTP,
+                        Status = 1,
+                        UserMessage = LanguageAll.Language.VerifyOTP,
+                        data = model
+                    });
+                    //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
             }
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> LoginByEVN([FromBody] LoginEVNModel model)
+        {
+            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            if (ModelState.IsValid)
+            {
+                bool IsExitst = false;
+                _logger.LogInformation($"Finding EVNCode: {model.EVNCode}");
+                var c = new Claim("EVNCode", model.EVNCode);
+                var users = await _userManager.GetUsersForClaimAsync(c);
+                if (users != null)
+                {
+                    if(users.Count > 0)// EVNCode Exists
+                    {
+                        IsExitst = true;
+                        _logger.LogInformation($"Found: {model.EVNCode}");
+                        var result = await _signInManager.PasswordSignInAsync(users[0].UserName, _configuration["Password:Default"], bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
+                        if (result.Succeeded || result.RequiresTwoFactor)
+                        {
+                            return await SendSMSOTP(users[0], new LoginModel() { Username = users[0].UserName });
+                        }
+                        else if (result.IsLockedOut)
+                        {
+                            _logger.LogWarning("User account locked out.");
+                            return StatusCode(StatusCodes.Status200OK,
+                                        new ResponseBase(LanguageAll.Language.Fail, $"{model.EVNCode}: {LanguageAll.Language.AccountLockout}!", $"{model.EVNCode}: {LanguageAll.Language.AccountLockout}!", 0, 400));
+                        }
+                    }
+                }
+
+                if (!IsExitst)
+                {
+                    for(var i = 0; i < companyConfig.Companys.Count; i++)
+                    {
+                        var inv = new EVNCodeInput()
+                        {
+                            CompanyID = companyConfig.Companys[i].Info.CompanyId,
+                            EVNCode = model.EVNCode
+                        };
+                        var a = await _iInvoiceServices.getCustomerInfo(inv);
+                        if (a.DataStatus == "00")
+                        {
+                            AppUser user;
+                            if (a.ItemsData.Email.IsValidEmail())
+                                user = new()
+                                {
+                                    SecurityStamp = Guid.NewGuid().ToString(),
+                                    UserName = a.ItemsData.Mobile,
+                                    Email = a.ItemsData.Email,
+                                    PhoneNumber = a.ItemsData.Mobile,
+                                    TwoFactorEnabled = true,
+                                };
+                            else
+                                user = new()
+                                {
+                                    SecurityStamp = Guid.NewGuid().ToString(),
+                                    UserName = a.ItemsData.Mobile,
+                                    PhoneNumber = a.ItemsData.Mobile,
+                                    TwoFactorEnabled = true,
+                                };
+                            var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
+                            if (result.Succeeded)
+                            {
+                                var userExists = await _userManager.FindByNameAsync(a.ItemsData.Mobile);
+                                // Update address
+                                var a1 = await _userManager.GetClaimsAsync(userExists);
+                                if (!String.IsNullOrEmpty(a.ItemsData.Address))
+                                {
+                                    await _userManager.AddClaimAsync(userExists, new Claim("Address", a.ItemsData.Address));
+                                }
+                                if (!String.IsNullOrEmpty(a.ItemsData.WaterCode))
+                                {
+                                    await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData.WaterCode));
+                                }
+                                if (!String.IsNullOrEmpty(a.ItemsData.TaxCode))
+                                {
+                                    await _userManager.AddClaimAsync(userExists, new Claim("TaxCode", a.ItemsData.TaxCode));
+                                }
+                                await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData.CustomerName));
+                                await _userManager.AddClaimAsync(userExists, c); // EVNCode
+                                var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{a.ItemsData.CustomerCode}");
+                                await _userManager.AddClaimAsync(userExists, _claim); // 
+                                // Send SMS
+                                //userExists.TotalOTP = 1;
+                                //userExists.OTPSendTime = DateTime.Now;
+                                //await _userManager.UpdateAsync(userExists);
+                                //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, a.ItemsData.Mobile);
+                                //var message = $"Your security code is: {code}";
+                                //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
+                                //return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                                return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
+                            }
+                        }
+                    }
+                    
+                }
+
+                if(!IsExitst)
+                {
+                    _logger.LogInformation($"Not found: {model.EVNCode}");
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                    {
+                        Code = 400,
+                        InternalMessage = LanguageAll.Language.NotFound,
+                        MoreInfo = LanguageAll.Language.NotFound,
+                        Status = 0,
+                        UserMessage = LanguageAll.Language.NotFound,
+                        data = null
+                    });
+                }
+            }
+
+            _logger.LogInformation($"Not found: {model.EVNCode}");
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.Fail, $"{model.EVNCode}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
         }
     }
 }
