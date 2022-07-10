@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
-using Utils.Repository.Interfaces;
 
 namespace Auth.Controllers
 {
@@ -44,7 +43,7 @@ namespace Auth.Controllers
         #endregion
 
         public InvoiceController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
-            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, 
+            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer,
             IInvoiceServices _iInvoiceServices, IAllService _Service,
             IInvoiceSaveServices _iInvoiceSaveServices)
         {
@@ -62,8 +61,8 @@ namespace Auth.Controllers
         }
 
         [HttpPost]
-        [Route("[action]/{Page}/{PageSize}")]
-        public async Task<IActionResult> ListAll(int? Page, int? PageSize, [FromBody] InvoiceModel invM)
+        [Route("[action]/{Page}")]
+        public async Task<IActionResult> ListAll(int? Page, [FromBody] InvoiceModel invM)
         {
             InvoiceAllInput inv = new InvoiceAllInput()
             {
@@ -89,38 +88,63 @@ namespace Auth.Controllers
         }
 
         [HttpPost]
-        [Route("[action]/{Page}/{PageSize}")]
-        public async Task<IActionResult> FindInvoice(int? Page, int? PageSize, [FromBody] InvoiceFindModel invM)
+        [Route("[action]/{Page}")]
+        public async Task<IActionResult> FindInvoice(int? Page, [FromBody] InvoiceFindModel invM)
         {
-            List<ItemsDataAll> r = new List<ItemsDataAll>();
-            int CompanyId = 0;
-            foreach (var item in User.Claims.Where(u => u.Type == "GetInvoice"))
+            List<CompanyInvoice> r = new List<CompanyInvoice>();
+            foreach (var companyInfo in companyConfig.Companys)
             {
+                var a = new CompanyInvoice()
+                {
+                    CompanyCode = companyInfo.Info.CompanyCode,
+                    CompanyId = companyInfo.Info.CompanyId,
+                    CompanyLogo = companyInfo.Info.CompanyLogo,
+                    CompanyNameEn = companyInfo.Info.CompanyNameEn,
+                    CompanyName = companyInfo.Info.CompanyName,
+                    Taxcode = companyInfo.Info.Taxcode,
+                    itemsData = new List<ItemsDatum>()
+                };
+                var contract = User.Claims.Where(c => c.Type == "GetInvoice" && c.Value.StartsWith($"{companyInfo.Info.CompanyId}."));
+                int CompanyId = companyInfo.Info.CompanyId;
                 string CustomerCode = "";
-                var arr = item.Value.Split(".");
-                if (arr.Length > 1)
-                {
-                    CompanyId = int.Parse(arr[0]);
-                    CustomerCode = arr[1];
+                foreach (var item in contract)
+                {                    
+                    var arr = item.Value.Split(".");
+                    if (arr.Length > 1)
+                    {
+                        CustomerCode = CustomerCode + "," + arr[1];
+                    }
+                    else
+                    {
+                        CustomerCode = CustomerCode + "," + arr[0];
+                    }
                 }
-                else
+                var inv = new InvoiceAllAInput()
                 {
-                    CustomerCode = arr[0];
+                    CompanyID = CompanyId,
+                    CustomerCodeList = CustomerCode,
+                    FromDate = invM.FromDate.HasValue ? invM.FromDate.Value.ToString("MM/dd/yyyy") : "",
+                    ToDate = invM.ToDate.HasValue ? invM.ToDate.Value.ToString("MM/dd/yyyy") : "",
+                    Page = Page.HasValue ? Page.Value : 1
+                };
+                var a2 = await _iInvoiceServices.GetInvoiceAllA(inv);
+                if (a2.DataStatus == "00")
+                {
+                    a.itemsData = a2.ItemsData;
                 }
-                if (CustomerCode == invM.CustomerCode) break;
+                r.Add(a);
             }
-            InvoiceAllInput inv = new InvoiceAllInput()
+
+            var a1 = new ResponseOK()
             {
-                CompanyID = CompanyId,
-                CustomerCode = invM.CustomerCode,
-                Page = (Page.HasValue ? Page.Value : 1),
-                FromDate = (invM.FromDate.HasValue ? invM.FromDate.Value.ToString("MM/dd/yyyy") : ""),
-                ToDate = (invM.ToDate.HasValue ? invM.ToDate.Value.ToString("MM/dd/yyyy") : ""),
-                PaymentStatus = (invM.PaymentStatus.HasValue ? invM.PaymentStatus.Value.ToString() : "")
+                Code = 200,
+                data = r,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 1,
+                UserMessage = LanguageAll.Language.Success
             };
-            var a = await _iInvoiceServices.GetInvoiceAll(inv);
-            _logger.WriteLog($"ListAll {JsonConvert.SerializeObject(inv)}: {a.UserMessage}", "ListAll");
-            return Ok(a);
+            return Ok(a1);
         }
 
         [HttpPost]
@@ -173,7 +197,7 @@ namespace Auth.Controllers
                     CustomerCode = CustomerCode
                 };
                 var a = await _iInvoiceServices.GetInvoiceA(inv);
-                if(a.DataStatus == "00")
+                if (a.DataStatus == "00")
                 {
                     r.AddRange(a.ItemsData);
                 }
@@ -191,6 +215,38 @@ namespace Auth.Controllers
         }
 
         [HttpPost]
+        [Route("[action]/{Page}")]
+        public async Task<IActionResult> InvoiceSave(int? Page, [FromBody] SearchDateModel inv)
+        {
+            var r = await _iInvoiceSaveServices.InvoceSaveGetListAsync(Page, 10, new SearchDateModel() { FromDate = inv.FromDate, ToDate = inv.ToDate});
+            return Ok(new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 1,
+                UserMessage = LanguageAll.Language.Success,
+                data = r
+            }); 
+        }
+        
+        [HttpGet]
+        [Route("[action]/{Id}")]
+        public async Task<IActionResult> InvoiceDelete(long Id)
+        {
+            var r = await _iInvoiceSaveServices.DeleteAsync(Id);
+            return Ok(new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 1,
+                UserMessage = LanguageAll.Language.Success,
+                data = r
+            });
+        }
+
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Pay([FromBody] PayInputModel inv)
         {
@@ -205,22 +261,22 @@ namespace Auth.Controllers
                 var a = await _iInvoiceServices.CheckInvoice(invInput);
                 if (a != null)
                 {
-                    var invq = a.ItemsData.InvList.Where(u => u.InvCode == inv.InvoiceNo).FirstOrDefault();
+                    var invq = a.ItemsData.InvList.Where(u => u.InvCode == inv.InvCode).FirstOrDefault();
                     if (invq != null)
                     {
-                        if (invq.InvAmount == inv.InvoiceAmount)
+                        if (invq.InvAmount == inv.InvAmount)
                         {
                             var _contact = new Contact()
                             {
                                 Address = inv.CustomerCode,
                                 CompanyName = inv.CustomerCode,
                                 ContactDate = DateTime.Now,
-                                Description = $"2_{inv.CustomerCode}_{inv.InvoiceNo}_{inv.InvoiceAmount}",
+                                Description = $"2_{inv.CustomerCode}_{inv.InvCode}_{inv.InvAmount}",
                                 Email = inv.CustomerCode,
                                 Fullname = inv.CustomerCode,
                                 IsCompany = false,
-                                Mobile = inv.InvoiceNo,
-                                Price = inv.InvoiceAmount,
+                                Mobile = inv.InvCode.ToString(),
+                                Price = inv.InvAmount,
                                 ServiceId = null,
                                 StatusId = 0,
                                 UserId = -1,
@@ -240,6 +296,27 @@ namespace Auth.Controllers
 
                             if (r != null)
                             {
+                                if (r.IsSave.HasValue && r.IsSave.Value)
+                                {
+                                    var orderSave = new InvoiceSave()
+                                    {
+                                        Id = r.Id,
+                                        Address = r.Address,
+                                        CustomerCode = inv.CustomerCode,
+                                        CustomerName = r.Fullname,
+                                        InvAmount = invq.InvAmount,
+                                        InvAmountWithoutTax = invq.InvAmountWithoutTax,
+                                        InvCode = invq.InvCode.ToString(),
+                                        InvDate = invq.InvDate,
+                                        InvNumber = invq.InvNumber,
+                                        InvRemarks = invq.InvRemarks,
+                                        InvSerial = invq.InvSerial,
+                                        MaSoBiMat = invq.MaSoBiMat,
+                                        PaymentStatus = 0,
+                                        TaxPer = invq.TaxPer
+                                    };
+                                    await _iInvoiceSaveServices.AddAsync(orderSave);
+                                }
                                 _logger.LogInformation($"Send payment-invoice is success: {_contact.Fullname}");
                                 PaymentIn t = new PaymentIn()
                                 {
@@ -248,7 +325,7 @@ namespace Auth.Controllers
                                     vpc_Customer_Id = User.Claims.GetClaimValue(ClaimTypes.NameIdentifier),
                                     vpc_Customer_Phone = "",
                                     vpc_MerchTxnRef = $"{(r.Id + Paygate.OnePay.Tools.StartIdOrder).ToString()}",//.{inv.InvoiceNo}
-                                    vpc_OrderInfo = $"2_{inv.CustomerCode}_{inv.InvoiceNo}_{inv.InvoiceAmount}",
+                                    vpc_OrderInfo = $"2_{inv.CustomerCode}_{inv.InvCode}_{inv.InvAmount}",
                                     vpc_SHIP_City = "Han",
                                     vpc_SHIP_Country = "VN",
                                     vpc_SHIP_Provice = "Han",

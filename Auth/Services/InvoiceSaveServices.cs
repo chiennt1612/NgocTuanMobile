@@ -5,7 +5,6 @@ using EntityFramework.API.Entities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Auth.Services
@@ -14,11 +13,27 @@ namespace Auth.Services
     {
         private IUnitOfWork unitOfWork;
         private ILogger<InvoiceSaveServices> ilogger;
-        public InvoiceSaveServices( ILogger<InvoiceSaveServices> ilogger, IUnitOfWork unitOfWork)
+        public InvoiceSaveServices(ILogger<InvoiceSaveServices> ilogger, IUnitOfWork unitOfWork)
         {
             this.ilogger = ilogger;
             this.unitOfWork = unitOfWork;
         }
+        public async Task<bool> DeleteAsync(long id)
+        {
+            try
+            {
+                await unitOfWork.invoiceSaveRepository.DeleteAsync(id);
+                await unitOfWork.SaveAsync();
+                ilogger.LogInformation($"Save object  Is OK");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ilogger.LogError($"Save object Is Fail {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<InvoiceSave> AddAsync(InvoiceSave contact)
         {
             try

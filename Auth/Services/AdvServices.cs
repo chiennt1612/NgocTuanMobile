@@ -2,7 +2,6 @@
 using Auth.Services.Interfaces;
 using EntityFramework.API.Entities;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;

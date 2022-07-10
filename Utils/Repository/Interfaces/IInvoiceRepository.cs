@@ -13,6 +13,7 @@ namespace Utils.Repository.Interfaces
         Task<PayResult> CheckPayInvoice(CheckPayInput inv);
         Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv);
         Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv);
+        Task<InvoiceDataResult> GetInvoiceAllA(InvoiceAllAInput inv);
         Task<CustomerInfoResult> getCustomerInfo(EVNCodeInput inv);
         Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv);
     }

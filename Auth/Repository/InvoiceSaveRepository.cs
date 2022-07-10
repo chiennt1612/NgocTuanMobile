@@ -26,8 +26,11 @@ namespace Auth.Repository
             int _page = Page.HasValue ? Page.Value : 1;
             int _pagesize = PageSize.HasValue ? PageSize.Value : 10;
 
-            Expression<Func<InvoiceSave, bool>> expression = u => (!exp.FromDate.HasValue || exp.FromDate.HasValue && 
-                                                                u.InvDate >= exp.FromDate.Value);
+            if (!exp.FromDate.HasValue) exp.FromDate = new DateTime(1900, 1, 1);
+            if (!exp.ToDate.HasValue) exp.ToDate = new DateTime(2900, 12, 31);
+            Expression<Func<InvoiceSave, bool>> expression = u => (
+                    (u.InvDate >= exp.FromDate.Value) && 
+                    (u.InvDate <= exp.ToDate.Value));
             return _context.InvoiceSaves
                             .Where(expression)
                             .OrderByDescending(u => u.Id)

@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EntityFramework.API.Entities
 {
     public class InvoiceSave
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         [StringLength(30)]
         public string CustomerCode { get; set; }
@@ -31,7 +25,7 @@ namespace EntityFramework.API.Entities
         public string InvCode { get; set; }
         [StringLength(300)]
         public string InvRemarks { get; set; }
-        public int InvAmount { get; set; }
+        public double InvAmount { get; set; }
         public int PaymentStatus { get; set; }
     }
 }

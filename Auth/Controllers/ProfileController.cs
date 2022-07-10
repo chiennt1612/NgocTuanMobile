@@ -4,9 +4,13 @@ using Auth.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
@@ -27,12 +31,17 @@ namespace Auth.Controllers
         private readonly IProfile _profile;
         private readonly AppUserManager _userManager;
         private readonly ILogger<ProfileController> _logger;
+        public CompanyConfig companyConfig { get; set; }
+        private IConfiguration _configuration;
 
-        public ProfileController(IProfile profile, AppUserManager userManager, ILogger<ProfileController> logger)
+        public ProfileController(IProfile profile, AppUserManager userManager, ILogger<ProfileController> logger,
+            IConfiguration _configuration)
         {
             _profile = profile;
             _userManager = userManager;
             _logger = logger;
+            this._configuration = _configuration;
+            companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
             _logger.WriteLog("Starting profile");
         }
 
@@ -57,6 +66,42 @@ namespace Auth.Controllers
             var a = await _profile.GetContractAllList(inv);
             _logger.WriteLog($"GetContractList {inv.CompanyID}/ {inv.Mobile}: {a.UserMessage}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
             return Ok(a);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> GetContractList()
+        {
+            var Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName;
+            List<ContractInfo> r = new List<ContractInfo>();
+            foreach (var companyInfo in companyConfig.Companys)
+            {
+                ContractInput inv = new ContractInput()
+                {
+                    CompanyID = companyInfo.Info.CompanyId,
+                    Mobile = Mobile
+                };
+                var a = await _profile.GetContractList(inv);
+                if (a.DataStatus == "00")
+                {
+                    r.Add(new ContractInfo() { 
+                        CompanyInfo = companyInfo.Info,
+                        ContractList = a.ItemsData.ContractList
+                    });
+                }
+            }
+
+               
+            _logger.WriteLog($"GetContractList");
+            return Ok(new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 0,
+                UserMessage = LanguageAll.Language.Success,
+                data = r
+            });
         }
 
         //[HttpPost]
@@ -116,6 +161,21 @@ namespace Auth.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Check Avatar and save to admin.nuocngoctuan.com                
+                if (!string.IsNullOrEmpty(model.Avatar))
+                {
+                    _logger.WriteLog($"1. SetProfile {model.Avatar}");
+                    var username = User.Claims.Where(u => u.Type == ClaimTypes.Name).FirstOrDefault()?.Value;
+                    if (string.IsNullOrEmpty(username)) username = "admin";
+                    string path = companyConfig.AvatarFolder;
+                    string fileName = username + ".jpg";
+                    _logger.WriteLog($"2. SetProfile {path}/{fileName}");
+                    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                    if (System.IO.File.Exists(path + @"/" + fileName)) System.IO.File.Delete(path + @"/" + fileName);
+                    System.IO.File.WriteAllBytes(path + @"/" + fileName, Convert.FromBase64String(model.Avatar));
+                    model.Avatar = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
+                    _logger.WriteLog($"3. SetProfile {model.Avatar}");
+                }
                 var a = await _profile.SetProfile(model);
                 _logger.WriteLog($"SetProfile: {a.UserMessage}", $"SetProfile");
                 if (a.Status == 0)

@@ -3,7 +3,6 @@ using Auth.Services.Interfaces;
 using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.EntityBase;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;

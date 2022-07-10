@@ -14,5 +14,6 @@ namespace Auth.Services.Interfaces
         Task<ResponseOK> GetCompanyList();
         Task<ResponseOK> GetCompanyInfo(int profileType = 1);
         Task<ResponseOK> GetContractAllList(ContractInput inv);
+        Task<ContractResult> GetContractList(ContractInput inv);
     }
 }

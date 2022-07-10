@@ -71,5 +71,14 @@ namespace EntityFramework.API.Entities
         public bool? IsAgree { get; set; }
         [JsonIgnore]
         public bool? IsSave { get; set; }
+
+        [StringLength(2000, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
+        public string Noted { get; set; }
+        [StringLength(300, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
+        public string Img { get; set; }
+        [StringLength(2000, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
+        public string Noted2 { get; set; }
+        [StringLength(300, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(Resources.EntityValidation))]
+        public string Img2 { get; set; }
     }
 }

@@ -4,12 +4,12 @@ using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Utils;
 using Utils.Models;
 using Utils.Repository.Interfaces;
 
@@ -219,10 +219,12 @@ namespace Auth.Services
             }
             if (String.IsNullOrEmpty(a.Where(u => u.Type == "Avatar").FirstOrDefault()?.Value))
             {
+                _logger.WriteLog($"4.1. SetProfile {inv.Avatar}");
                 await _userManager.AddClaimAsync(u, new Claim("Avatar", inv.Avatar));
             }
             else
             {
+                _logger.WriteLog($"4.2. SetProfile {inv.Avatar}");
                 await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "Avatar").FirstOrDefault(), new Claim("Avatar", inv.Avatar));
             }
             if (String.IsNullOrEmpty(a.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value))
@@ -559,5 +561,9 @@ namespace Auth.Services
             };
         }
 
+        public async Task<ContractResult> GetContractList(ContractInput inv)
+        {
+            return await _invoice.GetContract(inv);
+        }
     }
 }

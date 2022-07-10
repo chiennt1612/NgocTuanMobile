@@ -3,106 +3,84 @@ using System.Collections.Generic;
 
 namespace Utils.Models
 {
-    public class InvoiceResult
-    {
-        public ItemsData ItemsData { get; set; }
-        public string DataStatus { get; set; }
-        public string Message { get; set; }
-        public int ResponseStatus { get; set; }
-
-        public string Keyword { get; set; } = "";
-        public bool IsAgree { get; set; } = true;
-    }
-
-    public class ContractInput
+    #region input class
+    public class ContractInput : ContractInputBase
     {
         public int CompanyID { get; set; } = 0;
+    }
+    public class ContractInputBase
+    {
         public string Mobile { get; set; }
     }
-
     public class InvoiceInput
     {
         public int CompanyID { get; set; } = 0;
         public string CustomerCode { get; set; }
     }
-
-    public class ItemsData
-    {
-        public string CustomerCode { get; set; }
-        public string CustomerName { get; set; }
-        public string Address { get; set; }
-        public List<InvList> InvList { get; set; }
-    }
-
-    public class InvList
-    {
-        public string InvCode { get; set; }
-        public string InvRemarks { get; set; }
-        public string MaSoBiMat { get; set; }
-        public string InvNumber { get; set; }
-        public string InvSerial { get; set; }
-        public DateTime InvDate { get; set; }
-        public double TaxPer { get; set; }
-        public double InvAmountWithoutTax { get; set; }
-        public int InvAmount { get; set; }
-    }
-
     public class CheckPayInput
     {
         public int CompanyID { get; set; } = 0;
         public string OnePayID { get; set; }
     }
-
-    public class PayInput
+    public class PayInput : InvoiceInput
     {
-        public int CompanyID { get; set; } = 0;
         public string OnePayID { get; set; }
-        public string CustomerCode { get; set; }
         public string InvoiceNo { get; set; }
         public int InvoiceAmount { get; set; }
 
         public bool IsAgree { get; set; } = true;
     }
-
-    public class InvoiceAllInput
+    public class InvoiceAllInput : InvoiceInput
     {
-        public int CompanyID { get; set; } = 0;
-        public string CustomerCode { get; set; }
         public int Page { get; set; }
         public string FromDate { get; set; }
         public string ToDate { get; set; }
         public string PaymentStatus { get; set; }
     }
-
-    public class UndoPayResult
+    public class InvoiceAllAInput 
     {
-        public string UndoPayStatus { get; set; }
-        public string Message { get; set; }
-        public string ResponseStatus { get; set; }
+        public int CompanyID { get; set; } = 0;
+        public string CustomerCodeList { get; set; }
+        public int Page { get; set; }
+        public string FromDate { get; set; }
+        public string ToDate { get; set; }
+        public string PaymentStatus { get; set; }
     }
-
-    public class PayResult
+    public class EVNCodeInput
     {
-        public string PayStatus { get; set; }
-        public string Message { get; set; }
-        public string ResponseStatus { get; set; }
+        public int CompanyID { get; set; } = 0;
+        public string EVNCode { get; set; }
     }
-
-    public class InvoiceAllResult
+    public class InvQrCodeInput
     {
-        public int Rowcount { get; set; }
-        public ItemsDataAll ItemsData { get; set; }
-        public string DataStatus { get; set; }
+        public int CompanyID { get; set; } = 0;
+        public string InvoiceSerial { get; set; }
+        public string InvoiceNumber { get; set; }
+    }
+    #endregion
+    #region base class
+    public class CustomerInfo : ContractInputBase
+    {
+        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerType { get; set; }
+        public string Address { get; set; }
+        public string Email { get; set; }
+        public string WaterIndexCode { get; set; }
+        public string TaxCode { get; set; }
+    }
+    public class ResultBase
+    {
         public string Message { get; set; }
         public int ResponseStatus { get; set; }
-
-        public string Keyword { get; set; } = "";
-        public bool IsAgree { get; set; } = true;
     }
-
-    public class InvListAll
+    public class DataResultBase : ResultBase
     {
-        public int InvCode { get; set; }
+        public string DataStatus { get; set; }
+    }
+    public class InvoiceBase
+    {
+        public long InvCode { get; set; }
         public string InvRemarks { get; set; }
         public string MaSoBiMat { get; set; }
         public string InvNumber { get; set; }
@@ -111,124 +89,92 @@ namespace Utils.Models
         public double TaxPer { get; set; }
         public double InvAmountWithoutTax { get; set; }
         public double InvAmount { get; set; }
+    }
+    public class InvoiceStatusBase : InvoiceBase
+    {
         public int PaymentStatus { get; set; } // 1. Da thanh toan; 0. Chua thanh toan
     }
-
-    public class ItemsDataAll
+    #endregion
+    #region result class
+    public class InvoiceResult : DataResultBase
     {
-        public string CustomerCode { get; set; }
-        public string CustomerName { get; set; }
-        public string Mobile { get; set; }
-        public string Email { get; set; }
-        public string Address { get; set; }
-        public string WaterIndexCode { get; set; }
-        public List<InvListAll> InvList { get; set; }
+        public ItemsData ItemsData { get; set; }
+        public string Keyword { get; set; } = "";
+        public bool IsAgree { get; set; } = true;        
     }
-
-    public class ContractList
+    public class UndoPayResult : ResultBase
     {
-        public string CustomerCode { get; set; }
-        public string CustomerName { get; set; }
-        public string CustomerType { get; set; }
-        public string Address { get; set; }
-        public string WaterCode { get; set; }
-        public string TaxCode { get; set; }
+        public string UndoPayStatus { get; set; }
     }
-
-    public class ItemsList
+    public class PayResult : ResultBase
     {
-        public string Mobile { get; set; }
-        public List<ContractList> ContractList { get; set; }
+        public string PayStatus { get; set; }
     }
-
-    public class ContractResult
+    public class InvoiceAllResult : DataResultBase
     {
-        public ItemsList ItemsData { get; set; }
-        public string DataStatus { get; set; }
-        public string Message { get; set; }
-        public string ResponseStatus { get; set; }
-        public CompanyInfo CompanyInfo { get; set; }
+        public int Rowcount { get; set; }
+        public ItemsDataAll ItemsData { get; set; }
+        public string Keyword { get; set; } = "";
+        public bool IsAgree { get; set; } = true;
     }
-
-    public class ItemsDatum
-    {
-        public string CustomerCode { get; set; }
-        public string CustomerName { get; set; }
-        public string Address { get; set; }
-        public string InvCode { get; set; }
-        public string InvRemarks { get; set; }
-        public string MaSoBiMat { get; set; }
-        public string InvNumber { get; set; }
-        public string InvSerial { get; set; }
-        public DateTime InvDate { get; set; }
-        public double TaxPer { get; set; }
-        public double InvAmountWithoutTax { get; set; }
-        public int InvAmount { get; set; }
-    }
-
-    public class InvoiceDataResult
+    public class InvoiceDataResult : DataResultBase
     {
         public List<ItemsDatum> ItemsData { get; set; }
-        public string DataStatus { get; set; }
-        public string Message { get; set; }
-        public string ResponseStatus { get; set; }
     }
-
-    public class InvQrCode
-    {
-        public string CustomerCode { get; set; }
-        public string CustomerName { get; set; }
-        public string Address { get; set; }
-        public string MaSoBiMat { get; set; }
-        public string InvSerial { get; set; }
-        public string InvNumber { get; set; }
-        public string InvDate { get; set; }
-        public double TaxPer { get; set; }
-        public double InvAmountWithoutTax { get; set; }
-        public string InvCode { get; set; }
-        public string InvRemarks { get; set; }
-        public int InvAmount { get; set; }
-        public int PaymentStatus { get; set; }
-    }
-
-    public class InvoiceQRCode
+    public class InvoiceQRCode : DataResultBase
     {
         public InvQrCode ItemsData { get; set; }
-        public string DataStatus { get; set; }
-        public string Message { get; set; }
-        public string ResponseStatus { get; set; }
     }
-
-    public class CustomerInfo
+    public class CustomerInfoResult : DataResultBase
+    {
+        public CustomerInfo ItemsData { get; set; }
+    }
+    #endregion
+    #region Other
+    public class ItemsData
     {
         public string CustomerCode { get; set; }
         public string CustomerName { get; set; }
-        public string CustomerType { get; set; }
         public string Address { get; set; }
-        public string Email { get; set; }
-        public string WaterCode { get; set; }
-        public string Mobile { get; set; }
-        public string TaxCode { get; set; }
+        public string WaterIndexCode { get; set; }
+        public List<InvList> InvList { get; set; }
     }
-
-    public class CustomerInfoResult
+    public class InvList : InvoiceBase
     {
-        public CustomerInfo ItemsData { get; set; }
-        public string DataStatus { get; set; }
-        public string Message { get; set; }
-        public string ResponseStatus { get; set; }
     }
-
-    public class EVNCodeInput
+    public class InvListAll : InvoiceStatusBase
     {
-        public int CompanyID { get; set; } = 0;
-        public string EVNCode { get; set; }
     }
-
-    public class InvQrCodeInput
+    public class ItemsDataAll : CustomerInfo
     {
-        public int CompanyID { get; set; } = 0;
-        public string InvoiceSerial { get; set; }
-        public string InvoiceNumber { get; set; }
+        public List<InvListAll> InvList { get; set; }
     }
+    public class ContractList : CustomerInfo
+    {
+    }
+    public class ItemsList : ContractInputBase
+    {
+        public List<ContractList> ContractList { get; set; }
+    }
+    public class ContractResult : DataResultBase
+    {
+        public ItemsList ItemsData { get; set; }
+        public CompanyInfo CompanyInfo { get; set; }
+    }
+    public class ContractInfo
+    {
+        public List<ContractList> ContractList { get; set; }
+        public CompanyInfo CompanyInfo { get; set; }
+    }
+    public class ItemsDatum : InvQrCode
+    {
+    }    
+    public class InvQrCode : InvoiceStatusBase
+    {
+        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
+        public string Address { get; set; }
+        public string WaterIndexCode { get; set; }
+    }
+    #endregion
 }

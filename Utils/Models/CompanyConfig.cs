@@ -5,7 +5,7 @@ namespace Utils.Models
     public class CompanyConfig
     {
         public List<Company> Companys { get; set; }
-
+        public string AvatarFolder { get; set; }
     }
     public class Company
     {
@@ -22,6 +22,11 @@ namespace Utils.Models
         public string CompanyNameEn { get; set; }
         public string CompanyLogo { get; set; }
         public string Taxcode { get; set; }
+    }
+
+    public class CompanyInvoice : CompanyInfo
+    {
+        public List<ItemsDatum> itemsData { get; set; }
     }
 
     public class CompanyInfoInput

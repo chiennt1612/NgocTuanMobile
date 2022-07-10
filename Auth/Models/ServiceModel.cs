@@ -35,6 +35,59 @@ namespace Auth.Models
         public bool IsAgree { get; set; } = true;
     }
 
+    public class ChangeContractInputModel
+    {
+        public long ServiceId { get; set; }
+        public bool IsCompany { get; set; }
+        public string CompanyName { get; set; } // CMND
+        public double Price { get; set; }
+        public string Fullname { get; set; }
+        public string Address { get; set; }
+        public string Mobile { get; set; }
+        public string Email { get; set; }
+        public string Description { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
+        public bool IsAgree { get; set; } = true;
+
+        public string Noted { get; set; }
+    }
+
+    public class ChangePositionInputModel
+    {
+        public long ServiceId { get; set; }
+        public bool IsCompany { get; set; }
+        public string CompanyName { get; set; } // CMND
+        public double Price { get; set; }
+        public string Fullname { get; set; }
+        public string Address { get; set; }
+        public string Mobile { get; set; }
+        public string Email { get; set; }
+        public string Description { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
+        public bool IsAgree { get; set; } = true;
+
+        public string Noted { get; set; }
+        public string Img { get; set; }
+        public string Noted2 { get; set; }
+        public string Img2 { get; set; }
+    }
+
+    public class ChangePriceInputModel
+    {
+        public long ServiceId { get; set; }
+        public bool IsCompany { get; set; }
+        public string CompanyName { get; set; } // CMND
+        public double Price { get; set; }
+        public string Fullname { get; set; }
+        public string Address { get; set; }
+        public string Mobile { get; set; }
+        public string Email { get; set; }
+        public string Description { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
+        public bool IsAgree { get; set; } = true;
+        public string Img { get; set; }
+    }
+
     public enum PaymentMethod
     {
         Cash = 1,

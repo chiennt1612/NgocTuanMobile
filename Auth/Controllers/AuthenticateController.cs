@@ -460,7 +460,7 @@ namespace Auth.Controllers
                 var users = await _userManager.GetUsersForClaimAsync(c);
                 if (users != null)
                 {
-                    if(users.Count > 0)// EVNCode Exists
+                    if (users.Count > 0)// EVNCode Exists
                     {
                         IsExitst = true;
                         _logger.LogInformation($"Found: {model.EVNCode}");
@@ -480,7 +480,7 @@ namespace Auth.Controllers
 
                 if (!IsExitst)
                 {
-                    for(var i = 0; i < companyConfig.Companys.Count; i++)
+                    for (var i = 0; i < companyConfig.Companys.Count; i++)
                     {
                         var inv = new EVNCodeInput()
                         {
@@ -518,9 +518,9 @@ namespace Auth.Controllers
                                 {
                                     await _userManager.AddClaimAsync(userExists, new Claim("Address", a.ItemsData.Address));
                                 }
-                                if (!String.IsNullOrEmpty(a.ItemsData.WaterCode))
+                                if (!String.IsNullOrEmpty(a.ItemsData.WaterIndexCode))
                                 {
-                                    await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData.WaterCode));
+                                    await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData.WaterIndexCode));
                                 }
                                 if (!String.IsNullOrEmpty(a.ItemsData.TaxCode))
                                 {
@@ -542,10 +542,10 @@ namespace Auth.Controllers
                             }
                         }
                     }
-                    
+
                 }
 
-                if(!IsExitst)
+                if (!IsExitst)
                 {
                     _logger.LogInformation($"Not found: {model.EVNCode}");
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()

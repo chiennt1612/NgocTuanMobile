@@ -70,11 +70,12 @@ namespace Auth.Controllers
                     && (o.IsService && u.ServiceId.HasValue && !o.IsService && !u.ServiceId.HasValue)
                     );
             var r = await _Service.contactServices.GetListAsync(sqlWhere, sqlOrder, true, _Page, _PageSize);
-            var r1 = new BaseEntityList<OrderModel>(){  
+            var r1 = new BaseEntityList<OrderModel>()
+            {
                 page = _Page,
                 pageSize = _PageSize,
                 totalRecords = r.totalRecords
-                };
+            };
             r1.list = from b in r.list
                       select new OrderModel()
                       {

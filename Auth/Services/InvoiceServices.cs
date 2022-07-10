@@ -47,9 +47,21 @@ namespace Auth.Services
             return a;
         }
 
+        public async Task<InvoiceAllResult> CheckAllInvoice(InvoiceAllInput inv)
+        {
+            var a = await _invoice.GetInvoiceAll(inv);
+            return a;
+        }
+
         public async Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv)
         {
             var a = await _invoice.GetInvoiceA(inv);
+            return a;
+        }
+
+        public async Task<InvoiceDataResult> GetInvoiceAllA(InvoiceAllAInput inv)
+        {
+            var a = await _invoice.GetInvoiceAllA(inv);
             return a;
         }
 
