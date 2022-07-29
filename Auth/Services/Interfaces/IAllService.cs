@@ -12,6 +12,11 @@
         IParamSettingServices paramSettingServices { get; }
         IProductServices productServices { get; }
         IContactServices contactServices { get; }
+
+        INoticeServices noticeServices { get; }
+        IInvoiceServices invoiceServices { get; }
+        IInvoiceSaveServices iInvoiceSaveServices { get; }
+        IContractServices contractServices { get; }
     }
 
 }

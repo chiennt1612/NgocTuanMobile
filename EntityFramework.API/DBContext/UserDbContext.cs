@@ -6,6 +6,7 @@ namespace EntityFramework.API.DBContext
 {
     public class UserDbContext : IdentityDbContext<AppUser, AppRole, long>
     {
+        public DbSet<AppUserDevice> AppUserDevices { get; set; }
         public UserDbContext(DbContextOptions<UserDbContext> options)
                : base(options)
         {
@@ -78,6 +79,18 @@ namespace EntityFramework.API.DBContext
             //    //u1.HasKey(u => u.UserId);
             //    u1.ToTable("UserToken");
             //});
+
+            builder.Entity<AppUserDevice>(u1 =>
+            {
+                u1.HasKey(u => u.Id);
+
+                u1.HasIndex(u => u.DeviceID).IsUnique();
+                u1.Property(u => u.DeviceID).HasMaxLength(36);
+                u1.Property(u => u.Username).HasMaxLength(30);
+                u1.Property(u => u.Token).HasMaxLength(2000);
+
+                u1.ToTable("UserDevices");
+            });
         }
     }
 }

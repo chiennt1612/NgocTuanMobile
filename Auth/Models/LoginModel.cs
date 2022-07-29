@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Utils.Models;
 
 namespace Auth.Models
 {
@@ -25,5 +26,21 @@ namespace Auth.Models
         public string Username { get; set; }
 
         public string Address { get; set; }
+    }
+
+    public class DeviceModel : DeviceTokenModel
+    {
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string DeviceId { get; set; }
+
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public OSType OS { get; set; }
+
+        public bool IsGetNotice { get; set; }
+    }
+
+    public class DeviceTokenModel
+    {
+        public string Token { get; set; }
     }
 }

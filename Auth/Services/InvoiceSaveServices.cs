@@ -1,11 +1,11 @@
-﻿using Auth.Models;
-using Auth.Repository.Interfaces;
+﻿using Auth.Repository.Interfaces;
 using Auth.Services.Interfaces;
 using EntityFramework.API.Entities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Utils.Models;
 
 namespace Auth.Services
 {
@@ -72,9 +72,15 @@ namespace Auth.Services
             }
         }
 
-        public async Task<IList<InvoiceSave>> InvoceSaveGetListAsync(int? Page, int? PageSize, SearchDateModel exp)
+        public async Task<IList<InvoiceSave>> InvoceSaveGetListAsync(int? Page, int? PageSize, InvoiceSaveSearchModelA exp)
         {
             var a = await unitOfWork.invoiceSaveRepository.InvoceSaveGetListAsync(Page, PageSize, exp);
+            return a;
+        }
+
+        public async Task<int> GetCountAsync(InvoiceSaveSearchModelA exp)
+        {
+            var a = await unitOfWork.invoiceSaveRepository.GetCountAsync(exp);
             return a;
         }
     }

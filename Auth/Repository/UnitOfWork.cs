@@ -32,6 +32,8 @@ namespace Auth.Repository
         private InvoiceSaveRepository _InvoiceSaveRepository;
         private IContactRepository _ContactRepository;
         private IOrderStatusRepository _OrderStatusRepository;
+        private INoticeRepository _NoticeRepository;
+        private IContractRepository _ContractRepository;
         #endregion
 
         /// <summary>
@@ -94,6 +96,22 @@ namespace Auth.Repository
             get
             {
                 return _ContactRepository = _ContactRepository ?? new ContactRepository(_appDbContext, _httpContext);
+            }
+        }
+
+        public INoticeRepository noticeRepository
+        {
+            get
+            {
+                return _NoticeRepository = _NoticeRepository ?? new NoticeRepository(_appDbContext, _httpContext);
+            }
+        }
+
+        public IContractRepository contractRepository
+        {
+            get
+            {
+                return _ContractRepository = _ContractRepository ?? new ContractRepository(_appDbContext, _httpContext);
             }
         }
 

@@ -11,9 +11,6 @@ namespace Auth.Models
         [StringLength(128, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string CompanyName { get; set; }
 
-        [StringLength(20, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
-        public string PhoneNumber { get; set; }
-
         [StringLength(200, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         [EmailAddress(ErrorMessageResourceName = "EmailIsNotValid", ErrorMessageResourceType = typeof(LanguageAll.Language))]
         public string Email { get; set; }
@@ -75,6 +72,8 @@ namespace Auth.Models
 
         public List<string> CustomerCodeList { get; set; }
 
+        public string DeviceId { get; set; }
+        public bool IsGetNotice { get; set; } = false;
         public string Avatar { get; set; }
         public ProfileOutputModel()
         {

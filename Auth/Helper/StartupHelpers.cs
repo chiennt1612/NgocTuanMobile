@@ -54,11 +54,13 @@ namespace Auth.Helper
 
         public static void AddServices(this IServiceCollection services)
         {
-            services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-            services.AddScoped<IInvoiceSaveRepository, InvoiceSaveRepository>();
-            services.AddScoped<IProfile, Profile>();
-            services.AddScoped<IInvoiceServices, InvoiceServices>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
+            services.AddScoped<IInvoiceRepository, InvoiceRepository>();          
+            services.AddScoped<IUnitOfWork, UnitOfWork>();            
+
+            services.AddScoped<IContractServices, ContractServices>();
+            services.AddScoped<INoticeServices, NoticeServices>();
+            services.AddScoped<IInvoiceServices, InvoiceServices>();            
             services.AddScoped<IArticleServices, ArticleServices>();
             services.AddScoped<ICategoriesServices, CategoriesServices>();
             services.AddScoped<INewsCategoriesServices, NewsCategoriesServices>();
@@ -69,8 +71,10 @@ namespace Auth.Helper
             services.AddScoped<IAdvServices, AdvServices>();
             services.AddScoped<IServiceServices, ServiceServices>();
             services.AddScoped<IFAQServices, FAQServices>();
-            services.AddScoped<IAllService, AllService>();
             services.AddScoped<IInvoiceSaveServices, InvoiceSaveServices>();
+            services.AddScoped<IProfile, Profile>();
+
+            services.AddScoped<IAllService, AllService>();
         }
 
         public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)

@@ -572,7 +572,7 @@ namespace Auth.Controllers
                 data = rd
             });
         }
-    
+
         private string Upload(string file)
         {
             // Check Avatar and save to admin.nuocngoctuan.com                

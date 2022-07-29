@@ -37,7 +37,7 @@ namespace Utils.Models
         public string ToDate { get; set; }
         public string PaymentStatus { get; set; }
     }
-    public class InvoiceAllAInput 
+    public class InvoiceAllAInput
     {
         public int CompanyID { get; set; } = 0;
         public string CustomerCodeList { get; set; }
@@ -100,7 +100,7 @@ namespace Utils.Models
     {
         public ItemsData ItemsData { get; set; }
         public string Keyword { get; set; } = "";
-        public bool IsAgree { get; set; } = true;        
+        public bool IsAgree { get; set; } = true;
     }
     public class UndoPayResult : ResultBase
     {
@@ -124,15 +124,17 @@ namespace Utils.Models
     public class InvoiceQRCode : DataResultBase
     {
         public InvQrCode ItemsData { get; set; }
+        public CompanyInfo CompanyInfo { get; set; }
     }
     public class CustomerInfoResult : DataResultBase
     {
-        public CustomerInfo ItemsData { get; set; }
+        public List<CustomerInfo> ItemsData { get; set; }
     }
     #endregion
     #region Other
     public class ItemsData
     {
+        public int CompanyID { get; set; } = 0;
         public string CustomerCode { get; set; }
         public string CustomerName { get; set; }
         public string Address { get; set; }
@@ -166,9 +168,15 @@ namespace Utils.Models
         public List<ContractList> ContractList { get; set; }
         public CompanyInfo CompanyInfo { get; set; }
     }
+    public class ContractOneInfo
+    {
+        public ContractList ContractInfo { get; set; }
+        public CompanyInfo CompanyInfo { get; set; }
+    }
     public class ItemsDatum : InvQrCode
     {
-    }    
+        public int CompanyId { get; set; } = 0;
+    }
     public class InvQrCode : InvoiceStatusBase
     {
         public string CustomerCode { get; set; }

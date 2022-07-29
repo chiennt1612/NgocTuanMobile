@@ -20,6 +20,8 @@ namespace Auth.Repository.Interfaces
         IContactRepository contactRepository { get; }
         IInvoiceSaveRepository invoiceSaveRepository { get; }
         IOrderStatusRepository orderStatusRepository { get; }
+        INoticeRepository noticeRepository { get; }
+        IContractRepository contractRepository { get; }
 
         void Save();
         Task SaveAsync();

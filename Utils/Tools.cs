@@ -13,9 +13,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Utils.Models;
 
 namespace Utils
 {
@@ -80,6 +83,123 @@ namespace Utils
             }
         }
 
+        #region XSSFilter
+        public static string XSSFilter(this string html, HtmlXSSFilter htmlXSS)
+        {
+            // Filter tag not allow
+            foreach (var itemTag in htmlXSS.TagNotAllow)
+            {
+                html = html.XSSFilter(itemTag, "<");
+                html = html.XSSFilter(itemTag, "</");
+            }
+
+            // Filter Attribute not allow
+            html = html.XSSFilterAttribute(htmlXSS);
+            return html;
+        }
+
+        private static string XSSFilterAttribute(this string html, HtmlXSSFilter htmlXSS)
+        {
+            int startIndex = 0; int cnt = 0; int i = -1; int j = -1; string subString = ""; string subStringReplace = "";
+            html.GetSubstring(out subString, out i, out j, startIndex, "<", ">", "/>");
+            subStringReplace = subString;
+            if (subStringReplace.Length > 6)
+            {
+                foreach (var itemAttribute in htmlXSS.AttributeNotAllow)
+                {
+                    subStringReplace = subStringReplace.XSSFilter(itemAttribute, " ", "=");
+                    subStringReplace = subStringReplace.XSSFilter(itemAttribute, "\"", "=");
+                    subStringReplace = subStringReplace.XSSFilter(itemAttribute, "'", "=");
+                }
+                if (subString != subStringReplace)
+                    html = html.Replace(subString, subStringReplace);
+            }
+            while (cnt < 10000 && i > -1 && j > i)
+            {
+                startIndex = j; cnt++; subString = ""; subStringReplace = ""; i = -1; j = -1;
+                html.GetSubstring(out subString, out i, out j, startIndex, "<", ">", "/>");
+                subStringReplace = subString;
+                if (subStringReplace.Length > 6)
+                {
+                    foreach (var itemAttribute in htmlXSS.AttributeNotAllow)
+                    {
+                        subStringReplace = subStringReplace.XSSFilter(itemAttribute, " ", "=");
+                        subStringReplace = subStringReplace.XSSFilter(itemAttribute, "\"", "=");
+                        subStringReplace = subStringReplace.XSSFilter(itemAttribute, "'", "=");
+                    }
+                    if (subString != subStringReplace)
+                        html = html.Replace(subString, subStringReplace);
+                }
+            }
+            return html;
+        }
+        private static string XSSFilter(this string html, string itemTag, string BeginTag = "<", string EndTag = " ", string EndTag2 = ">")
+        {
+            int startIndex = 0; int cnt = 0; int i = -1; int j = -1; string subString = ""; string subStringReplace = "";
+            html.GetSubstring(out subString, out i, out j, startIndex, itemTag.BeginTag(BeginTag), EndTag, EndTag2);
+            subStringReplace = subString.Replace(itemTag.ToLower(), itemTag.XSS(), StringComparison.OrdinalIgnoreCase);
+            if (!(String.IsNullOrEmpty(subString) || String.IsNullOrEmpty(subStringReplace)))
+                html = html.Replace(subString, subStringReplace);
+            while (cnt < 10000 && i > -1 && j > i)
+            {
+                startIndex = j; cnt++; subString = ""; subStringReplace = ""; i = -1; j = -1;
+                html.GetSubstring(out subString, out i, out j, startIndex, itemTag.BeginTag(BeginTag), EndTag, EndTag2);
+                subStringReplace = subString.Replace(itemTag.ToLower(), itemTag.XSS(), StringComparison.OrdinalIgnoreCase);
+                if (!(String.IsNullOrEmpty(subString) || String.IsNullOrEmpty(subStringReplace)))
+                    html = html.Replace(subString, subStringReplace);
+            }
+            return html;
+        }
+        private static string XSS(this string itemTag)
+        {
+            return $"[{itemTag.ToUpper()}]";
+        }
+        private static string BeginTag(this string itemTag, string startString = "<")
+        {
+            return $"{startString}{itemTag}";
+        }
+        private static void GetSubstring(this string html, out string subString, out int i, out int j,
+            int startIndex, string tagBegin, string tagEnd, string tagEnd2 = "", bool isTag = true)
+        {
+            subString = "";
+            i = html.ToLower().IndexOf(tagBegin.ToLower(), startIndex + 1);
+            j = html.ToLower().IndexOf(tagEnd.ToLower(), i + 1);// tagBegin.Length);
+            if (j < 0 && !string.IsNullOrEmpty(tagEnd2)) j = html.IndexOf(tagEnd2, i + 1);// + tagBegin.Length);
+            int start = i + tagBegin.Length;
+            int length = j - i + tagEnd.Length - 1 - tagBegin.Length;
+            if (isTag)
+            {
+                start = i;
+                length = j - i + tagEnd.Length;
+            }
+            if (i > -1 && j > i)
+            {
+                subString = html.Substring(start, length);
+            }
+        }
+        #endregion
+
+        #region MD5
+        public static string ToMD5Hash(this string str)
+        {
+            if (string.IsNullOrEmpty(str))
+                return null;
+
+            return Encoding.ASCII.GetBytes(str).ToMD5Hash();
+        }
+
+        private static string ToMD5Hash(this byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return null;
+
+            using (var md5 = MD5.Create())
+            {
+                return string.Join("", md5.ComputeHash(bytes).Select(x => x.ToString("X2")));
+            }
+        }
+        #endregion
+
         public static string GetUrlById(string SubFolder, long Id)
         {
             return $"https://nuocngoctuan.com/{SubFolder}/{Id}";
@@ -99,7 +219,7 @@ namespace Utils
             else
                 return DeserializeFromBase64String<T>(r);
         }
-        public static async Task SetAsync<T>(this IDistributedCache _cache, string Key, T _obj, long _time = 1, CancellationToken token = default)
+        public static async Task SetAsync<T>(this IDistributedCache _cache, string Key, T _obj, long _time = 30, CancellationToken token = default)
         {
             DistributedCacheEntryOptions options = new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTime.Now.AddMinutes(_time) };
             string r = SerializeToBase64String<T>(_obj);
@@ -553,6 +673,37 @@ namespace Utils
         #endregion
 
         #region CalAPI
+        private static async Task<string> GetURL<T>(this HttpWebRequest httpWebRequest, ILogger _logger, T pzData)
+        {
+            string result = string.Empty;
+            if (pzData != null)
+            {
+                _logger.LogInformation($"pzData: {JsonConvert.SerializeObject(pzData)}");
+                using (var streamWriter = new StreamWriter(await httpWebRequest.GetRequestStreamAsync()))
+                {
+                    string json = JsonConvert.SerializeObject(pzData);
+                    await streamWriter.WriteAsync(json);
+                    await streamWriter.FlushAsync();
+                    streamWriter.Close();
+                }
+            }
+            InitiateSSLTrust();//bypass SSL
+            try
+            {
+                var httpResponse = (HttpWebResponse)await httpWebRequest.GetResponseAsync();
+                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    result = await streamReader.ReadToEndAsync();
+                    _logger.LogInformation($"result: {result}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"result: {ex.ToString()}");
+                result = "";
+            }            
+            return result;
+        }
         private static void InitiateSSLTrust()
         {
             try
@@ -570,37 +721,54 @@ namespace Utils
         }
         public static async Task<T> APIRequest<T, T1>(ILogger _logger, string APIUrl, string APIToken, string functionName, T1 pzData)
         {
-            string result = string.Empty;
-            HttpWebRequest httpWebRequest;
-            httpWebRequest = (HttpWebRequest)WebRequest.Create(APIUrl);
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(APIUrl);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Accept = "application/json";
             httpWebRequest.Method = "POST";
             httpWebRequest.Headers.Add("Authorization", "Basic " + APIToken);
             httpWebRequest.Headers.Add("FunctionName", functionName);
-
             _logger.LogInformation($"APIUrl: {APIUrl}\n APIToken: {APIToken}\n FunctionName: {functionName}");
-
-            if (pzData != null)
-            {
-                _logger.LogInformation($"pzData: {pzData}");
-                using (var streamWriter = new StreamWriter(await httpWebRequest.GetRequestStreamAsync()))
-                {
-                    string json = JsonConvert.SerializeObject(pzData);
-                    await streamWriter.WriteAsync(json);
-                    await streamWriter.FlushAsync();
-                    streamWriter.Close();
-                }
-            }
-            InitiateSSLTrust();//bypass SSL
-            var httpResponse = (HttpWebResponse)await httpWebRequest.GetResponseAsync();
-
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                result = await streamReader.ReadToEndAsync();
-            }
-            _logger.LogInformation($"result: {result}");
+            string result = await httpWebRequest.GetURL(_logger, pzData);
             return JsonConvert.DeserializeObject<T>(result);
+        }
+        #endregion
+
+        #region Firebase
+        public static async Task<string> PushFireBase(NoticePushFirebaseModel model, FireBaseConfig config, ILogger _logger)
+        {
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(config.URL);
+            httpWebRequest.ContentType = "application/json";
+            //httpWebRequest.Accept = "application/json";
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Headers.Add("Authorization", "key=" + config.ServerKey);
+            _logger.LogInformation($"APIUrl: {config.URL}\n APIToken: {config.ServerKey}");
+            var data = new
+            {
+                registration_ids = model.Token,
+                data = new
+                {
+                    title = model.Subject,
+                    body = model.Content,
+                    username = model.Username,
+                    deviceID = model.DeviceID,
+                    token = model.Token,
+                    noticeTypeId = model.NoticeTypeId,
+                    noticeTypeName = model.NoticeTypeName,
+                    subject = model.Subject,
+                    content = model.Content,
+                    isHTML = model.IsHTML,
+                    author = model.Author,
+                    isRead = false
+                },
+                notification = new
+                {
+                    title = model.Subject,
+                    body = model.Content
+                }//,
+                //to = model.Token
+            };
+            //_logger.LogInformation($"data: {JsonConvert.SerializeObject(data)}");
+            return await httpWebRequest.GetURL(_logger, data);
         }
         #endregion
     }

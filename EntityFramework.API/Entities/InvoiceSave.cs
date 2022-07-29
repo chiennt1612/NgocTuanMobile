@@ -27,5 +27,7 @@ namespace EntityFramework.API.Entities
         public string InvRemarks { get; set; }
         public double InvAmount { get; set; }
         public int PaymentStatus { get; set; }
+        [StringLength(30)]
+        public long UserId { get; set; }
     }
 }

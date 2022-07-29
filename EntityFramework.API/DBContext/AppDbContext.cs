@@ -26,6 +26,8 @@ namespace EntityFramework.API.DBContext
 
         public DbSet<Adv> Advs { get; set; }
         public DbSet<AdvPosition> AdvPositions { get; set; }
+        public DbSet<Notice> Notices { get; set; }
+        public DbSet<Contract> Contracts { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -154,6 +156,31 @@ namespace EntityFramework.API.DBContext
             {
                 log.ToTable(TableConsts.OrderItem);
                 log.HasKey(x => x.Id);
+            });
+
+            builder.Entity<Notice>(u1 =>
+            {
+                u1.HasKey(u => u.Id);
+
+                u1.HasIndex(u => u.DeviceID);
+                u1.HasIndex(u => u.Username);
+                //u1.HasIndex(u => u.CreateDate);
+                u1.Property(u => u.DeviceID).HasMaxLength(36);
+                u1.Property(u => u.Username).HasMaxLength(30);
+
+                u1.Property(u => u.NoticeTypeName).HasMaxLength(128);
+                u1.Property(u => u.Author).HasMaxLength(128);
+                u1.Property(u => u.Subject).HasMaxLength(200);
+                u1.Property(u => u.Content).HasMaxLength(500);
+
+                u1.ToTable("UserNotice");
+            });
+
+            builder.Entity<Contract>(u1 =>
+            {
+                u1.HasKey(u => u.Id);
+
+                u1.ToTable("UserContract");
             });
         }
     }

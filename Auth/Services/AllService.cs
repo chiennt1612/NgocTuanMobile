@@ -19,6 +19,11 @@ namespace Auth.Services
         public IParamSettingServices paramSettingServices { get; }
         public IProductServices productServices { get; }
         public IContactServices contactServices { get; }
+
+        public INoticeServices noticeServices { get; }
+        public IInvoiceServices invoiceServices { get; }
+        public IInvoiceSaveServices iInvoiceSaveServices { get; }
+        public IContractServices contractServices { get; }
         #endregion
 
         /// <summary>
@@ -35,7 +40,11 @@ namespace Auth.Services
         INewsCategoriesServices newsCategoriesServices,
         IParamSettingServices paramSettingServices,
         IProductServices productServices,
-        IContactServices contactServices)
+        IContactServices contactServices,
+        INoticeServices noticeServices,
+        IInvoiceServices invoiceServices,
+        IInvoiceSaveServices iInvoiceSaveServices,
+        IContractServices iContractServices)
         {
             this.fAQServices = fAQServices;
             this.serviceServices = serviceServices;
@@ -48,6 +57,10 @@ namespace Auth.Services
             this.productServices = productServices;
             this.contactServices = contactServices;
             this.advServices = advServices;
+            this.noticeServices = noticeServices;
+            this.invoiceServices = invoiceServices;
+            this.iInvoiceSaveServices = iInvoiceSaveServices;
+            this.contractServices = iContractServices;
         }
     }
 

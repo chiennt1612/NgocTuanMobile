@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Utils.Models;
 
 namespace Auth.Models
 {
@@ -8,11 +8,7 @@ namespace Auth.Models
         public int? PaymentStatus { get; set; }
     }
 
-    public class SearchDateModel
-    {
-        public DateTime? FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
-    }
+
 
     public class InvoiceModel : InvoiceFindModel
     {

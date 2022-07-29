@@ -1,7 +1,9 @@
-﻿using Auth.Models;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Utils.Models;
 
 namespace Auth.Services.Interfaces
 {
@@ -10,6 +12,7 @@ namespace Auth.Services.Interfaces
         Task<bool> DeleteAsync(long id);
         Task<InvoiceSave> AddAsync(InvoiceSave contact);
         Task<InvoiceSave> GetByIdAsync(long Id);
-        Task<IList<InvoiceSave>> InvoceSaveGetListAsync(int? Page, int? PageSize, SearchDateModel exp);
+        Task<IList<InvoiceSave>> InvoceSaveGetListAsync(int? Page, int? PageSize, InvoiceSaveSearchModelA exp);
+        Task<int> GetCountAsync(InvoiceSaveSearchModelA exp);
     }
 }

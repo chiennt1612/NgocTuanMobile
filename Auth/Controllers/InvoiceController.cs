@@ -37,19 +37,13 @@ namespace Auth.Controllers
         private PaygateInfo paygateInfo;
         private IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
-        private readonly IInvoiceServices _iInvoiceServices;
-        private readonly IInvoiceSaveServices _iInvoiceSaveServices;
         public CompanyConfig companyConfig { get; set; }
         #endregion
 
         public InvoiceController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
-            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer,
-            IInvoiceServices _iInvoiceServices, IAllService _Service,
-            IInvoiceSaveServices _iInvoiceSaveServices)
+            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IAllService _Service)
         {
             this._logger = _logger;
-            this._iInvoiceServices = _iInvoiceServices;
-            this._iInvoiceSaveServices = _iInvoiceSaveServices;
             this._Service = _Service;
             this._localizer = _localizer;
             this._cache = _cache;
@@ -73,7 +67,13 @@ namespace Auth.Controllers
                 ToDate = (invM.ToDate.HasValue ? invM.ToDate.Value.ToString("MM/dd/yyyy") : ""),
                 PaymentStatus = (invM.PaymentStatus.HasValue ? invM.PaymentStatus.Value.ToString() : "")
             };
-            var a = await _iInvoiceServices.GetInvoiceAll(inv);
+            string _key = $"{inv.CompanyID}.{inv.CustomerCode}.{inv.Page}.{inv.FromDate}.{inv.ToDate}.{inv.PaymentStatus}".ToMD5Hash();
+            ResponseOK a = await _cache.GetAsync<ResponseOK>(_key);
+            if(a == null)
+            {
+                a = await _Service.invoiceServices.GetInvoiceAll(inv);
+                await _cache.SetAsync(_key, a);
+            }
             _logger.WriteLog($"ListAll {JsonConvert.SerializeObject(inv)}: {a.UserMessage}", "ListAll");
             return Ok(a);
         }
@@ -82,7 +82,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> List([FromBody] InvoiceInput inv)
         {
-            var a = await _iInvoiceServices.GetInvoice(inv);
+            var a = await _Service.invoiceServices.GetInvoice(inv);
             _logger.WriteLog($"List {JsonConvert.SerializeObject(inv)}: {a.UserMessage}", "List");
             return Ok(a);
         }
@@ -92,6 +92,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> FindInvoice(int? Page, [FromBody] InvoiceFindModel invM)
         {
             List<CompanyInvoice> r = new List<CompanyInvoice>();
+            int itemsCount = 0;
             foreach (var companyInfo in companyConfig.Companys)
             {
                 var a = new CompanyInvoice()
@@ -108,7 +109,7 @@ namespace Auth.Controllers
                 int CompanyId = companyInfo.Info.CompanyId;
                 string CustomerCode = "";
                 foreach (var item in contract)
-                {                    
+                {
                     var arr = item.Value.Split(".");
                     if (arr.Length > 1)
                     {
@@ -125,12 +126,18 @@ namespace Auth.Controllers
                     CustomerCodeList = CustomerCode,
                     FromDate = invM.FromDate.HasValue ? invM.FromDate.Value.ToString("MM/dd/yyyy") : "",
                     ToDate = invM.ToDate.HasValue ? invM.ToDate.Value.ToString("MM/dd/yyyy") : "",
-                    Page = Page.HasValue ? Page.Value : 1
+                    Page = Page.HasValue ? Page.Value : 1,
+                    PaymentStatus = invM.PaymentStatus.HasValue ? invM.PaymentStatus.Value.ToString() : "2"
                 };
-                var a2 = await _iInvoiceServices.GetInvoiceAllA(inv);
+                var a2 = await _Service.invoiceServices.GetInvoiceAllA(inv);
                 if (a2.DataStatus == "00")
                 {
+                    for (var j = 0; j < a2.ItemsData.Count; j++)
+                    {
+                        a2.ItemsData[j].CompanyId = CompanyId;
+                    }
                     a.itemsData = a2.ItemsData;
+                    itemsCount = itemsCount + int.Parse(a2.Message);
                 }
                 r.Add(a);
             }
@@ -138,7 +145,10 @@ namespace Auth.Controllers
             var a1 = new ResponseOK()
             {
                 Code = 200,
-                data = r,
+                data = new {
+                    itemsCount = itemsCount,
+                    itemsList = r
+                },
                 InternalMessage = LanguageAll.Language.Success,
                 MoreInfo = LanguageAll.Language.Success,
                 Status = 1,
@@ -152,24 +162,57 @@ namespace Auth.Controllers
         public async Task<IActionResult> FindInvoiceByQRCode([FromBody] InvQRCodeModel invM)
         {
             string[] a = invM.QRCode.Split("|"); //0900996305|1/004|1|K22TYT1|---|10/06/2022|26145
-            int CompanyId = 0;
-            for (int i = 0; i < companyConfig.Companys.Count; i++)
+            int i = 0;
+            bool found = false;
+            while (i < companyConfig.Companys.Count && !found)
             {
-                if (companyConfig.Companys[i].Info.Taxcode == a[0])
-                {
-                    CompanyId = companyConfig.Companys[i].Info.CompanyId;
-                    break;
-                }
+                if (companyConfig.Companys[i].Info.Taxcode == a[0]) found = true;
+                i++;
             }
+            if (found) 
+                i = i - 1;
+            else
+                return Ok(
+                    new ResponseOK()
+                    {
+                        Code = 400,
+                        InternalMessage = LanguageAll.Language.NotFound,
+                        MoreInfo = LanguageAll.Language.NotFound,
+                        Status = 0,
+                        UserMessage = LanguageAll.Language.NotFound,
+                        data = null
+                    });
 
             InvQrCodeInput inv = new InvQrCodeInput()
             {
-                CompanyID = CompanyId,
+                CompanyID = companyConfig.Companys[i].Info.CompanyId,
                 InvoiceNumber = a[6],
                 InvoiceSerial = a[3]
             };
-            var a1 = await _iInvoiceServices.getInvoiceByQRCode(inv);
-            return Ok(a1);
+            var a1 = await _Service.invoiceServices.getInvoiceByQRCode(inv);
+            if (a1.DataStatus == "00")
+            {
+                a1.CompanyInfo = companyConfig.Companys[i].Info;
+                return Ok(new ResponseOK()
+                {
+                    Code = 200,
+                    data = a1,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                });
+            }
+            else
+                return Ok(new ResponseOK()
+                {
+                    Code = 404,
+                    data = null,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                });
         }
 
         [HttpGet]
@@ -196,29 +239,60 @@ namespace Auth.Controllers
                     CompanyID = CompanyId,
                     CustomerCode = CustomerCode
                 };
-                var a = await _iInvoiceServices.GetInvoiceA(inv);
+                var a = await _Service.invoiceServices.GetInvoiceA(inv);
                 if (a.DataStatus == "00")
                 {
+                    for(var j = 0; j < a.ItemsData.Count; j++)
+                    {
+                        a.ItemsData[j].CompanyId = CompanyId;
+                    }
                     r.AddRange(a.ItemsData);
                 }
             }
-            var a1 = new ResponseOK()
-            {
-                Code = 200,
-                data = r,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+            ResponseOK a1;
+            if (r.Count > 0)
+                a1 = new ResponseOK()
+                {
+                    Code = 200,
+                    data = r,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                a1 = new ResponseOK()
+                {
+                    Code = 404,
+                    data = null,
+                    InternalMessage = LanguageAll.Language.NotFound,
+                    MoreInfo = LanguageAll.Language.NotFound,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.NotFound
+                };
             return Ok(a1);
         }
 
         [HttpPost]
         [Route("[action]/{Page}")]
-        public async Task<IActionResult> InvoiceSave(int? Page, [FromBody] SearchDateModel inv)
+        public async Task<IActionResult> InvoiceSave(int? Page, [FromBody] InvoiceSaveSearchModel inv)
         {
-            var r = await _iInvoiceSaveServices.InvoceSaveGetListAsync(Page, 10, new SearchDateModel() { FromDate = inv.FromDate, ToDate = inv.ToDate});
+            var userId = long.Parse(HttpContext.User.Claims.Where(u => u.Type == ClaimTypes.NameIdentifier).FirstOrDefault()?.Value);
+            var r = await _Service.iInvoiceSaveServices.InvoceSaveGetListAsync(Page, 10, new InvoiceSaveSearchModelA() { FromDate = inv.FromDate, ToDate = inv.ToDate, CustomerCode = inv.CustomerCode, UserId = userId });
+            var c = await _Service.iInvoiceSaveServices.GetCountAsync(new InvoiceSaveSearchModelA() { FromDate = inv.FromDate, ToDate = inv.ToDate, CustomerCode = inv.CustomerCode, UserId = userId });
+            if (c < 1)
+            {
+                return Ok(new ResponseOK()
+                {
+                    Code = 404,
+                    InternalMessage = LanguageAll.Language.NotFound,
+                    MoreInfo = LanguageAll.Language.NotFound,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.NotFound,
+                    data = null
+                });
+            }
+            else
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -226,15 +300,19 @@ namespace Auth.Controllers
                 MoreInfo = LanguageAll.Language.Success,
                 Status = 1,
                 UserMessage = LanguageAll.Language.Success,
-                data = r
-            }); 
+                data = new {
+                    itemsCount = c,
+                    itemsList = r,
+                    companyInfo = companyConfig.Companys[0].Info
+                }
+            });
         }
-        
+
         [HttpGet]
         [Route("[action]/{Id}")]
         public async Task<IActionResult> InvoiceDelete(long Id)
         {
-            var r = await _iInvoiceSaveServices.DeleteAsync(Id);
+            var r = await _Service.iInvoiceSaveServices.DeleteAsync(Id);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -258,7 +336,7 @@ namespace Auth.Controllers
                     CompanyID = inv.CompanyID,
                     CustomerCode = inv.CustomerCode
                 };
-                var a = await _iInvoiceServices.CheckInvoice(invInput);
+                var a = await _Service.invoiceServices.CheckInvoice(invInput);
                 if (a != null)
                 {
                     var invq = a.ItemsData.InvList.Where(u => u.InvCode == inv.InvCode).FirstOrDefault();
@@ -313,9 +391,10 @@ namespace Auth.Controllers
                                         InvSerial = invq.InvSerial,
                                         MaSoBiMat = invq.MaSoBiMat,
                                         PaymentStatus = 0,
-                                        TaxPer = invq.TaxPer
+                                        TaxPer = invq.TaxPer,
+                                        UserId = long.Parse(User.Claims.GetClaimValue(ClaimTypes.NameIdentifier))
                                     };
-                                    await _iInvoiceSaveServices.AddAsync(orderSave);
+                                    await _Service.iInvoiceSaveServices.AddAsync(orderSave);
                                 }
                                 _logger.LogInformation($"Send payment-invoice is success: {_contact.Fullname}");
                                 PaymentIn t = new PaymentIn()

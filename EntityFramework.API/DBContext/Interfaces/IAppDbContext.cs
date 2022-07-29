@@ -15,5 +15,6 @@ namespace EntityFramework.API.DBContext.Interfaces
         public DbSet<Service> Services { get; set; }
         public DbSet<FAQ> FAQs { get; set; }
         public DbSet<ParamSetting> ParamSettings { get; set; }
+        public DbSet<Notice> Notices { get; set; }
     }
 }

@@ -381,6 +381,14 @@ namespace Auth.Migrations.AppDb
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<string>("Img")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Img2")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<bool?>("IsAgree")
                         .HasColumnType("bit");
 
@@ -394,6 +402,14 @@ namespace Auth.Migrations.AppDb
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Noted")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Noted2")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<int?>("PaymentMethod")
                         .HasColumnType("int");
@@ -417,6 +433,53 @@ namespace Auth.Migrations.AppDb
                     b.HasIndex("StatusId");
 
                     b.ToTable("Contact");
+                });
+
+            modelBuilder.Entity("EntityFramework.API.Entities.Contract", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(230)
+                        .HasColumnType("nvarchar(230)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CustomerCode")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("CustomerName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CustomerType")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Mobile")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TaxCode")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("WaterIndexCode")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserContract");
                 });
 
             modelBuilder.Entity("EntityFramework.API.Entities.FAQ", b =>
@@ -508,8 +571,8 @@ namespace Auth.Migrations.AppDb
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int>("InvAmount")
-                        .HasColumnType("int");
+                    b.Property<double>("InvAmount")
+                        .HasColumnType("float");
 
                     b.Property<double>("InvAmountWithoutTax")
                         .HasColumnType("float");
@@ -621,6 +684,70 @@ namespace Auth.Migrations.AppDb
                     b.HasIndex("ParentId");
 
                     b.ToTable("NewsCategories");
+                });
+
+            modelBuilder.Entity("EntityFramework.API.Entities.Notice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Author")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsHTML")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NoticeTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NoticeTypeName")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int>("OS")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReadDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Subject")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceID");
+
+                    b.HasIndex("Username");
+
+                    b.ToTable("UserNotice");
                 });
 
             modelBuilder.Entity("EntityFramework.API.Entities.Ordering.Address", b =>

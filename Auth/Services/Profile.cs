@@ -1,12 +1,16 @@
 ﻿using Auth.Models;
+using Auth.Repository.Interfaces;
 using Auth.Services.Interfaces;
+using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -21,17 +25,23 @@ namespace Auth.Services
         private readonly ILogger<Profile> _logger;
         private readonly IHttpContextAccessor _context;
         private readonly IInvoiceRepository _invoice;
+        private readonly IContractServices _contract;
+        private readonly IUserDeviceRepository _iUserDeviceRepository;
 
         public Profile(
             ILogger<Profile> logger,
             UserManager<AppUser> userManager,
             IInvoiceRepository invoice,
-            IHttpContextAccessor context)
+            IHttpContextAccessor context,
+            IUserDeviceRepository iUserDeviceRepository,
+            IContractServices contract)
         {
             _userManager = userManager;
             _logger = logger;
             _context = context;
             _invoice = invoice;
+            _iUserDeviceRepository = iUserDeviceRepository;
+            _contract = contract;
         }
 
         public async Task<ResponseOK> GetProfile(int profileType = 1)
@@ -39,6 +49,7 @@ namespace Auth.Services
             var a1 = await _userManager.GetUserAsync(_context.HttpContext.User);
             _logger.LogInformation($"Get profile: {a1.UserName}");
             IEnumerable<Claim> claims;
+            string DeviceId = _context.HttpContext.User.Claims.Where(u => u.Type == "DeviceId").FirstOrDefault()?.Value;
             if (profileType == 1)
             {
                 claims = _context.HttpContext.User.Claims;
@@ -58,13 +69,19 @@ namespace Auth.Services
             {
                 a.Birthday = default;
             }
+
+            Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == DeviceId);
+            var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);
+            a.IsGetNotice = UserByDevice != null ? UserByDevice.IsGetNotice : false;
+            a.DeviceId = DeviceId;
+
             a.CompanyName = claims.Where(u => u.Type == "CompanyName").FirstOrDefault()?.Value;
             a.WaterCompany = claims.Where(u => u.Type == "WaterCompany").FirstOrDefault()?.Value;
             foreach (var item in claims.Where(u => u.Type == "GetInvoice"))
             {
                 a.CustomerCodeList.Add(item.Value);
             }
-            a.Email = claims.Where(u => u.Type == ClaimTypes.Email).FirstOrDefault()?.Value;
+            a.Email = a1.Email;// claims.Where(u => u.Type == ClaimTypes.Email).FirstOrDefault()?.Value;
             a.Fullname = claims.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value;
             if (bool.TryParse(claims.Where(u => u.Type == "IsCompany").FirstOrDefault()?.Value, out bool _b))
             {
@@ -85,7 +102,7 @@ namespace Auth.Services
             a.Avatar = claims.Where(u => u.Type == "Avatar").FirstOrDefault()?.Value;
             a.IssuePlace = claims.Where(u => u.Type == "IssuePlace").FirstOrDefault()?.Value;
             a.PersonID = claims.Where(u => u.Type == "PersonID").FirstOrDefault()?.Value;
-            a.PhoneNumber = claims.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value;
+            a.PhoneNumber = a1.UserName;// claims.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value;
             _logger.LogInformation($"Get profile: {a1.UserName} => {a.Fullname}");
             switch (profileType)
             {
@@ -144,6 +161,7 @@ namespace Auth.Services
 
         public async Task<ResponseOK> SetProfile(ProfileInputModel inv)
         {
+            _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
             if (!String.IsNullOrEmpty(inv.Email))
             {
                 var a1 = await _userManager.FindByEmailAsync(inv.Email);
@@ -217,16 +235,16 @@ namespace Auth.Services
                     await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "CompanyName").FirstOrDefault(), new Claim("CompanyName", inv.CompanyName));
                 }
             }
-            if (String.IsNullOrEmpty(a.Where(u => u.Type == "Avatar").FirstOrDefault()?.Value))
+            if (!string.IsNullOrEmpty(inv.Avatar))
             {
-                _logger.WriteLog($"4.1. SetProfile {inv.Avatar}");
+                if (a.Where(u => u.Type == "Avatar").FirstOrDefault() != null)
+                {
+                    _logger.WriteLog($"4.1. SetProfile {inv.Avatar}");
+                    await _userManager.RemoveClaimAsync(u, new Claim("Avatar", inv.Avatar));
+                }
                 await _userManager.AddClaimAsync(u, new Claim("Avatar", inv.Avatar));
             }
-            else
-            {
-                _logger.WriteLog($"4.2. SetProfile {inv.Avatar}");
-                await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "Avatar").FirstOrDefault(), new Claim("Avatar", inv.Avatar));
-            }
+            
             if (String.IsNullOrEmpty(a.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value))
             {
                 await _userManager.AddClaimAsync(u, new Claim("Fullname", inv.Fullname));
@@ -276,22 +294,23 @@ namespace Auth.Services
                     await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "PersonID").FirstOrDefault(), new Claim("PersonID", inv.PersonID));
                 }
             }
-            if (!String.IsNullOrEmpty(inv.PhoneNumber))
-            {
-                if (String.IsNullOrEmpty(a.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value))
-                {
-                    await _userManager.AddClaimAsync(u, new Claim("PhoneNumber", inv.PhoneNumber));
-                }
-                else
-                {
-                    await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "PhoneNumber").FirstOrDefault(), new Claim("PhoneNumber", inv.PhoneNumber));
-                }
-            }
+            //if (!String.IsNullOrEmpty(inv.PhoneNumber))
+            //{
+            //    if (String.IsNullOrEmpty(a.Where(u => u.Type == "PhoneNumber").FirstOrDefault()?.Value))
+            //    {
+            //        await _userManager.AddClaimAsync(u, new Claim("PhoneNumber", inv.PhoneNumber));
+            //    }
+            //    else
+            //    {
+            //        await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "PhoneNumber").FirstOrDefault(), new Claim("PhoneNumber", inv.PhoneNumber));
+            //    }
+            //}
             return await GetProfile(2);
         }
 
         public async Task<ResponseOK> LinkInvoice(InvoiceInput inv)
         {
+            _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
             if (inv.CompanyID < 0 || inv.CompanyID > 100)
             {
                 return new ResponseOK()
@@ -317,8 +336,13 @@ namespace Auth.Services
                 };
             }
 
-            InvoiceResult ir = await _invoice.GetInvoice(inv);
-            if (ir.DataStatus != "01" && ir.DataStatus != "00")
+            EVNCodeInput inv1 = new EVNCodeInput()
+            {
+                CompanyID = inv.CompanyID,
+                EVNCode = inv.CustomerCode
+            };
+            CustomerInfoResult ir = await _invoice.getCustomerInfo(inv1);
+            if (ir.DataStatus != "00")
             {
                 return new ResponseOK()
                 {
@@ -336,6 +360,19 @@ namespace Auth.Services
             if (_u.Count == 0)
             {
                 var u = await _userManager.GetUserAsync(_context.HttpContext.User);
+                await  _contract.AddAsync(new Contract() { 
+                    Address = ir.ItemsData[0].Address,
+                    CompanyId = inv.CompanyID,
+                    CustomerCode = ir.ItemsData[0].CustomerCode,
+                    CustomerName = ir.ItemsData[0].CustomerName,
+                    CustomerType = ir.ItemsData[0].CustomerType,
+                    Email = ir.ItemsData[0].Email,
+                    Mobile = ir.ItemsData[0].Mobile,
+                    TaxCode = ir.ItemsData[0].TaxCode,
+                    UserId = u.Id,
+                    WaterIndexCode = ir.ItemsData[0].WaterIndexCode
+                });
+                
                 await _userManager.AddClaimAsync(u, _claim);
                 return await GetProfile(3);
             }
@@ -353,6 +390,7 @@ namespace Auth.Services
 
         public async Task<ResponseOK> RemoveInvoice(InvoiceInput inv)
         {
+            _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
             if (inv.CompanyID < 0 || inv.CompanyID > 100)
             {
                 return new ResponseOK()
@@ -378,19 +416,19 @@ namespace Auth.Services
                 };
             }
 
-            InvoiceResult ir = await _invoice.GetInvoice(inv);
-            if (ir.DataStatus != "01" && ir.DataStatus != "00")
-            {
-                return new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.LinkInvoiceFailCodeNotExitst,
-                    MoreInfo = LanguageAll.Language.LinkInvoiceFailCodeNotExitst,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.LinkInvoiceFailCodeNotExitst,
-                    data = null
-                };
-            }
+            //InvoiceResult ir = await _invoice.GetInvoice(inv);
+            //if (ir.DataStatus != "01" && ir.DataStatus != "00")
+            //{
+            //    return new ResponseOK()
+            //    {
+            //        Code = 400,
+            //        InternalMessage = LanguageAll.Language.LinkInvoiceFailCodeNotExitst,
+            //        MoreInfo = LanguageAll.Language.LinkInvoiceFailCodeNotExitst,
+            //        Status = 0,
+            //        UserMessage = LanguageAll.Language.LinkInvoiceFailCodeNotExitst,
+            //        data = null
+            //    };
+            //}
 
             var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{inv.CustomerCode}");
             var u = await _userManager.GetUserAsync(_context.HttpContext.User);
@@ -400,14 +438,19 @@ namespace Auth.Services
                 return new ResponseOK()
                 {
                     Code = 400,
-                    InternalMessage = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
-                    MoreInfo = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
+                    InternalMessage = LanguageAll.Language.NotFound,
+                    MoreInfo = LanguageAll.Language.NotFound,
                     Status = 0,
-                    UserMessage = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
+                    UserMessage = LanguageAll.Language.NotFound,
                     data = null
                 };
             }
 
+            Expression<Func<Contract, bool>> expression = u => (
+                    (u.CompanyId >= inv.CompanyID) &&
+                    (u.CustomerCode == inv.CustomerCode));
+            var contract = await _contract.GetAsync(expression);
+            if (contract != null) await _contract.DeleteAsync(contract.Id);
             await _userManager.RemoveClaimAsync(u, _claim);
 
             return await GetProfile(4);

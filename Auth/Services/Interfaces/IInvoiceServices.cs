@@ -15,6 +15,6 @@ namespace Auth.Services.Interfaces
         Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv);
         Task<InvoiceDataResult> GetInvoiceAllA(InvoiceAllAInput inv);
         Task<CustomerInfoResult> getCustomerInfo(EVNCodeInput inv);
-        Task<ResponseOK> getInvoiceByQRCode(InvQrCodeInput inv);
+        Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv);
     }
 }

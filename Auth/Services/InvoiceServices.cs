@@ -16,34 +16,60 @@ namespace Auth.Services
         public async Task<ResponseOK> CheckPayInvoice(CheckPayInput inv)
         {
             var a = await _invoice.CheckPayInvoice(inv);
-            return new ResponseOK()
-            {
-                Code = 200,
-                data = a,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+            if (a.PayStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
         }
 
         public async Task<ResponseOK> GetInvoice(InvoiceInput inv)
         {
             var a = await _invoice.GetInvoice(inv);
-            return new ResponseOK()
+            if (a.DataStatus == "00")
             {
-                Code = 200,
-                data = a,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+                a.ItemsData.CompanyID = inv.CompanyID;
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            }
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = null,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
         }
 
         public async Task<InvoiceResult> CheckInvoice(InvoiceInput inv)
         {
             var a = await _invoice.GetInvoice(inv);
+            if (a.DataStatus == "00") a.ItemsData.CompanyID = inv.CompanyID;
             return a;
         }
 
@@ -71,60 +97,85 @@ namespace Auth.Services
             return a;
         }
 
-        public async Task<ResponseOK> getInvoiceByQRCode(InvQrCodeInput inv)
+        public async Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv)
         {
             var a = await _invoice.getInvoiceByQRCode(inv);
-            return new ResponseOK()
-            {
-                Code = 200,
-                data = a,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+            return a;
         }
 
         public async Task<ResponseOK> GetInvoiceAll(InvoiceAllInput inv)
         {
             var a = await _invoice.GetInvoiceAll(inv);
-            return new ResponseOK()
-            {
-                Code = 200,
-                data = a,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+            if(a.DataStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
         }
 
         public async Task<ResponseOK> PayInvoice(PayInput inv)
         {
             var a = await _invoice.PayInvoice(inv);
-            return new ResponseOK()
-            {
-                Code = 200,
-                data = a,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+            if(a.PayStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
         }
 
         public async Task<ResponseOK> UndoPayInvoice(InvoiceInput inv)
         {
             var a = await _invoice.UndoPayInvoice(inv);
-            return new ResponseOK()
-            {
-                Code = 200,
-                data = a,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success
-            };
+            if(a.UndoPayStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Utils.Models;
 
 namespace Auth.Models
 {

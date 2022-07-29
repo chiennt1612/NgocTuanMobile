@@ -136,6 +136,46 @@ namespace Auth.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("EntityFramework.API.Entities.Identity.AppUserDevice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("DeviceID")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<bool>("IsGetNotice")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OS")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceID")
+                        .IsUnique()
+                        .HasFilter("[DeviceID] IS NOT NULL");
+
+                    b.ToTable("UserDevices");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
                 {
                     b.Property<int>("Id")
