@@ -1,0 +1,15 @@
+/Auth/bin
+/MobileAPI/bin
+/Paygate/bin
+/SMSGetway/bin
+/EntityFramework.API/bin
+/Utils/bin
+/LanguageAll/bin
+/EntityFramework.API/obj
+/Utils/obj
+/LanguageAll/obj
+/Auth/obj
+/MobileAPI/obj
+/Paygate/obj
+/SMSGetway/obj
+/.vs
