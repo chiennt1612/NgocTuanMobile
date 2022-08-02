@@ -133,7 +133,7 @@ namespace Utils
             }
             return html;
         }
-        private static string XSSFilter(this string html, string itemTag, string BeginTag = "<", string EndTag = " ", string EndTag2 = ">")
+        private static string XSSFilter(this string html, string itemTag, string BeginTag = "<", string EndTag = ">", string EndTag2 = " ")
         {
             int startIndex = 0; int cnt = 0; int i = -1; int j = -1; string subString = ""; string subStringReplace = "";
             html.GetSubstring(out subString, out i, out j, startIndex, itemTag.BeginTag(BeginTag), EndTag, EndTag2);
@@ -701,7 +701,7 @@ namespace Utils
             {
                 _logger.LogInformation($"result: {ex.ToString()}");
                 result = "";
-            }            
+            }
             return result;
         }
         private static void InitiateSSLTrust()

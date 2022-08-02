@@ -97,7 +97,7 @@ namespace Auth.Controllers
                 }
             }
 
-            if(r.Count < 1)
+            if (r.Count < 1)
             {
                 return Ok(
                     new ResponseOK()
@@ -179,7 +179,7 @@ namespace Auth.Controllers
                     (u.CompanyId >= CompanyID) &&
                     (u.UserId == UserId));
             var contract = await _contract.GetManyAsync(expression);
-            if(contract.Count() < 1)
+            if (contract.Count() < 1)
             {
                 return Ok(new ResponseOK()
                 {
@@ -203,7 +203,7 @@ namespace Auth.Controllers
                     companyInfo = companyConfig.Companys[CompanyID].Info,
                     contractList = contract
                 }
-            }); 
+            });
         }
 
         [HttpGet]

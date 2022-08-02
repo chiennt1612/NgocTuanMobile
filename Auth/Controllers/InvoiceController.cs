@@ -69,7 +69,7 @@ namespace Auth.Controllers
             };
             string _key = $"{inv.CompanyID}.{inv.CustomerCode}.{inv.Page}.{inv.FromDate}.{inv.ToDate}.{inv.PaymentStatus}".ToMD5Hash();
             ResponseOK a = await _cache.GetAsync<ResponseOK>(_key);
-            if(a == null)
+            if (a == null)
             {
                 a = await _Service.invoiceServices.GetInvoiceAll(inv);
                 await _cache.SetAsync(_key, a);
@@ -145,7 +145,8 @@ namespace Auth.Controllers
             var a1 = new ResponseOK()
             {
                 Code = 200,
-                data = new {
+                data = new
+                {
                     itemsCount = itemsCount,
                     itemsList = r
                 },
@@ -169,7 +170,7 @@ namespace Auth.Controllers
                 if (companyConfig.Companys[i].Info.Taxcode == a[0]) found = true;
                 i++;
             }
-            if (found) 
+            if (found)
                 i = i - 1;
             else
                 return Ok(
@@ -242,7 +243,7 @@ namespace Auth.Controllers
                 var a = await _Service.invoiceServices.GetInvoiceA(inv);
                 if (a.DataStatus == "00")
                 {
-                    for(var j = 0; j < a.ItemsData.Count; j++)
+                    for (var j = 0; j < a.ItemsData.Count; j++)
                     {
                         a.ItemsData[j].CompanyId = CompanyId;
                     }
@@ -293,19 +294,20 @@ namespace Auth.Controllers
                 });
             }
             else
-            return Ok(new ResponseOK()
-            {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success,
-                data = new {
-                    itemsCount = c,
-                    itemsList = r,
-                    companyInfo = companyConfig.Companys[0].Info
-                }
-            });
+                return Ok(new ResponseOK()
+                {
+                    Code = 200,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success,
+                    data = new
+                    {
+                        itemsCount = c,
+                        itemsList = r/*,
+                        companyInfo = companyConfig.Companys[0].Info*/
+                    }
+                });
         }
 
         [HttpGet]
@@ -392,7 +394,13 @@ namespace Auth.Controllers
                                         MaSoBiMat = invq.MaSoBiMat,
                                         PaymentStatus = 0,
                                         TaxPer = invq.TaxPer,
-                                        UserId = long.Parse(User.Claims.GetClaimValue(ClaimTypes.NameIdentifier))
+                                        UserId = long.Parse(User.Claims.GetClaimValue(ClaimTypes.NameIdentifier)),
+                                        CompanyCode = companyConfig.Companys[inv.CompanyID].Info.CompanyCode,
+                                        CompanyId = companyConfig.Companys[inv.CompanyID].Info.CompanyId,
+                                        CompanyLogo = companyConfig.Companys[inv.CompanyID].Info.CompanyLogo,
+                                        CompanyName = companyConfig.Companys[inv.CompanyID].Info.CompanyName,
+                                        CompanyNameEn = companyConfig.Companys[inv.CompanyID].Info.CompanyNameEn,
+                                        Taxcode = companyConfig.Companys[inv.CompanyID].Info.Taxcode
                                     };
                                     await _Service.iInvoiceSaveServices.AddAsync(orderSave);
                                 }

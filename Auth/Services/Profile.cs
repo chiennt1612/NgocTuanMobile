@@ -244,7 +244,7 @@ namespace Auth.Services
                 }
                 await _userManager.AddClaimAsync(u, new Claim("Avatar", inv.Avatar));
             }
-            
+
             if (String.IsNullOrEmpty(a.Where(u => u.Type == "Fullname").FirstOrDefault()?.Value))
             {
                 await _userManager.AddClaimAsync(u, new Claim("Fullname", inv.Fullname));
@@ -360,7 +360,8 @@ namespace Auth.Services
             if (_u.Count == 0)
             {
                 var u = await _userManager.GetUserAsync(_context.HttpContext.User);
-                await  _contract.AddAsync(new Contract() { 
+                await _contract.AddAsync(new Contract()
+                {
                     Address = ir.ItemsData[0].Address,
                     CompanyId = inv.CompanyID,
                     CustomerCode = ir.ItemsData[0].CustomerCode,
@@ -372,7 +373,7 @@ namespace Auth.Services
                     UserId = u.Id,
                     WaterIndexCode = ir.ItemsData[0].WaterIndexCode
                 });
-                
+
                 await _userManager.AddClaimAsync(u, _claim);
                 return await GetProfile(3);
             }

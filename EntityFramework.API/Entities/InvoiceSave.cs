@@ -28,6 +28,17 @@ namespace EntityFramework.API.Entities
         public double InvAmount { get; set; }
         public int PaymentStatus { get; set; }
         [StringLength(30)]
+        public int CompanyId { get; set; }
+        [StringLength(30)]
+        public string CompanyCode { get; set; }
+        [StringLength(150)]
+        public string CompanyName { get; set; }
+        [StringLength(150)]
+        public string CompanyNameEn { get; set; }
+        [StringLength(200)]
+        public string CompanyLogo { get; set; }
+        [StringLength(30)]
+        public string Taxcode { get; set; }
         public long UserId { get; set; }
     }
 }

@@ -672,12 +672,12 @@ namespace Auth.Controllers
                                 }
                                 await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].CustomerName));
                                 await _userManager.AddClaimAsync(userExists, c); // EVNCode
-                                foreach(var customerCode in a.ItemsData)
+                                foreach (var customerCode in a.ItemsData)
                                 {
                                     var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
                                     await _userManager.AddClaimAsync(userExists, _claim); // 
                                 }
-                                
+
                                 // Send SMS
                                 //userExists.TotalOTP = 1;
                                 //userExists.OTPSendTime = DateTime.Now;
@@ -742,7 +742,7 @@ namespace Auth.Controllers
                                         device.OS = model.OS;
                                         device.IsGetNotice = model.IsGetNotice;
                                         await _iUserDeviceRepository.Update(device);
-                                    //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
+                                        //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
                                     }
                                     return Ok(new ResponseOK
                                     {
@@ -766,7 +766,7 @@ namespace Auth.Controllers
                                         Username = user.UserName
                                     };
                                     await _iUserDeviceRepository.AddAsync(device);
-                                //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
+                                    //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
                                     return Ok(new ResponseOK
                                     {
                                         Status = 1,
@@ -951,14 +951,14 @@ namespace Auth.Controllers
                 model.Content = model.Content.XSSFilter(htmlXSS);
                 if (_u.Count > 0)
                 {
-                    List<Notice> notices = new List<Notice>();                    
+                    List<Notice> notices = new List<Notice>();
                     foreach (var u in _u)
                     {
                         List<string> device_ids = new List<string>();
                         List<string> token_ids = new List<string>();
                         Expression<Func<AppUserDevice, bool>> sqlWhere = d => (d.Username == u.UserName);
                         var d = await _iUserDeviceRepository.GetManyAsync(sqlWhere);
-                        foreach(var d1 in d)
+                        foreach (var d1 in d)
                         {
                             notices.Add(new Notice()
                             {
@@ -974,12 +974,12 @@ namespace Auth.Controllers
                                 OS = d1.OS,
                                 Subject = model.Subject,
                                 Username = d1.Username
-                            });                            
+                            });
                             if (d1.IsGetNotice && !String.IsNullOrEmpty(d1.Token) && !String.IsNullOrEmpty(d1.DeviceID))
                             {
                                 token_ids.Add(d1.Token);
                                 device_ids.Add(d1.DeviceID);
-                            }                            
+                            }
                         }
                         if (token_ids.Count > 0)
                         {
@@ -999,7 +999,8 @@ namespace Auth.Controllers
                             await Tools.PushFireBase(model1, fireBaseConfig, _logger);
                         }
                     }
-                    if (notices.Count > 0) {
+                    if (notices.Count > 0)
+                    {
                         await _iInvoiceServices.noticeServices.AddManyAsync(notices);
                         return Ok(new ResponseOK
                         {
@@ -1010,7 +1011,7 @@ namespace Auth.Controllers
                             MoreInfo = $"{model.CustomerCode}: Push notice success",
                             data = notices
                         });
-                    } 
+                    }
                 }
             }
 
@@ -1024,7 +1025,7 @@ namespace Auth.Controllers
                 data = null
             });
         }
-    
+
         //private async Task SetDeviceToClaim(string DeviceId, string IsGetNotice = "0")
         //{
         //    var u = await _userManager.GetUserAsync(User);

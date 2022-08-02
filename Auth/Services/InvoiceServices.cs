@@ -106,7 +106,7 @@ namespace Auth.Services
         public async Task<ResponseOK> GetInvoiceAll(InvoiceAllInput inv)
         {
             var a = await _invoice.GetInvoiceAll(inv);
-            if(a.DataStatus == "00")
+            if (a.DataStatus == "00")
                 return new ResponseOK()
                 {
                     Code = 200,
@@ -131,7 +131,7 @@ namespace Auth.Services
         public async Task<ResponseOK> PayInvoice(PayInput inv)
         {
             var a = await _invoice.PayInvoice(inv);
-            if(a.PayStatus == "00")
+            if (a.PayStatus == "00")
                 return new ResponseOK()
                 {
                     Code = 200,
@@ -156,7 +156,7 @@ namespace Auth.Services
         public async Task<ResponseOK> UndoPayInvoice(InvoiceInput inv)
         {
             var a = await _invoice.UndoPayInvoice(inv);
-            if(a.UndoPayStatus == "00")
+            if (a.UndoPayStatus == "00")
                 return new ResponseOK()
                 {
                     Code = 200,

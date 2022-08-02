@@ -55,12 +55,12 @@ namespace Auth.Helper
         public static void AddServices(this IServiceCollection services)
         {
             services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
-            services.AddScoped<IInvoiceRepository, InvoiceRepository>();          
-            services.AddScoped<IUnitOfWork, UnitOfWork>();            
+            services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<IContractServices, ContractServices>();
             services.AddScoped<INoticeServices, NoticeServices>();
-            services.AddScoped<IInvoiceServices, InvoiceServices>();            
+            services.AddScoped<IInvoiceServices, InvoiceServices>();
             services.AddScoped<IArticleServices, ArticleServices>();
             services.AddScoped<ICategoriesServices, CategoriesServices>();
             services.AddScoped<INewsCategoriesServices, NewsCategoriesServices>();
