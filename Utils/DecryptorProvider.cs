@@ -508,12 +508,12 @@ namespace Decryptor
             // Initialize Rijndael key object.
             RijndaelManaged symmetricKey = new RijndaelManaged();
 
-            // If we do not have initialization vector, we cannot use the CBC mode.
-            // The only alternative is the ECB mode (which is not as good).
-            if (initVectorBytes.Length == 0)
-                symmetricKey.Mode = CipherMode.ECB;
-            else
-                symmetricKey.Mode = CipherMode.CBC;
+            //// If we do not have initialization vector, we cannot use the CBC mode.
+            //// The only alternative is the ECB mode (which is not as good).
+            //if (initVectorBytes.Length == 0)
+            //    symmetricKey.Mode = CipherMode.ECB;
+            //else
+            symmetricKey.Mode = CipherMode.CBC;
 
             // Create encryptor and decryptor, which we will use for cryptographic
             // operations.

@@ -12,6 +12,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
+using System.Runtime.Serialization.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -255,8 +256,10 @@ namespace Utils
 
         public static T DeserializeFromBase64String<T>(string content)
         {
-            var obj = JsonConvert.DeserializeObject<T>(Base64Decode(content));
-            return obj;
+            var ds = new DataContractJsonSerializer(typeof(T));
+            return (T)ds.ReadObject(new MemoryStream(Convert.FromBase64String(content)));
+            //var obj = JsonConvert.DeserializeObject<T>(Base64Decode(content));
+            //return obj;
         }
 
         public static string Base64UrlEncode(byte[] s)
