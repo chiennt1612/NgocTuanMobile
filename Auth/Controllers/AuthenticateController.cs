@@ -155,7 +155,20 @@ namespace Auth.Controllers
                                 foreach (var customerCode in a.ItemsData)
                                 {
                                     var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
-                                    await _userManager.AddClaimAsync(userExists, _claim); // 
+                                    await _userManager.AddClaimAsync(userExists, _claim); //
+                                    await _iInvoiceServices.contractServices.AddAsync(new Contract()
+                                    {
+                                        Address = customerCode.Address,
+                                        CompanyId = inv.CompanyID,
+                                        CustomerCode = customerCode.CustomerCode,
+                                        CustomerName = customerCode.CustomerName,
+                                        CustomerType = customerCode.CustomerType,
+                                        Email = customerCode.Email,
+                                        Mobile = customerCode.Mobile,
+                                        TaxCode = customerCode.TaxCode,
+                                        UserId = userExists.Id,
+                                        WaterIndexCode = customerCode.WaterIndexCode
+                                    });
                                 }
 
                                 // Send SMS
@@ -676,6 +689,19 @@ namespace Auth.Controllers
                                 {
                                     var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
                                     await _userManager.AddClaimAsync(userExists, _claim); // 
+                                    await _iInvoiceServices.contractServices.AddAsync(new Contract()
+                                    {
+                                        Address = customerCode.Address,
+                                        CompanyId = inv.CompanyID,
+                                        CustomerCode = customerCode.CustomerCode,
+                                        CustomerName = customerCode.CustomerName,
+                                        CustomerType = customerCode.CustomerType,
+                                        Email = customerCode.Email,
+                                        Mobile = customerCode.Mobile,
+                                        TaxCode = customerCode.TaxCode,
+                                        UserId = userExists.Id,
+                                        WaterIndexCode = customerCode.WaterIndexCode
+                                    });
                                 }
 
                                 // Send SMS

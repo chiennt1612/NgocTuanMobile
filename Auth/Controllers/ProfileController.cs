@@ -330,6 +330,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> SetProfile([FromBody] ProfileInputModel model)
         {
+            _logger.WriteLog($"0. SetProfile {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 // Check Avatar and save to admin.nuocngoctuan.com                

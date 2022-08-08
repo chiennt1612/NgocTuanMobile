@@ -1,8 +1,10 @@
 ﻿using Auth.Models;
 using Auth.Services.Interfaces;
 using EntityFramework.API.Entities;
+using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +32,7 @@ namespace Auth.Controllers
     public class InvoiceController : ControllerBase
     {
         #region Properties
+        private readonly UserManager<AppUser> _userManager;
         private readonly IDistributedCache _cache;
         private readonly ILogger<InvoiceController> _logger;
         private readonly IStringLocalizer<InvoiceController> _localizer;
@@ -41,7 +44,8 @@ namespace Auth.Controllers
         #endregion
 
         public InvoiceController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
-            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IAllService _Service)
+            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IAllService _Service, 
+            UserManager<AppUser> userManager)
         {
             this._logger = _logger;
             this._Service = _Service;
@@ -52,6 +56,7 @@ namespace Auth.Controllers
             paygateInfo = this._configuration.GetSection(nameof(PaygateInfo)).Get<PaygateInfo>();
             this._logger.WriteLog("Starting invoice page");
             companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
+            _userManager = userManager;
         }
 
         [HttpPost]
@@ -105,7 +110,9 @@ namespace Auth.Controllers
                     Taxcode = companyInfo.Info.Taxcode,
                     itemsData = new List<ItemsDatum>()
                 };
-                var contract = User.Claims.Where(c => c.Type == "GetInvoice" && c.Value.StartsWith($"{companyInfo.Info.CompanyId}."));
+                var user1 = await _userManager.GetUserAsync(HttpContext.User);
+                var claims = await _userManager.GetClaimsAsync(user1);
+                var contract = claims.Where(c => c.Type == "GetInvoice" && c.Value.StartsWith($"{companyInfo.Info.CompanyId}."));
                 int CompanyId = companyInfo.Info.CompanyId;
                 string CustomerCode = "";
                 foreach (var item in contract)
@@ -221,7 +228,9 @@ namespace Auth.Controllers
         public async Task<IActionResult> List()
         {
             List<ItemsDatum> r = new List<ItemsDatum>();
-            foreach (var item in User.Claims.Where(u => u.Type == "GetInvoice"))
+            var user1 = await _userManager.GetUserAsync(HttpContext.User);
+            var claims = await _userManager.GetClaimsAsync(user1);
+            foreach (var item in claims.Where(u => u.Type == "GetInvoice"))
             {
                 int CompanyId = 0;
                 string CustomerCode = "";
@@ -315,15 +324,26 @@ namespace Auth.Controllers
         public async Task<IActionResult> InvoiceDelete(long Id)
         {
             var r = await _Service.iInvoiceSaveServices.DeleteAsync(Id);
-            return Ok(new ResponseOK()
-            {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Success,
-                data = r
-            });
+            if(r)
+                return Ok(new ResponseOK()
+                {
+                    Code = 200,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success,
+                    data = r
+                });
+            else
+                return Ok(new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail,
+                    data = r
+                });
         }
 
         [HttpPost]

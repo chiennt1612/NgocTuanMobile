@@ -13,3 +13,5 @@
 /Paygate/obj
 /SMSGetway/obj
 /.vs
+/Auth/appsettings.json
+/Auth/Log

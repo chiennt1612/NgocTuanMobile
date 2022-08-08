@@ -162,7 +162,7 @@ namespace Auth.Services
         public async Task<ResponseOK> SetProfile(ProfileInputModel inv)
         {
             _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
-            if (!String.IsNullOrEmpty(inv.Email))
+            if (inv.Email.IsValidEmail())
             {
                 var a1 = await _userManager.FindByEmailAsync(inv.Email);
                 if (a1 == null)

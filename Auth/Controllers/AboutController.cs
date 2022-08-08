@@ -40,11 +40,12 @@ namespace Auth.Controllers
         [Route("[action]/{language}")]
         public async Task<IActionResult> ExtendList(string language = "Vi")
         {
-            List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"GuideList_{language}");
+            List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"ExtendList_{language}");
             if (r == null)
             {
                 var _guide = _configuration.GetSection(nameof(AboutPage)).Get<AboutPage>();
                 var a = language == "Vi" ? _guide.ExtendID.Vi : _guide.ExtendID.En;
+                var b1 = ((await _Service.aboutServices.GetAllAsync()).Where(u => a.Contains(u.Id)).OrderBy(u => u.Title));
                 var i = 0;
                 r = (from b in ((await _Service.aboutServices.GetAllAsync()).Where(u => a.Contains(u.Id)).OrderBy(u => u.Title))
                      select new AboutModel()
@@ -55,9 +56,9 @@ namespace Auth.Controllers
                          Sort = i++,
                          Title = b.Title
                      }).ToList();
-                await _cache.SetAsync<List<AboutModel>>($"GuideList_{language}", r);
+                await _cache.SetAsync<List<AboutModel>>($"ExtendList_{language}", r);
             }
-            _logger.WriteLog($"GuideList: ", "GuideList");
+            _logger.WriteLog($"ExtendList: ", "ExtendList");
             return Ok(new ResponseOK()
             {
                 Code = 200,

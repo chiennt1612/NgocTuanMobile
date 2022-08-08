@@ -210,6 +210,11 @@ namespace Utils
             if (String.IsNullOrEmpty(email)) return false;
             return new EmailAddressAttribute().IsValid(email);
         }
+        public static bool IsValidEmailAllowNull(this string email)
+        {
+            if (String.IsNullOrEmpty(email)) return true;
+            return new EmailAddressAttribute().IsValid(email);
+        }
 
         #region cache dist
         public static async Task<T> GetAsync<T>(this IDistributedCache _cache, string Key, CancellationToken token = default)
