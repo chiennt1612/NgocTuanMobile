@@ -24,12 +24,12 @@ namespace Auth.Services
             {
                 var a = await unitOfWork.contactRepository.AddAsync(contact);
                 await unitOfWork.SaveAsync();
-                ilogger.LogInformation($"Save object  Is OK");
+                if (ilogger != null) ilogger.LogInformation($"Save object  Is OK");
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Save object Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Save object Is Fail {ex.Message}");
                 return default;
             }
         }
@@ -41,17 +41,17 @@ namespace Auth.Services
                 var a = await unitOfWork.contactRepository.GetByIdAsync(Id);
                 try
                 {
-                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Fullname}");
+                    if (ilogger != null) ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Fullname}");
                 }
                 catch (Exception ex)
                 {
-                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {ex.Message}");
+                    if (ilogger != null) ilogger.LogInformation($"Get by id {Id.ToString()} Is {ex.Message}");
                 }
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Get by id {Id.ToString()} Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Get by id {Id.ToString()} Is Fail {ex.Message}");
                 return default;
             }
         }
@@ -62,12 +62,12 @@ namespace Auth.Services
             {
                 unitOfWork.contactRepository.Update(order);
                 await unitOfWork.SaveAsync();
-                ilogger.LogInformation($"Update Contact is OK");
+                if (ilogger != null) ilogger.LogInformation($"Update Contact is OK");
                 return order;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Update Contact is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Update Contact is error {ex.Message}");
                 return default;
             }
         }
@@ -80,12 +80,12 @@ namespace Auth.Services
             try
             {
                 var a = await unitOfWork.contactRepository.GetListAsync(expression, sort, desc, page, pageSize);
-                ilogger.LogInformation($"GetListAsync expression, sort {desc} {page} {pageSize}");
+                if (ilogger != null) ilogger.LogInformation($"GetListAsync expression, sort {desc} {page} {pageSize}");
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetListAsync expression, sort {desc} {page} {pageSize} Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetListAsync expression, sort {desc} {page} {pageSize} Is Fail {ex.Message}");
                 return default;
             }
         }

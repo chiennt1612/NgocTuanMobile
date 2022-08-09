@@ -15,3 +15,5 @@
 /.vs
 /Auth/appsettings.json
 /Auth/Log
+/UnitTestMobile/obj
+/UnitTestMobile/bin

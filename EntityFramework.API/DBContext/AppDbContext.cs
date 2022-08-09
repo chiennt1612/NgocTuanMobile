@@ -29,6 +29,15 @@ namespace EntityFramework.API.DBContext
         public DbSet<Notice> Notices { get; set; }
         public DbSet<Contract> Contracts { get; set; }
 
+        public AppDbContext(string connectionString) : base(GetOptions(connectionString))
+        {
+        }
+
+        private static DbContextOptions GetOptions(string connectionString)
+        {
+            return SqlServerDbContextOptionsExtensions.UseSqlServer(new DbContextOptionsBuilder(), connectionString).Options;
+        }
+
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {

@@ -30,11 +30,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[2], inv);
-                ilogger.LogInformation($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -48,11 +48,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[0], inv);
-                ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -66,11 +66,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[7], inv);
-                //ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                //if (ilogger != null) ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -84,11 +84,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[6], inv);
-                //ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                //if (ilogger != null) ilogger.LogInformation($"GetInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -102,11 +102,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[4], inv);
-                ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -120,11 +120,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[1], inv);
-                ilogger.LogInformation($"PayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"PayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"PayInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"PayInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -138,11 +138,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[2], inv);
-                ilogger.LogInformation($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -156,11 +156,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[5], inv);
-                ilogger.LogInformation($"getContractAllList {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"getContractAllList {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"getContractAllList {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"getContractAllList {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -174,11 +174,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[8], inv);
-                ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }
@@ -192,11 +192,11 @@ namespace Utils.Repository
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[9], inv);
-                ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+                if (ilogger != null) ilogger.LogInformation($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetInvoiceHistory {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
             }
             return a;
         }

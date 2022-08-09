@@ -24,12 +24,12 @@ namespace Auth.Services
             {
                 await unitOfWork.invoiceSaveRepository.DeleteAsync(id);
                 await unitOfWork.SaveAsync();
-                ilogger.LogInformation($"Save object  Is OK");
+                if (ilogger != null) ilogger.LogInformation($"Save object  Is OK");
                 return true;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Save object Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Save object Is Fail {ex.Message}");
                 return false;
             }
         }
@@ -40,12 +40,12 @@ namespace Auth.Services
             {
                 var a = await unitOfWork.invoiceSaveRepository.AddAsync(contact);
                 await unitOfWork.SaveAsync();
-                ilogger.LogInformation($"Save object  Is OK");
+                if (ilogger != null) ilogger.LogInformation($"Save object  Is OK");
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Save object Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Save object Is Fail {ex.Message}");
                 return default;
             }
         }
@@ -57,7 +57,7 @@ namespace Auth.Services
                 var a = await unitOfWork.invoiceSaveRepository.GetByIdAsync(Id);
                 //try
                 //{
-                //    ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Fullname}");
+                if (ilogger != null) ilogger.LogInformation($"Get by id {Id.ToString()}");
                 //}
                 //catch (Exception ex)
                 //{
@@ -67,7 +67,7 @@ namespace Auth.Services
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Get by id {Id.ToString()} Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Get by id {Id.ToString()} Is Fail {ex.Message}");
                 return default;
             }
         }

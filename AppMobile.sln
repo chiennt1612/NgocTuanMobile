@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.API", "EntityFramework.API\EntityFramework.API.csproj", "{A7A5E1FC-C73A-46A5-98C1-ADAB394D9C56}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobileAPI", "MobileAPI\MobileAPI.csproj", "{7096CEEF-151F-4B91-B56A-75531D21F5A8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "Utils\Utils.csproj", "{1E4DF1BC-CB79-4AA0-819F-CEE0FF2C4574}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestMobile", "UnitTestMobile\UnitTestMobile.csproj", "{9B901114-98A5-4096-AC67-DA19F2BC8BF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{1E4DF1BC-CB79-4AA0-819F-CEE0FF2C4574}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E4DF1BC-CB79-4AA0-819F-CEE0FF2C4574}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E4DF1BC-CB79-4AA0-819F-CEE0FF2C4574}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B901114-98A5-4096-AC67-DA19F2BC8BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B901114-98A5-4096-AC67-DA19F2BC8BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B901114-98A5-4096-AC67-DA19F2BC8BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B901114-98A5-4096-AC67-DA19F2BC8BF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -252,50 +252,47 @@ namespace Auth.Controllers
                     }
                     else
                     {
-                        AppUser user;
-                        if (model.Email.IsValidEmail())
-                            user = new()
-                            {
-                                SecurityStamp = Guid.NewGuid().ToString(),
-                                UserName = model.Username,
-                                Email = model.Email,
-                                PhoneNumber = model.Username,
-                                TwoFactorEnabled = true,
-                            };
-                        else
-                            user = new()
-                            {
-                                SecurityStamp = Guid.NewGuid().ToString(),
-                                UserName = model.Username,
-                                PhoneNumber = model.Username,
-                                TwoFactorEnabled = true,
-                            };
-                        var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
-                        if (result.Succeeded)
+                        if (!String.IsNullOrEmpty(model.Fullname))
                         {
-                            userExists = await _userManager.FindByNameAsync(model.Username);
-                            // Update address
-                            var a = await _userManager.GetClaimsAsync(userExists);
-                            if (!String.IsNullOrEmpty(model.Address))
+                            AppUser user;
+                            if (model.Email.IsValidEmail())
+                                user = new()
+                                {
+                                    SecurityStamp = Guid.NewGuid().ToString(),
+                                    UserName = model.Username,
+                                    Email = model.Email,
+                                    PhoneNumber = model.Username,
+                                    TwoFactorEnabled = true,
+                                };
+                            else
+                                user = new()
+                                {
+                                    SecurityStamp = Guid.NewGuid().ToString(),
+                                    UserName = model.Username,
+                                    PhoneNumber = model.Username,
+                                    TwoFactorEnabled = true,
+                                };
+                            var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
+                            if (result.Succeeded)
                             {
-                                if (String.IsNullOrEmpty(a.Where(u => u.Type == "Address").FirstOrDefault()?.Value))
+                                userExists = await _userManager.FindByNameAsync(model.Username);
+                                // Update address
+                                var a = await _userManager.GetClaimsAsync(userExists);
+                                await _userManager.AddClaimAsync(userExists, new Claim("Fullname", model.Fullname));
+                                if (!String.IsNullOrEmpty(model.Address))
                                 {
-                                    await _userManager.AddClaimAsync(userExists, new Claim("Address", model.Address));
+                                    if (String.IsNullOrEmpty(a.Where(u => u.Type == "Address").FirstOrDefault()?.Value))
+                                    {
+                                        await _userManager.AddClaimAsync(userExists, new Claim("Address", model.Address));
+                                    }
+                                    else
+                                    {
+                                        await _userManager.ReplaceClaimAsync(userExists, a.Where(u => u.Type == "Address").FirstOrDefault(), new Claim("Address", model.Address));
+                                    }
                                 }
-                                else
-                                {
-                                    await _userManager.ReplaceClaimAsync(userExists, a.Where(u => u.Type == "Address").FirstOrDefault(), new Claim("Address", model.Address));
-                                }
+                                // Send SMS
+                                return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
                             }
-                            // Send SMS
-                            //userExists.TotalOTP = 1;
-                            //userExists.OTPSendTime = DateTime.Now;
-                            //await _userManager.UpdateAsync(userExists);
-                            //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, model.Username);
-                            //var message = $"Your security code is: {code}";
-                            //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
-                            //return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
-                            return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
                         }
                     }
                 }

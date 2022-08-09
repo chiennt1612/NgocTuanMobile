@@ -26,7 +26,7 @@ namespace Auth.Services
 
         public async Task<IEnumerable<Service>> GetAllAsync()
         {
-            ilogger.LogInformation($"GetAllAsync");
+            if (ilogger != null) ilogger.LogInformation($"GetAllAsync");
             if (_GetAll == default)
             {
                 _GetAll = await unitOfWork.serviceRepository.GetAllAsync();
@@ -41,17 +41,17 @@ namespace Auth.Services
                 var a = await unitOfWork.serviceRepository.GetByIdAsync(Id);
                 try
                 {
-                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Title}");
+                    if (ilogger != null) ilogger.LogInformation($"Get by id {Id.ToString()} Is {a.Title}");
                 }
                 catch (Exception ex)
                 {
-                    ilogger.LogInformation($"Get by id {Id.ToString()} Is {ex.Message}");
+                    if (ilogger != null) ilogger.LogInformation($"Get by id {Id.ToString()} Is {ex.Message}");
                 }
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"Get by id {Id.ToString()} Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"Get by id {Id.ToString()} Is Fail {ex.Message}");
                 return default;
             }
         }
@@ -64,12 +64,12 @@ namespace Auth.Services
             try
             {
                 var a = await unitOfWork.serviceRepository.GetListAsync(expression, sort, desc, page, pageSize);
-                ilogger.LogInformation($"GetListAsync expression, sort {desc} {page} {pageSize}");
+                if (ilogger != null) ilogger.LogInformation($"GetListAsync expression, sort {desc} {page} {pageSize}");
                 return a;
             }
             catch (Exception ex)
             {
-                ilogger.LogError($"GetListAsync expression, sort {desc} {page} {pageSize} Is Fail {ex.Message}");
+                if (ilogger != null) ilogger.LogError($"GetListAsync expression, sort {desc} {page} {pageSize} Is Fail {ex.Message}");
                 return default;
             }
         }

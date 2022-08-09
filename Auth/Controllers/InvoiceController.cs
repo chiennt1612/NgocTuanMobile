@@ -44,7 +44,7 @@ namespace Auth.Controllers
         #endregion
 
         public InvoiceController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
-            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IAllService _Service, 
+            ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IAllService _Service,
             UserManager<AppUser> userManager)
         {
             this._logger = _logger;
@@ -324,7 +324,7 @@ namespace Auth.Controllers
         public async Task<IActionResult> InvoiceDelete(long Id)
         {
             var r = await _Service.iInvoiceSaveServices.DeleteAsync(Id);
-            if(r)
+            if (r)
                 return Ok(new ResponseOK()
                 {
                     Code = 200,
