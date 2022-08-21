@@ -15,23 +15,23 @@ namespace Auth.Services
         private IUnitOfWork unitOfWork;
         private ILogger<ServiceServices> ilogger;
 
-        public static IEnumerable<Service> _GetAll; // cache tạm thời
-
         public ServiceServices(IUnitOfWork unitOfWork, ILogger<ServiceServices> ilogger)
         {
             this.unitOfWork = unitOfWork;
             this.ilogger = ilogger;
-            _GetAll = default;
+        }
+
+        public async Task<IEnumerable<Service>> GetManyAsync(Expression<Func<Service, bool>> where)
+        {
+            if (ilogger != null) ilogger.LogInformation($"GetManyAsync");
+            
+            return await unitOfWork.serviceRepository.GetManyAsync(where); ;
         }
 
         public async Task<IEnumerable<Service>> GetAllAsync()
         {
             if (ilogger != null) ilogger.LogInformation($"GetAllAsync");
-            if (_GetAll == default)
-            {
-                _GetAll = await unitOfWork.serviceRepository.GetAllAsync();
-            }
-            return _GetAll;
+            return await unitOfWork.serviceRepository.GetAllAsync(); ;
         }
 
         public async Task<Service> GetByIdAsync(long Id)

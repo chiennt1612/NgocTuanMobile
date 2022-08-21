@@ -1,12 +1,15 @@
 ﻿using Auth.Helper;
 using Auth.Models;
 using Auth.Services.Interfaces;
+using EntityFramework.API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
@@ -43,19 +46,23 @@ namespace Auth.Controllers
             List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"ExtendList_{language}");
             if (r == null)
             {
+                r = new List<AboutModel>();
                 var _guide = _configuration.GetSection(nameof(AboutPage)).Get<AboutPage>();
                 var a = language == "Vi" ? _guide.ExtendID.Vi : _guide.ExtendID.En;
-                var b1 = ((await _Service.aboutServices.GetAllAsync()).Where(u => a.Contains(u.Id)).OrderBy(u => u.Title));
-                var i = 0;
-                r = (from b in ((await _Service.aboutServices.GetAllAsync()).Where(u => a.Contains(u.Id)).OrderBy(u => u.Title))
-                     select new AboutModel()
-                     {
-                         Id = b.Id,
-                         Description = b.Description,
-                         Url = Tools.GetUrlById("About", b.Id),
-                         Sort = i++,
-                         Title = b.Title
-                     }).ToList();
+                Expression<Func<About, bool>> expression = u =>  a.Contains(u.Id);
+                var items = await _Service.aboutServices.GetManyAsync(expression);
+                int i = 0;
+                foreach(var b in items)
+                {
+                    r.Add(new AboutModel()
+                    {
+                        Id = b.Id,
+                        //Description = b.Description,
+                        Url = Tools.GetUrlById("About", b.Id),
+                        Sort = i++,
+                        Title = b.Title
+                    });
+                }
                 await _cache.SetAsync<List<AboutModel>>($"ExtendList_{language}", r);
             }
             _logger.WriteLog($"ExtendList: ", "ExtendList");
@@ -76,18 +83,23 @@ namespace Auth.Controllers
             List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"GuideList_{language}");
             if (r == null)
             {
+                r = new List<AboutModel>();
                 var _guide = _configuration.GetSection(nameof(AboutPage)).Get<AboutPage>();
                 var a = language == "Vi" ? _guide.GuideID.Vi : _guide.GuideID.En;
-                var i = 0;
-                r = (from b in ((await _Service.aboutServices.GetAllAsync()).Where(u => a.Contains(u.Id)).OrderBy(u => u.Title))
-                     select new AboutModel()
-                     {
-                         Id = b.Id,
-                         Description = b.Description,
-                         Url = Tools.GetUrlById("About", b.Id),
-                         Sort = i++,
-                         Title = b.Title
-                     }).ToList();
+                Expression<Func<About, bool>> expression = u => a.Contains(u.Id);
+                var items = (await _Service.aboutServices.GetManyAsync(expression)).OrderBy(u => u.Title);
+                int i = 0;
+                foreach (var b in items)
+                {
+                    r.Add(new AboutModel()
+                    {
+                        Id = b.Id,
+                        //Description = b.Description,
+                        Url = Tools.GetUrlById("About", b.Id),
+                        Sort = i++,
+                        Title = b.Title
+                    });
+                }
                 await _cache.SetAsync<List<AboutModel>>($"GuideList_{language}", r);
             }
             _logger.WriteLog($"GuideList: ", "GuideList");

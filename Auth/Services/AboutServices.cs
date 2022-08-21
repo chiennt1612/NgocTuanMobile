@@ -24,6 +24,13 @@ namespace Auth.Services
             _GetAll = default;
         }
 
+        public async Task<IEnumerable<About>> GetManyAsync(Expression<Func<About, bool>> where)
+        {
+            if (ilogger != null) ilogger.LogInformation($"GetManyAsync");
+
+            return await unitOfWork.aboutRepository.GetManyAsync(where); ;
+        }
+
         public async Task<IEnumerable<About>> GetAllAsync()
         {
             ilogger.LogInformation($"GetAllAsync");

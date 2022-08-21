@@ -9,6 +9,7 @@ namespace Auth.Services.Interfaces
 {
     public interface IServiceServices
     {
+        Task<IEnumerable<Service>> GetManyAsync(Expression<Func<Service, bool>> where);
         Task<IEnumerable<Service>> GetAllAsync();
         Task<Service> GetByIdAsync(long Id);
         Task<BaseEntityList<Service>> GetListAsync(

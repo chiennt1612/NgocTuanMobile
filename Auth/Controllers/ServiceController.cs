@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -65,7 +66,8 @@ namespace Auth.Controllers
             List<ServiceModel> r = await _cache.GetAsync<List<ServiceModel>>($"SerrviceList_{language}");//IEnumerable
             if (r == null)
             {
-                r = (from p in (await _Service.serviceServices.GetAllAsync())
+                Expression<Func<Service, bool>> expression = u => u.Id > 10;
+                r = (from p in (await _Service.serviceServices.GetManyAsync(expression))
                      select new ServiceModel()
                      {
                          Description = p.Description,
