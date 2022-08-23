@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SMSGetway;
 using System;
 using System.Collections.Generic;
@@ -80,7 +81,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            _logger.LogInformation($"Login. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 bool IsExitst = false;
@@ -235,7 +236,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 if (_smsVietel.FormatMobile(model.Username) != "")
@@ -318,7 +319,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> VerifyPhoneNumber([FromBody] OTPModel model)
         {
-            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            _logger.LogInformation($"VerifyPhoneNumber. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 //var user = await GetCurrentUserAsync();
@@ -367,7 +368,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> RenewToken([FromBody] RefreshTokenModel model)
         {
-            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            _logger.LogInformation($"RenewToken. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 var encodedString = HttpContext.Request.Headers["Authorization"];
@@ -448,7 +449,7 @@ namespace Auth.Controllers
 
         private async Task<IActionResult> LoginOK(string DeviceId, AppUser user)
         {
-            _logger.LogInformation($"Logined: {user.UserName}");
+            _logger.LogInformation($"LoginOK -> Logined: {user.UserName}; DeviceId: {DeviceId}");
             ClaimsPrincipal userClaims = await _userClaimsPrincipalFactory.CreateAsync(user);
             List<Claim> claims = userClaims.Claims.ToList();
             //var userRoles = await _userManager.GetRolesAsync(user);
@@ -485,15 +486,16 @@ namespace Auth.Controllers
                 if (UserByDevice != default)
                 {
                     _logger.LogInformation($"Found device {DeviceId}");
-                    if (UserByDevice.Username == user.UserName)
-                    {
+                    //if (UserByDevice.Username == user.UserName)
+                    //{
                         claims.Remove(_IsGetNotice);
                         claims.Add(new Claim("IsGetNotice", UserByDevice.IsGetNotice ? "1" : "0"));
                         _logger.LogInformation($"Found device {DeviceId}/{user.UserName}");
+                        UserByDevice.Username = user.UserName;
                         UserByDevice.RefreshToken = user.RefreshToken;
                         UserByDevice.RefreshTokenExpiryTime = user.RefreshTokenExpiryTime;
                         await _iUserDeviceRepository.Update(UserByDevice);
-                    }
+                    //}
                 }
                 else
                 {
@@ -605,7 +607,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> LoginByEVN([FromBody] LoginEVNModel model)
         {
-            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            _logger.LogInformation($"LoginByEVN. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 bool IsExitst = false;
@@ -741,7 +743,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> PushDeviceID([FromBody] DeviceModel model)
         {
-            _logger.LogInformation($"PushDeviceID/model: {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
+            _logger.LogInformation($"PushDeviceID/model: {JsonConvert.SerializeObject(model)}");
             AppUserDevice device = null;
             if (ModelState.IsValid)
             {
@@ -758,15 +760,15 @@ namespace Auth.Controllers
                                 device = await _iUserDeviceRepository.GetAsync(sqlWhere);
                                 if (device != null)
                                 {
-                                    _logger.LogInformation($"PushDeviceID/model: {Newtonsoft.Json.JsonConvert.SerializeObject(model)} --> Update");
-                                    if (device.Username == user.UserName)
-                                    {
+                                    _logger.LogInformation($"PushDeviceID/model: {JsonConvert.SerializeObject(model)} --> Update");
+                                    //if (device.Username == user.UserName)
+                                    //{
                                         device.Token = model.Token;
                                         device.OS = model.OS;
                                         device.IsGetNotice = model.IsGetNotice;
                                         await _iUserDeviceRepository.Update(device);
                                         //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
-                                    }
+                                    //}
                                     return Ok(new ResponseOK
                                     {
                                         Status = 1,
@@ -822,7 +824,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> IsSetNotice([FromBody] DeviceTokenModel model)
         {
-            _logger.LogInformation($"IsSetNoticeDeviceID/model: {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
+            _logger.LogInformation($"IsSetNoticeDeviceID/model: {JsonConvert.SerializeObject(model)}");
             AppUserDevice device = null;
             if (ModelState.IsValid)
             {
@@ -895,7 +897,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetNoticeByDevice([FromBody] NoticeModel model)
         {
-            _logger.LogInformation($"ModelState: {ModelState.IsValid}");
+            _logger.LogInformation($"GetNoticeByDevice. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             string DeviceId = HttpContext.User.Claims.Where(u => u.Type == "DeviceId").FirstOrDefault()?.Value;
             AppUserDevice device = null;
             if (ModelState.IsValid)
@@ -962,6 +964,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> PushNoticeToDevice([FromBody] NoticeInputModel model)
         {
+            _logger.LogInformation($"PushNoticeToDevice. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             string IP = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             string token = Request.Headers["Authorization"].ToString().Substring("Bearer ".Length);
             _logger.LogInformation($"IP: {IP}; token: {token}: {((fireBaseAPIConfig.IPTrust.Contains(IP) || fireBaseAPIConfig.IPTrust.Contains("*")) && token == fireBaseAPIConfig.ServerKey)}");

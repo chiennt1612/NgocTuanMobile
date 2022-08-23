@@ -96,6 +96,7 @@ namespace Auth.Controllers
         [Route("[action]/{Page}")]
         public async Task<IActionResult> FindInvoice(int? Page, [FromBody] InvoiceFindModel invM)
         {
+            _logger.WriteLog($"FindInvoice {JsonConvert.SerializeObject(invM)}", "FindInvoice");
             List<CompanyInvoice> r = new List<CompanyInvoice>();
             int itemsCount = 0;
             foreach (var companyInfo in companyConfig.Companys)
@@ -169,6 +170,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> FindInvoiceByQRCode([FromBody] InvQRCodeModel invM)
         {
+            _logger.WriteLog($"FindInvoiceByQRCode {JsonConvert.SerializeObject(invM)}", "FindInvoiceByQRCode");
             string[] a = invM.QRCode.Split("|"); //0900996305|1/004|1|K22TYT1|---|10/06/2022|26145
             int i = 0;
             bool found = false;
@@ -287,6 +289,7 @@ namespace Auth.Controllers
         [Route("[action]/{Page}")]
         public async Task<IActionResult> InvoiceSave(int? Page, [FromBody] InvoiceSaveSearchModel inv)
         {
+            _logger.WriteLog($"InvoiceSave {JsonConvert.SerializeObject(inv)}", "InvoiceSave");
             var userId = long.Parse(HttpContext.User.Claims.Where(u => u.Type == ClaimTypes.NameIdentifier).FirstOrDefault()?.Value);
             var r = await _Service.iInvoiceSaveServices.InvoceSaveGetListAsync(Page, 10, new InvoiceSaveSearchModelA() { FromDate = inv.FromDate, ToDate = inv.ToDate, CustomerCode = inv.CustomerCode, UserId = userId });
             var c = await _Service.iInvoiceSaveServices.GetCountAsync(new InvoiceSaveSearchModelA() { FromDate = inv.FromDate, ToDate = inv.ToDate, CustomerCode = inv.CustomerCode, UserId = userId });
@@ -350,6 +353,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Pay([FromBody] PayInputModel inv)
         {
+            _logger.WriteLog($"Pay {JsonConvert.SerializeObject(inv)}", "Pay");
             dynamic rd;
             if (inv.IsAgree)
             {
