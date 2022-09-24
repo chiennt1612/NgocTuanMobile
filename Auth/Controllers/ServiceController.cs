@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -56,18 +57,20 @@ namespace Auth.Controllers
             this._emailSender = _emailSender;
             paygateInfo = this._configuration.GetSection(nameof(PaygateInfo)).Get<PaygateInfo>();
             companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
-            _logger.WriteLog("Starting news page");
+            _logger.WriteLog(_configuration, "Starting news page");
         }
 
         [HttpGet]
         [Route("[action]/{language}")]
         public async Task<IActionResult> List(string language = "Vi")
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             List<ServiceModel> r = await _cache.GetAsync<List<ServiceModel>>($"SerrviceList_{language}");//IEnumerable
             if (r == null)
             {
-                Expression<Func<Service, bool>> expression = u => u.Id > 10;
-                r = (from p in (await _Service.serviceServices.GetManyAsync(expression))
+                r = new List<ServiceModel>();
+                Expression<Func<Service, bool>> expression = u => u.Id == 11;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
                      select new ServiceModel()
                      {
                          Description = p.Description,
@@ -77,11 +80,111 @@ namespace Auth.Controllers
                          PricePerson = p.Price,
                          PriceText = p.PriceText,
                          Summary = p.Summary,
+                         Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
                          Title = p.Title
-                     }).ToList();
+                     }));
+                expression = u => u.Id == 12;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
+                expression = u => u.Id == 13;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
+                expression = u => u.Id == 16;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
+                expression = u => u.Id == 14;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
+                expression = u => u.Id == 17;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
+                expression = u => u.Id == 15;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
+                expression = u => u.Id == 18;
+                r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
                 await _cache.SetAsync<List<ServiceModel>>($"SerrviceList_{language}", r);
             }
-            _logger.WriteLog($"Category {language}", $"Category {language}");
+            _logger.WriteLog(_configuration, $"Category {language}", $"Category {language}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -97,12 +200,15 @@ namespace Auth.Controllers
         [Route("[action]/{Id}")]
         public async Task<IActionResult> Details(long Id)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _Service.serviceServices.GetByIdAsync(Id);
             var b = new ServiceDetailModel()
             {
                 _Detail = a,
+                Url = Utils.Tools.GetUrlById("Service/Details", a.Id),
                 _Related = (await _Service.serviceServices.GetAllAsync()).Where(u => u.Id != Id)
             };
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -118,6 +224,8 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Register(ServiceInputModel contact)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register: {Newtonsoft.Json.JsonConvert.SerializeObject(contact)}");
             dynamic rd;
             if (contact.IsAgree)
             {
@@ -196,6 +304,7 @@ namespace Auth.Controllers
                 }
                 else
                 {
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -212,7 +321,7 @@ namespace Auth.Controllers
                 ModelState.AddModelError("IsAgree", _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!"));
                 rd = _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!");
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -228,6 +337,8 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> ChangeContract(ChangeContractInputModel contact)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"ChangeContract: {Newtonsoft.Json.JsonConvert.SerializeObject(contact)}");
             dynamic rd;
             if (contact.IsAgree)
             {
@@ -307,6 +418,7 @@ namespace Auth.Controllers
                 }
                 else
                 {
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -323,7 +435,7 @@ namespace Auth.Controllers
                 ModelState.AddModelError("IsAgree", _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!"));
                 rd = _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!");
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -339,6 +451,8 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> ChangePosition(ChangePositionInputModel contact)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"ChangePosition: {Newtonsoft.Json.JsonConvert.SerializeObject(contact)}");
             dynamic rd;
             if (contact.IsAgree)
             {
@@ -348,12 +462,12 @@ namespace Auth.Controllers
                     string Img = "";
                     if (!string.IsNullOrEmpty(contact.Img))
                     {
-                        Img = Upload(contact.Img);
+                        Img = Upload(contact.Img, "0");
                     }
                     string Img2 = "";
                     if (!string.IsNullOrEmpty(contact.Img2))
                     {
-                        Img2 = Upload(contact.Img2);
+                        Img2 = Upload(contact.Img2, "1");
                     }
                     var _contact = new Contact()
                     {
@@ -376,6 +490,7 @@ namespace Auth.Controllers
                         Img = Img,
                         Img2 = Img2
                     };
+                    
                     if (User.Identity.IsAuthenticated)
                     {
                         _contact.Fullname = User.Claims.GetClaimValue("Fullname");
@@ -390,10 +505,12 @@ namespace Auth.Controllers
                     if (!string.IsNullOrEmpty(contact.Fullname)) _contact.Fullname = contact.Fullname;
                     if (!string.IsNullOrEmpty(contact.Mobile)) _contact.Mobile = contact.Mobile;
 
+                    _logger.LogInformation($"ChangePosition -> _contact: {Newtonsoft.Json.JsonConvert.SerializeObject(_contact)}");
                     var r = await _Service.contactServices.AddAsync(_contact);
+
                     if (r != null)
                     {
-                        _logger.LogInformation($"Send contact is success: {contact.Fullname}");
+                        _logger.LogInformation($"Send contact is success: {contact.Fullname}/{r.Img}/{r.Img2}/{r.Noted}/{r.Noted2}");
                         string msg = $"<ul><li><b>{_localizer["Tên đầy đủ"]}:</b> {contact.Fullname}</li><li><b>Email:</b> {contact.Email}</li><li><b>Mobile:</b> {contact.Mobile}</li><li><b>Trạng thái:</b> Chưa thanh toán</li><li>{contact.Description}</li></ul>";
 
                         switch ((int)contact.PaymentMethod)
@@ -431,6 +548,7 @@ namespace Auth.Controllers
                 }
                 else
                 {
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -447,7 +565,7 @@ namespace Auth.Controllers
                 ModelState.AddModelError("IsAgree", _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!"));
                 rd = _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!");
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -463,6 +581,8 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> ChangePrice(ChangePriceInputModel contact)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"ChangePrice: {Newtonsoft.Json.JsonConvert.SerializeObject(contact)}");
             dynamic rd;
             if (contact.IsAgree)
             {
@@ -472,7 +592,7 @@ namespace Auth.Controllers
                     string Img = "";
                     if (!string.IsNullOrEmpty(contact.Img))
                     {
-                        Img = Upload(contact.Img);
+                        Img = Upload(contact.Img, "0");
                     }
                     var _contact = new Contact()
                     {
@@ -547,6 +667,7 @@ namespace Auth.Controllers
                 }
                 else
                 {
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -563,7 +684,7 @@ namespace Auth.Controllers
                 ModelState.AddModelError("IsAgree", _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!"));
                 rd = _localizer.GetString("Bạn chưa chọn đồng ý điều khoản thanh toán!");
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -575,23 +696,25 @@ namespace Auth.Controllers
             });
         }
 
-        private string Upload(string file)
+        private string Upload(string file, string fileNumber)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             // Check Avatar and save to admin.nuocngoctuan.com                
             if (!string.IsNullOrEmpty(file))
             {
-                _logger.WriteLog($"1. Upload {file}");
+                _logger.WriteLog(_configuration, $"1. Upload {file}");
                 var username = User.Claims.Where(u => u.Type == ClaimTypes.Name).FirstOrDefault()?.Value;
                 if (string.IsNullOrEmpty(username)) username = "admin";
                 string path = companyConfig.AvatarFolder + @"/" + username;
-                string fileName = DateTime.Now.ToString("yyyyMMddHHmmss") + ".jpg";
-                _logger.WriteLog($"2. Upload {path}/{fileName}");
+                string fileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}_{fileNumber}.jpg";
+                _logger.WriteLog(_configuration, $"2. Upload {path}/{fileName}");
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
                 if (System.IO.File.Exists(path + @"/" + fileName)) System.IO.File.Delete(path + @"/" + fileName);
                 System.IO.File.WriteAllBytes(path + @"/" + fileName, Convert.FromBase64String(file));
-                file = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
-                _logger.WriteLog($"3. Upload {file}");
+                file = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + username + "/" + fileName;
+                _logger.WriteLog(_configuration, $"3. Upload {file}");
             }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return file;
         }
     }

@@ -18,6 +18,7 @@ namespace EntityFramework.API.Entities
         public bool IsRead { get; set; }
         public DateTime? ReadDate { get; set; }
         public string Author { get; set; }
+        public string Link { get; set; }
         public DateTime CreateDate { get; set; }
         [JsonIgnore]
         public bool IsDelete { get; set; }

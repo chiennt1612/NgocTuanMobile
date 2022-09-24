@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
@@ -36,13 +37,14 @@ namespace Auth.Controllers
             this._Service = Service;
             this._cache = cache;
             this._configuration = configuration;
-            _logger.WriteLog("Starting about page");
+            _logger.WriteLog(_configuration, "Starting about page");
         }
 
         [HttpGet]
         [Route("[action]/{language}")]
         public async Task<IActionResult> ExtendList(string language = "Vi")
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"ExtendList_{language}");
             if (r == null)
             {
@@ -65,7 +67,8 @@ namespace Auth.Controllers
                 }
                 await _cache.SetAsync<List<AboutModel>>($"ExtendList_{language}", r);
             }
-            _logger.WriteLog($"ExtendList: ", "ExtendList");
+            _logger.WriteLog(_configuration, $"ExtendList: ", "ExtendList");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -80,6 +83,7 @@ namespace Auth.Controllers
         [Route("[action]/{language}")]
         public async Task<IActionResult> GuideList(string language = "Vi")
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             List<AboutModel> r = await _cache.GetAsync<List<AboutModel>>($"GuideList_{language}");
             if (r == null)
             {
@@ -102,7 +106,8 @@ namespace Auth.Controllers
                 }
                 await _cache.SetAsync<List<AboutModel>>($"GuideList_{language}", r);
             }
-            _logger.WriteLog($"GuideList: ", "GuideList");
+            _logger.WriteLog(_configuration, $"GuideList: ", "GuideList");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -118,6 +123,7 @@ namespace Auth.Controllers
         [Route("[action]/{language}")]
         public async Task<IActionResult> AboutPage(string language = "Vi")
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             AboutModel r = await _cache.GetAsync<AboutModel>($"AboutPage_{language}");
             if (r == null)
             {
@@ -133,7 +139,8 @@ namespace Auth.Controllers
                 };
                 await _cache.SetAsync<AboutModel>($"AboutPage_{language}", r);
             }
-            _logger.WriteLog($"About: ", "About");
+            _logger.WriteLog(_configuration, $"About: ", "About");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -149,6 +156,7 @@ namespace Auth.Controllers
         [Route("[action]/{pageId}")]
         public async Task<IActionResult> PageInfo(long pageId)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             AboutModel r = await _cache.GetAsync<AboutModel>($"PageInfo_{pageId}");
             if (r == null)
             {
@@ -163,7 +171,8 @@ namespace Auth.Controllers
                 };
                 await _cache.SetAsync<AboutModel>($"PageInfo_{pageId}", r);
             }
-            _logger.WriteLog($"PageInfo {pageId}: ", $"PageInfo {pageId}");
+            _logger.WriteLog(_configuration, $"PageInfo {pageId}: ", $"PageInfo {pageId}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -179,6 +188,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Advs()
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             List<AdvModel> r = await _cache.GetAsync<List<AdvModel>>($"Advs");//IEnumerable
             if (r == null)
             {
@@ -194,7 +204,8 @@ namespace Auth.Controllers
                      }).ToList();
                 await _cache.SetAsync<List<AdvModel>>($"Advs", r);
             }
-            _logger.WriteLog($"Advs: ", $"Advs");
+            _logger.WriteLog(_configuration, $"Advs: ", $"Advs");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,

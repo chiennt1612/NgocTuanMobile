@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -45,7 +46,7 @@ namespace Auth.Controllers
             _logger = logger;
             this._configuration = _configuration;
             companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
-            _logger.WriteLog("Starting profile");
+            _logger.WriteLog(_configuration, "Starting profile");
             this._contract = _contract;
         }
 
@@ -53,8 +54,10 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetCompanyList()
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _profile.GetCompanyList();
-            _logger.WriteLog($"GetCompanyList: {a.UserMessage}", "GetCompanyList");
+            _logger.WriteLog(_configuration, $"GetCompanyList: {a.UserMessage}", "GetCompanyList");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(a);
         }
 
@@ -63,13 +66,15 @@ namespace Auth.Controllers
         [Route("[action]/{CompanyID}")]
         public async Task<IActionResult> AYsContractList(int CompanyID)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             ContractInput inv = new ContractInput()
             {
                 CompanyID = CompanyID,
                 Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName
             };
             var a = await _profile.GetContractAllList(inv);
-            _logger.WriteLog($"GetContractList {inv.CompanyID}/ {inv.Mobile}: {a.UserMessage}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
+            _logger.WriteLog(_configuration, $"GetContractList {inv.CompanyID}/ {inv.Mobile}: {a.UserMessage}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(a);
         }
 
@@ -77,6 +82,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> AYsContractList()
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName;
             List<ContractInfo> r = new List<ContractInfo>();
             foreach (var companyInfo in companyConfig.Companys)
@@ -96,7 +102,7 @@ namespace Auth.Controllers
                     });
                 }
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (r.Count < 1)
             {
                 return Ok(
@@ -110,7 +116,7 @@ namespace Auth.Controllers
                         data = null
                     });
             }
-            _logger.WriteLog($"GetContractList");
+            _logger.WriteLog(_configuration, $"GetContractList");
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -126,6 +132,7 @@ namespace Auth.Controllers
         [Route("[action]/{CustomerCode}")]
         public async Task<IActionResult> AYsContractInfo(string CustomerCode)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             ContractOneInfo r = new ContractOneInfo();
             foreach (var companyInfo in companyConfig.Companys)
             {
@@ -142,6 +149,7 @@ namespace Auth.Controllers
                     if (f != default)
                     {
                         r.ContractInfo = f;
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return Ok(new ResponseOK()
                         {
                             Code = 200,
@@ -155,8 +163,8 @@ namespace Auth.Controllers
                 }
             }
 
-
-            _logger.WriteLog($"GetContractList");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            _logger.WriteLog(_configuration, $"GetContractList");
             return Ok(new ResponseOK()
             {
                 Code = 404,
@@ -174,11 +182,13 @@ namespace Auth.Controllers
         [Route("[action]/{CompanyID}")]
         public async Task<IActionResult> GetContractList(int CompanyID)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
             Expression<Func<Contract, bool>> expression = u => (
                     (u.CompanyId >= CompanyID) &&
                     (u.UserId == UserId));
             var contract = await _contract.GetManyAsync(expression);
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (contract.Count() < 1)
             {
                 return Ok(new ResponseOK()
@@ -210,9 +220,11 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetContractList()
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
             Expression<Func<Contract, bool>> expression = u => (u.UserId == UserId);
             var contract = await _contract.GetManyAsync(expression);
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (contract.Count() < 1)
             {
                 return Ok(new ResponseOK()
@@ -244,9 +256,11 @@ namespace Auth.Controllers
         [Route("[action]/{CustomerCode}")]
         public async Task<IActionResult> GetContractInfo(string CustomerCode)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
             Expression<Func<Contract, bool>> expression = u => (u.UserId == UserId && u.CustomerCode == CustomerCode);
             var contract = await _contract.GetManyAsync(expression);
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (contract.Count() < 1)
             {
                 return Ok(new ResponseOK()
@@ -321,8 +335,10 @@ namespace Auth.Controllers
         [Route("[action]/{IsToken}")]
         public async Task<IActionResult> GetProfile(int IsToken)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _profile.GetProfile(IsToken);
-            _logger.WriteLog($"GetProfile {IsToken}: {a.UserMessage}", $"GetProfile {IsToken}");
+            _logger.WriteLog(_configuration, $"GetProfile {IsToken}: {a.UserMessage}", $"GetProfile {IsToken}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(a);
         }
 
@@ -330,26 +346,28 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> SetProfile([FromBody] ProfileInputModel model)
         {
-            _logger.WriteLog($"0. SetProfile {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.WriteLog(_configuration, $"0. SetProfile {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 // Check Avatar and save to admin.nuocngoctuan.com                
                 if (!string.IsNullOrEmpty(model.Avatar))
                 {
-                    _logger.WriteLog($"1. SetProfile {model.Avatar}");
+                    _logger.WriteLog(_configuration, $"1. SetProfile {model.Avatar}");
                     var username = User.Claims.Where(u => u.Type == ClaimTypes.Name).FirstOrDefault()?.Value;
                     if (string.IsNullOrEmpty(username)) username = "admin";
                     string path = companyConfig.AvatarFolder;
                     string fileName = username + ".jpg";
-                    _logger.WriteLog($"2. SetProfile {path}/{fileName}");
+                    _logger.WriteLog(_configuration, $"2. SetProfile {path}/{fileName}");
                     if (!Directory.Exists(path)) Directory.CreateDirectory(path);
                     if (System.IO.File.Exists(path + @"/" + fileName)) System.IO.File.Delete(path + @"/" + fileName);
                     System.IO.File.WriteAllBytes(path + @"/" + fileName, Convert.FromBase64String(model.Avatar));
                     model.Avatar = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
-                    _logger.WriteLog($"3. SetProfile {model.Avatar}");
+                    _logger.WriteLog(_configuration, $"3. SetProfile {model.Avatar}");
                 }
                 var a = await _profile.SetProfile(model);
-                _logger.WriteLog($"SetProfile: {a.UserMessage}", $"SetProfile");
+                _logger.WriteLog(_configuration, $"SetProfile: {a.UserMessage}", $"SetProfile");
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 if (a.Status == 0)
                 {
                     switch (a.Code)
@@ -381,8 +399,10 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> LinkContract([FromBody] InvoiceInput inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _profile.LinkInvoice(inv);
-            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.WriteLog(_configuration, $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (a.Status == 0)
             {
                 switch (a.Code)
@@ -401,8 +421,10 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> RemoveContract([FromBody] InvoiceInput inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _profile.RemoveInvoice(inv);
-            _logger.WriteLog($"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.WriteLog(_configuration, $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (a.Status == 0)
             {
                 switch (a.Code)

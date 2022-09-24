@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -81,6 +82,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"Login. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
@@ -94,11 +96,13 @@ namespace Auth.Controllers
                     var result = await _signInManager.PasswordSignInAsync(user.UserName, _configuration["Password:Default"], bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
                     if (result.Succeeded || result.RequiresTwoFactor)
                     {
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return await SendSMSOTP(user, model);
                     }
                     else if (result.IsLockedOut)
                     {
                         _logger.LogWarning("User account locked out.");
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return StatusCode(StatusCodes.Status200OK,
                                     new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!", 0, 400));
                     }
@@ -137,6 +141,8 @@ namespace Auth.Controllers
                             if (result.Succeeded)
                             {
                                 var userExists = await _userManager.FindByNameAsync(a.ItemsData[0].Mobile);
+                                // Add role customer
+                                await _userManager.AddToRoleAsync(userExists, "Customer");
                                 // Update address
                                 var a1 = await _userManager.GetClaimsAsync(userExists);
                                 if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
@@ -180,6 +186,7 @@ namespace Auth.Controllers
                                 //var message = $"Your security code is: {code}";
                                 //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
                                 //return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                                 return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
                             }
                         }
@@ -189,6 +196,7 @@ namespace Auth.Controllers
                 if (!IsExitst)
                 {
                     _logger.LogInformation($"Not found: {model.Username}");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -202,6 +210,7 @@ namespace Auth.Controllers
             }
 
             _logger.LogInformation($"Not found: {model.Username}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
         }
@@ -236,6 +245,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
@@ -248,7 +258,7 @@ namespace Auth.Controllers
                     var userExists = await _userManager.FindByNameAsync(model.Username);
                     if (userExists != null)
                     {
-
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return await SendSMSOTP(userExists, loginModel);
                     }
                     else
@@ -277,6 +287,8 @@ namespace Auth.Controllers
                             if (result.Succeeded)
                             {
                                 userExists = await _userManager.FindByNameAsync(model.Username);
+                                // Add role customer
+                                await _userManager.AddToRoleAsync(userExists, "Customer");
                                 // Update address
                                 var a = await _userManager.GetClaimsAsync(userExists);
                                 await _userManager.AddClaimAsync(userExists, new Claim("Fullname", model.Fullname));
@@ -292,6 +304,7 @@ namespace Auth.Controllers
                                     }
                                 }
                                 // Send SMS
+                                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                                 return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
                             }
                         }
@@ -299,6 +312,7 @@ namespace Auth.Controllers
                 }
                 else
                 {
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -311,6 +325,7 @@ namespace Auth.Controllers
                 }
             }
             _logger.LogError($"{model.Username}: {LanguageAll.Language.UserCreateFail}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail));
         }
@@ -319,6 +334,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> VerifyPhoneNumber([FromBody] OTPModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"VerifyPhoneNumber. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
@@ -332,6 +348,7 @@ namespace Auth.Controllers
                         _logger.LogInformation($"Validating OTP: {model.Code} with phone number: {PhoneNumber}; [TEST]");
                         if (model.Code == _loginConfiguration.OTPTest)
                         {
+                            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                             return await LoginOK(model.DeviceId, user);
                         }
                     }
@@ -341,6 +358,7 @@ namespace Auth.Controllers
                         var result = await _userManager.ChangePhoneNumberAsync(user, PhoneNumber, model.Code);
                         if (result.Succeeded)
                         {
+                            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                             return await LoginOK(model.DeviceId, user);
                         }
                     }
@@ -348,6 +366,7 @@ namespace Auth.Controllers
                 else
                 {
                     _logger.LogInformation($"Not found: {model.Username}");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -360,6 +379,7 @@ namespace Auth.Controllers
                 }
             }
             _logger.LogWarning("Invalid code.");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid));
         }
@@ -368,6 +388,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> RenewToken([FromBody] RefreshTokenModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"RenewToken. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
@@ -375,6 +396,7 @@ namespace Auth.Controllers
                 var a = _jwtToken.ValidateToken(encodedString);
                 if (a == null || a == default)
                 {
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK,
                         new ResponseBase(LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized, LanguageAll.Language.Unauthorized, 0, 401));
                 }
@@ -383,13 +405,16 @@ namespace Auth.Controllers
                 DateTime RefreshTokenExpiryTime = DateTime.Now.AddDays(1);
                 if (!String.IsNullOrEmpty(model.DeviceId))
                 {
-                    Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == model.DeviceId && u.Username == user.UserName);
-                    var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);
+                    //Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == model.DeviceId && u.Username == user.UserName);
+                    Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.RefreshToken == model.RefreshToken && u.Username == user.UserName);
+                    var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);                  
                     if (UserByDevice != default)
                     {
+                        model.DeviceId = UserByDevice.DeviceID;
                         RefreshToken = UserByDevice.RefreshToken;
                         if (UserByDevice.RefreshTokenExpiryTime.HasValue)
                             RefreshTokenExpiryTime = UserByDevice.RefreshTokenExpiryTime.Value;
+                        _logger.LogInformation($"RenewToken RefreshToken/UserByDevice: {RefreshToken}");
                     }
                 }
                 if (String.IsNullOrEmpty(RefreshToken) && !String.IsNullOrEmpty(user.RefreshToken))
@@ -397,18 +422,23 @@ namespace Auth.Controllers
                     RefreshToken = user.RefreshToken;
                     if (user.RefreshTokenExpiryTime.HasValue)
                         RefreshTokenExpiryTime = user.RefreshTokenExpiryTime.Value;
+                    _logger.LogInformation($"RenewToken RefreshToken/user: {RefreshToken}");
                 }
                 if (!String.IsNullOrEmpty(RefreshToken))
                 {
                     if (RefreshToken == model.RefreshToken && RefreshTokenExpiryTime >= DateTime.Now)
                     {
+                        _logger.LogInformation($"RenewToken {user.UserName} TRUE model: {JsonConvert.SerializeObject(model)}");
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return await LoginOK(model.DeviceId, user);
                     }
                 }
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return StatusCode(StatusCodes.Status200OK,
                     new ResponseBase(LanguageAll.Language.RefreshTokenInvalid, LanguageAll.Language.RefreshTokenInvalid, LanguageAll.Language.RefreshTokenInvalid, 0, 400));
             }
 
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.RenewTokenFail, LanguageAll.Language.RenewTokenFail, LanguageAll.Language.RenewTokenFail));
         }
@@ -418,6 +448,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Revoke()
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var user = await GetCurrentUserAsync(HttpContext.User);
 
             user.RefreshToken = null;
@@ -429,6 +460,7 @@ namespace Auth.Controllers
                 devices[i].RefreshToken = null;
             }
             await _iUserDeviceRepository.UpdateMany(devices);
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseBase(LanguageAll.Language.Success, LanguageAll.Language.Success, LanguageAll.Language.Success, 1, 200));
         }
 
@@ -449,6 +481,7 @@ namespace Auth.Controllers
 
         private async Task<IActionResult> LoginOK(string DeviceId, AppUser user)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"LoginOK -> Logined: {user.UserName}; DeviceId: {DeviceId}");
             ClaimsPrincipal userClaims = await _userClaimsPrincipalFactory.CreateAsync(user);
             List<Claim> claims = userClaims.Claims.ToList();
@@ -512,6 +545,7 @@ namespace Auth.Controllers
                     await _iUserDeviceRepository.AddAsync(UserByDevice);
                 }
             }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new LoginSuccessModel
             {
                 Status = 1,
@@ -529,11 +563,13 @@ namespace Auth.Controllers
 
         private Task<AppUser> GetCurrentUserAsync(ClaimsPrincipal user)
         {
+            //_logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return _userManager.GetUserAsync(user);
         }
 
         private async Task<IActionResult> SendSMSOTP(AppUser user, LoginModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             int IsNotAllowSend = 0;
             if (user.OTPSendTime.HasValue)
             {
@@ -557,16 +593,19 @@ namespace Auth.Controllers
             {
                 case 2:
                     _logger.LogWarning("You needs request OTP after 3 minutes.");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK,
                         new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPWait}!", $"{model.Username}: {LanguageAll.Language.OTPWait}!"));
                 case 3:
                     _logger.LogWarning("You request too more OTP on this day.");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK,
                         new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPLimited}!", $"{model.Username}: {LanguageAll.Language.OTPLimited}!"));
                 case 4:
                     user.TotalOTP = user.TotalOTP + 1;
                     user.OTPSendTime = DateTime.Now;
                     await _userManager.UpdateAsync(user);
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 200,
@@ -590,6 +629,7 @@ namespace Auth.Controllers
                     var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
                     var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
                     _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 200,
@@ -607,6 +647,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> LoginByEVN([FromBody] LoginEVNModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"LoginByEVN. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
@@ -623,11 +664,13 @@ namespace Auth.Controllers
                         var result = await _signInManager.PasswordSignInAsync(users[0].UserName, _configuration["Password:Default"], bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
                         if (result.Succeeded || result.RequiresTwoFactor)
                         {
+                            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                             return await SendSMSOTP(users[0], new LoginModel() { Username = users[0].UserName });
                         }
                         else if (result.IsLockedOut)
                         {
                             _logger.LogWarning("User account locked out.");
+                            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                             return StatusCode(StatusCodes.Status200OK,
                                         new ResponseBase(LanguageAll.Language.Fail, $"{model.EVNCode}: {LanguageAll.Language.AccountLockout}!", $"{model.EVNCode}: {LanguageAll.Language.AccountLockout}!", 0, 400));
                         }
@@ -668,6 +711,8 @@ namespace Auth.Controllers
                             if (result.Succeeded)
                             {
                                 var userExists = await _userManager.FindByNameAsync(a.ItemsData[0].Mobile);
+                                // Add role customer
+                                await _userManager.AddToRoleAsync(userExists, "Customer");
                                 // Update address
                                 var a1 = await _userManager.GetClaimsAsync(userExists);
                                 if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
@@ -711,6 +756,7 @@ namespace Auth.Controllers
                                 //var message = $"Your security code is: {code}";
                                 //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
                                 //return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                                 return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
                             }
                         }
@@ -721,6 +767,7 @@ namespace Auth.Controllers
                 if (!IsExitst)
                 {
                     _logger.LogInformation($"Not found: {model.EVNCode}");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
                         Code = 400,
@@ -734,6 +781,7 @@ namespace Auth.Controllers
             }
 
             _logger.LogInformation($"Not found: {model.EVNCode}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.Fail, $"{model.EVNCode}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
         }
@@ -743,6 +791,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> PushDeviceID([FromBody] DeviceModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"PushDeviceID/model: {JsonConvert.SerializeObject(model)}");
             AppUserDevice device = null;
             if (ModelState.IsValid)
@@ -767,8 +816,10 @@ namespace Auth.Controllers
                                         device.OS = model.OS;
                                         device.IsGetNotice = model.IsGetNotice;
                                         await _iUserDeviceRepository.Update(device);
-                                        //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
+                                    //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
                                     //}
+                                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                                     return Ok(new ResponseOK
                                     {
                                         Status = 1,
@@ -792,6 +843,8 @@ namespace Auth.Controllers
                                     };
                                     await _iUserDeviceRepository.AddAsync(device);
                                     //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
+                                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                                     return Ok(new ResponseOK
                                     {
                                         Status = 1,
@@ -807,7 +860,7 @@ namespace Auth.Controllers
                     }
                 }
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK
             {
                 Status = 0,
@@ -824,6 +877,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> IsSetNotice([FromBody] DeviceTokenModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"IsSetNoticeDeviceID/model: {JsonConvert.SerializeObject(model)}");
             AppUserDevice device = null;
             if (ModelState.IsValid)
@@ -835,6 +889,7 @@ namespace Auth.Controllers
                     device = await _iUserDeviceRepository.GetAsync(sqlWhere);
                     if (device != null)
                     {
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return Ok(new ResponseOK
                         {
                             Status = 1,
@@ -856,6 +911,7 @@ namespace Auth.Controllers
                         string deviceId = HttpContext.User.Claims.Where(u => u.Type == "DeviceId").FirstOrDefault()?.Value;
                         Expression<Func<AppUserDevice, bool>> sqlWhere1 = u => (u.DeviceID == deviceId);
                         device = await _iUserDeviceRepository.GetAsync(sqlWhere1);
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return Ok(new ResponseOK
                         {
                             Status = 1,
@@ -874,7 +930,7 @@ namespace Auth.Controllers
                     }
                 }
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK
             {
                 Status = 0,
@@ -897,6 +953,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetNoticeByDevice([FromBody] NoticeModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"GetNoticeByDevice. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             string DeviceId = HttpContext.User.Claims.Where(u => u.Type == "DeviceId").FirstOrDefault()?.Value;
             AppUserDevice device = null;
@@ -937,6 +994,7 @@ namespace Auth.Controllers
                         (!_AuthorChk || u.Author.Contains(model.Author)));
                     Func<Notice, object> sqlOrder = s => s.Id;
                     var r = await _iInvoiceServices.noticeServices.GetListAsync(sqlWhere, sqlOrder, true, Page, PageSize);
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return Ok(new ResponseOK
                     {
                         Status = 1,
@@ -948,7 +1006,7 @@ namespace Auth.Controllers
                     });
                 }
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK
             {
                 Status = 0,
@@ -960,10 +1018,34 @@ namespace Auth.Controllers
             });
         }
 
+        [Authorize]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SetReadNotice([FromBody] NoticeIdListModel model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                await _iInvoiceServices.noticeServices.UpdateRead(model.Ids);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return Ok(new ResponseOK
+            {
+                Status = 1,
+                UserMessage = $"Set read notice Ok",
+                InternalMessage = $"Set read notice Ok",
+                Code = 200,
+                MoreInfo = $"Set read notice Ok",
+                data = null
+            });
+        }
+
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> PushNoticeToDevice([FromBody] NoticeInputModel model)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            //int cntDeviceID = 0;
             _logger.LogInformation($"PushNoticeToDevice. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             string IP = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             string token = Request.Headers["Authorization"].ToString().Substring("Bearer ".Length);
@@ -971,8 +1053,17 @@ namespace Auth.Controllers
             if ((fireBaseAPIConfig.IPTrust.Contains(IP) || fireBaseAPIConfig.IPTrust.Contains("*")) && token == fireBaseAPIConfig.ServerKey)
             {
                 // finding user/deviceid
-                var _claim = new Claim("GetInvoice", $"{model.CompanyId}.{model.CustomerCode}");
-                var _u = await _userManager.GetUsersForClaimAsync(_claim);
+                IList<AppUser> _u = new List<AppUser>();
+                if (model.CustomerCode == "*")
+                {
+                    _u = await _userManager.GetUsersInRoleAsync("Customer");
+                }                    
+                else
+                {
+                    var _claim = new Claim("GetInvoice", $"{model.CompanyId}.{model.CustomerCode}");
+                    _u = await _userManager.GetUsersForClaimAsync(_claim);
+                }
+                
                 _logger.LogInformation($"GetInvoice: {model.CompanyId}.{model.CustomerCode}; Count: {_u.Count}");
                 model.Content = model.Content.XSSFilter(htmlXSS);
                 if (_u.Count > 0)
@@ -999,31 +1090,24 @@ namespace Auth.Controllers
                                 NoticeTypeName = model.NoticeTypeName,
                                 OS = d1.OS,
                                 Subject = model.Subject,
-                                Username = d1.Username
+                                Username = d1.Username,
+                                Link = model.Link
                             });
                             if (d1.IsGetNotice && !String.IsNullOrEmpty(d1.Token) && !String.IsNullOrEmpty(d1.DeviceID))
                             {
+                                //cntDeviceID = cntDeviceID + 1;
                                 token_ids.Add(d1.Token);
                                 device_ids.Add(d1.DeviceID);
+                                //if (cntDeviceID % 1000 == 0)
+                                //{
+                                //    await PushFirebase(token_ids, device_ids, model, u);
+                                //    device_ids = new List<string>();
+                                //    token_ids = new List<string>();
+                                //    await Task.Delay(500);
+                                //}
                             }
                         }
-                        if (token_ids.Count > 0)
-                        {
-                            var model1 = new NoticePushFirebaseModel()
-                            {
-                                Author = model.Author,
-                                Content = model.Content,
-                                DeviceID = device_ids,
-                                Token = token_ids,
-                                IsHTML = model.IsHTML,
-                                IsRead = false,
-                                NoticeTypeId = model.NoticeTypeId,
-                                NoticeTypeName = model.NoticeTypeName,
-                                Subject = model.Subject,
-                                Username = u.UserName
-                            };
-                            await Tools.PushFireBase(model1, fireBaseConfig, _logger);
-                        }
+                        await PushFirebase(token_ids, device_ids, model, u);
                     }
                     if (notices.Count > 0)
                     {
@@ -1040,7 +1124,7 @@ namespace Auth.Controllers
                     }
                 }
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK
             {
                 Status = 0,
@@ -1050,6 +1134,30 @@ namespace Auth.Controllers
                 MoreInfo = $"{model.CustomerCode}: Push notice fail",
                 data = null
             });
+        }
+
+        private async Task PushFirebase(List<string> token_ids, List<string> device_ids, NoticeInputModel model, AppUser u)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            if (token_ids.Count > 0)
+            {
+                var model1 = new NoticePushFirebaseModel()
+                {
+                    Author = model.Author,
+                    Content = model.Content,
+                    DeviceID = device_ids,
+                    Token = token_ids,
+                    IsHTML = model.IsHTML,
+                    IsRead = false,
+                    NoticeTypeId = model.NoticeTypeId,
+                    NoticeTypeName = model.NoticeTypeName,
+                    Subject = model.Subject,
+                    Link = model.Link,
+                    Username = u.UserName
+                };
+                await Tools.PushFireBase(model1, fireBaseConfig, _logger);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
         }
 
         //private async Task SetDeviceToClaim(string DeviceId, string IsGetNotice = "0")

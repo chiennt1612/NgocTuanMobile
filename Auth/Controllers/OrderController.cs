@@ -4,10 +4,12 @@ using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.EntityBase;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -27,23 +29,28 @@ namespace Auth.Controllers
         private readonly ILogger<OrderController> _logger;
         private readonly IAllService _Service;
         private readonly IProfile _profile;
+        private IConfiguration _configuration;
 
         public OrderController(
             ILogger<OrderController> logger,
             IAllService Service,
-            IProfile profile)
+            IProfile profile,
+            IConfiguration configuration)
         {
             this._logger = logger;
             this._Service = Service;
             this._profile = profile;
-            _logger.WriteLog("Starting Order page");
+            _configuration = configuration;
+            _logger.WriteLog(_configuration, "Starting Order page");
         }
 
         [HttpGet]
         [Route("[action]/{Id}")]
         public async Task<IActionResult> Detail(long Id)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _Service.contactServices.GetByIdAsync(Id);
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,
@@ -59,6 +66,7 @@ namespace Auth.Controllers
         [Route("[action]")]
         public async Task<IActionResult> List(int? page, int? pageSize, [FromBody] OrderSearchModel o)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             int _Page = (page.HasValue ? page.Value : 1);
             int _PageSize = pageSize.HasValue ? pageSize.Value : 10;
             Func<Contact, object> sqlOrder = s => s.Id;
@@ -92,6 +100,7 @@ namespace Auth.Controllers
                           PaymentMethod = 3,
                           ServiceId = b.ServiceId
                       };
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseOK()
             {
                 Code = 200,

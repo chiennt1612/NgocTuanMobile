@@ -26,21 +26,30 @@ namespace Auth.Repository
             int page, int pageSize)
         {
             var a = new BaseEntityList<Notice>();
-            a.totalRecords = await CountAsync(expression);
+            a.totalRecords = await _context.Notices
+                            .Where(a => a.IsDelete == false)
+                            //.Where(expression)
+                            .CountAsync(expression);
+            a.totalUnRead = await _context.Notices
+                            .Where(a => a.IsDelete == false && !a.IsRead)
+                            //.Where(expression)
+                            .CountAsync(expression);
             a.page = page;
             a.pageSize = pageSize;
             int skipRows = (page - 1) * pageSize;
             if (desc)
-                a.list = (await _context.Notices
+                a.list = _context.Notices
                             .Where(a => a.IsDelete == false)
-                            .Where(expression).ToListAsync()
-                          ).OrderByDescending(sort).Skip(skipRows).Take(pageSize);
+                            .Where(expression)
+                            .OrderByDescending(sort).Skip(skipRows).Take(pageSize);
             else
-                a.list = (await _context.Notices
+                a.list = _context.Notices
                             .Where(a => a.IsDelete == false)
-                            .Where(expression).ToListAsync()
-                          ).OrderBy(sort).Skip(skipRows).Take(pageSize);
+                            .Where(expression)
+                            .OrderBy(sort).Skip(skipRows).Take(pageSize);
             return a;
+            //.OrderBy(u => u.IsRead)
+            //                .ThenByDescending(u => u.CreateDate)
         }
     }
 }

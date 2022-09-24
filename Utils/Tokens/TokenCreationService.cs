@@ -88,10 +88,11 @@ namespace Utils.Tokens
 
         public string GenerateRefreshToken()
         {
-            var randomNumber = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
+            //var randomNumber = new byte[64];
+            //using var rng = RandomNumberGenerator.Create();
+            //rng.GetBytes(randomNumber);
+            byte[] randomNumber = Guid.NewGuid().ToByteArray();
+            return Convert.ToBase64String(randomNumber).ToMD5Hash();
         }
 
         public ClaimsPrincipal ValidateToken(string? token)

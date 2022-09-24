@@ -5,12 +5,15 @@ using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -27,6 +30,9 @@ namespace Auth.Services
         private readonly IInvoiceRepository _invoice;
         private readonly IContractServices _contract;
         private readonly IUserDeviceRepository _iUserDeviceRepository;
+        private readonly IDistributedCache _cache;
+        private readonly IConfiguration _configuration;
+        private List<string> invoiceCacheKeys;
 
         public Profile(
             ILogger<Profile> logger,
@@ -34,7 +40,9 @@ namespace Auth.Services
             IInvoiceRepository invoice,
             IHttpContextAccessor context,
             IUserDeviceRepository iUserDeviceRepository,
-            IContractServices contract)
+            IContractServices contract,
+            IDistributedCache cache,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _logger = logger;
@@ -42,10 +50,20 @@ namespace Auth.Services
             _invoice = invoice;
             _iUserDeviceRepository = iUserDeviceRepository;
             _contract = contract;
+            _cache = cache;
+            _configuration = configuration;
+
+            var b = _cache.GetAsync<List<string>>("InvoiceCacheKeys").GetAwaiter();
+            invoiceCacheKeys = b.GetResult();
+            if (invoiceCacheKeys == null)
+            {
+                invoiceCacheKeys = new List<string>();
+            }
         }
 
         public async Task<ResponseOK> GetProfile(int profileType = 1)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a1 = await _userManager.GetUserAsync(_context.HttpContext.User);
             _logger.LogInformation($"Get profile: {a1.UserName}");
             IEnumerable<Claim> claims;
@@ -107,6 +125,7 @@ namespace Auth.Services
             switch (profileType)
             {
                 case 1:
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return new ResponseOK()
                     {
                         Code = 200,
@@ -117,6 +136,7 @@ namespace Auth.Services
                         UserMessage = LanguageAll.Language.GetProfileOK
                     };
                 case 2:
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return new ResponseOK()
                     {
                         Code = 200,
@@ -127,6 +147,7 @@ namespace Auth.Services
                         data = a
                     };
                 case 3:
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return new ResponseOK()
                     {
                         Code = 200,
@@ -137,6 +158,7 @@ namespace Auth.Services
                         UserMessage = LanguageAll.Language.LinkInvoiceSuccess
                     };
                 case 4:
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return new ResponseOK()
                     {
                         Code = 200,
@@ -147,6 +169,7 @@ namespace Auth.Services
                         UserMessage = LanguageAll.Language.RemoveInvoiceSuccess
                     };
                 default:
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return new ResponseOK()
                     {
                         Code = 200,
@@ -161,6 +184,7 @@ namespace Auth.Services
 
         public async Task<ResponseOK> SetProfile(ProfileInputModel inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
             if (inv.Email.IsValidEmail())
             {
@@ -187,6 +211,7 @@ namespace Auth.Services
 
             if (String.IsNullOrEmpty(inv.CompanyName) && inv.IsCompany)
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -200,6 +225,7 @@ namespace Auth.Services
 
             if (String.IsNullOrEmpty(inv.Fullname))
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -239,7 +265,7 @@ namespace Auth.Services
             {
                 if (a.Where(u => u.Type == "Avatar").FirstOrDefault() != null)
                 {
-                    _logger.WriteLog($"4.1. SetProfile {inv.Avatar}");
+                    _logger.WriteLog(_configuration, $"4.1. SetProfile {inv.Avatar}");
                     await _userManager.RemoveClaimAsync(u, new Claim("Avatar", inv.Avatar));
                 }
                 await _userManager.AddClaimAsync(u, new Claim("Avatar", inv.Avatar));
@@ -305,14 +331,17 @@ namespace Auth.Services
             //        await _userManager.ReplaceClaimAsync(u, a.Where(u => u.Type == "PhoneNumber").FirstOrDefault(), new Claim("PhoneNumber", inv.PhoneNumber));
             //    }
             //}
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return await GetProfile(2);
         }
 
         public async Task<ResponseOK> LinkInvoice(InvoiceInput inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
             if (inv.CompanyID < 0 || inv.CompanyID > 100)
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -325,6 +354,7 @@ namespace Auth.Services
             }
             if (String.IsNullOrEmpty(inv.CustomerCode))
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -344,6 +374,7 @@ namespace Auth.Services
             CustomerInfoResult ir = await _invoice.getCustomerInfo(inv1);
             if (ir.DataStatus != "00")
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -375,9 +406,10 @@ namespace Auth.Services
                 });
 
                 await _userManager.AddClaimAsync(u, _claim);
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return await GetProfile(3);
             }
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return new ResponseOK()
             {
                 Code = 400,
@@ -391,9 +423,11 @@ namespace Auth.Services
 
         public async Task<ResponseOK> RemoveInvoice(InvoiceInput inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"inv: {JsonConvert.SerializeObject(inv)}");
             if (inv.CompanyID < 0 || inv.CompanyID > 100)
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -406,6 +440,7 @@ namespace Auth.Services
             }
             if (String.IsNullOrEmpty(inv.CustomerCode))
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -436,6 +471,7 @@ namespace Auth.Services
             var a = await _userManager.GetClaimsAsync(u);
             if (a.Where(u => u.Type == _claim.Type && u.Value == _claim.Value).FirstOrDefault() == default)
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -453,12 +489,13 @@ namespace Auth.Services
             var contract = await _contract.GetAsync(expression);
             if (contract != null) await _contract.DeleteAsync(contract.Id);
             await _userManager.RemoveClaimAsync(u, _claim);
-
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return await GetProfile(4);
         }
 
         public async Task<ResponseOK> GetCompanyList()
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a1 = await _userManager.GetUserAsync(_context.HttpContext.User);
             _logger.LogInformation($"GetCompanyList: {a1.UserName}");
             var r = new List<CompanyInfo>();
@@ -472,6 +509,7 @@ namespace Auth.Services
                     CompanyNameEn = item.Info.CompanyNameEn
                 });
             }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return new ResponseOK()
             {
                 Code = 200,
@@ -485,10 +523,12 @@ namespace Auth.Services
 
         public async Task<ResponseOK> SetCompanyInfo(CompanyInfoInput inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a1 = await _userManager.GetUserAsync(_context.HttpContext.User);
             _logger.LogInformation($"SetCompanyInfo: {a1.UserName}");
             if (String.IsNullOrEmpty(inv.CompanyCode))
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -522,11 +562,13 @@ namespace Auth.Services
             {
                 await _userManager.ReplaceClaimAsync(u, c, c1);
             }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return await GetProfile(5);
         }
 
         public async Task<ResponseOK> GetCompanyInfo(int profileType = 1)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a1 = await _userManager.GetUserAsync(_context.HttpContext.User);
             _logger.LogInformation($"GetCompanyInfo: {a1.UserName}");
             IEnumerable<Claim> claims;
@@ -552,6 +594,7 @@ namespace Auth.Services
                 CompanyLogo = _invoice.companyConfig.Companys[CompanyID].Info.CompanyLogo,
                 CompanyNameEn = _invoice.companyConfig.Companys[CompanyID].Info.CompanyNameEn
             };
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return new ResponseOK()
             {
                 Code = 200,
@@ -565,9 +608,11 @@ namespace Auth.Services
 
         public async Task<ResponseOK> GetContractAllList(ContractInput inv)
         {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var _company = _invoice.companyConfig.Companys.Where(u => u.Info.CompanyId == inv.CompanyID).FirstOrDefault();
             if (_company == null)
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -580,6 +625,7 @@ namespace Auth.Services
             }
             if (String.IsNullOrEmpty(inv.Mobile))
             {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return new ResponseOK()
                 {
                     Code = 400,
@@ -591,9 +637,20 @@ namespace Auth.Services
                 };
             }
 
-            ContractResult ir = await _invoice.GetContract(inv);
-            ir.CompanyInfo = _company.Info;
-
+            string _key = $"GetContractAllList.{inv.CompanyID}.{inv.Mobile}".ToMD5Hash();
+            if (!invoiceCacheKeys.Contains(_key))
+            {
+                invoiceCacheKeys.Add(_key);
+                await _cache.InvoiceSetAsync("InvoiceCacheKeys", invoiceCacheKeys);
+            }
+            ContractResult ir = await _cache.GetAsync<ContractResult>(_key);
+            if (ir == null)
+            {
+                ir = await _invoice.GetContract(inv);
+                ir.CompanyInfo = _company.Info;
+                await _cache.InvoiceSetAsync(_key, ir);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return new ResponseOK()
             {
                 Code = 200,
@@ -607,7 +664,21 @@ namespace Auth.Services
 
         public async Task<ContractResult> GetContractList(ContractInput inv)
         {
-            return await _invoice.GetContract(inv);
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            string _key = $"GetContractList.{inv.CompanyID}.{inv.Mobile}".ToMD5Hash();
+            if (!invoiceCacheKeys.Contains(_key))
+            {
+                invoiceCacheKeys.Add(_key);
+                await _cache.InvoiceSetAsync("InvoiceCacheKeys", invoiceCacheKeys);
+            }
+            ContractResult a = await _cache.GetAsync<ContractResult>(_key);
+            if (a == null)
+            {
+                a = await _invoice.GetContract(inv);
+                await _cache.InvoiceSetAsync(_key, a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return a;
         }
     }
 }

@@ -18,5 +18,6 @@ namespace Auth.Services.Interfaces
             int page, int pageSize);
         Task<Notice> AddAsync(Notice notice);
         Task DeleteAsync(long id);
+        Task UpdateRead(IList<long> ids);
     }
 }

@@ -23,6 +23,7 @@ namespace EntityFramework.API.Entities.Identity
         public string Token { get; set; }
         public OSType OS { get; set; }
         public bool IsGetNotice { get; set; } = false;
+        [StringLength(36)]
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
     }

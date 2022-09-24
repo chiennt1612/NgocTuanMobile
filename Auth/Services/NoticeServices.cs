@@ -77,5 +77,22 @@ namespace Auth.Services
             await unitOfWork.noticeRepository.DeleteAsync(id);
             await unitOfWork.SaveAsync();
         }
+
+        public async Task UpdateRead(IList<long> ids)
+        {
+            Expression<Func<Notice, bool>> where = u => ids.Contains(u.Id);
+            IEnumerable<Notice> entities = await unitOfWork.noticeRepository.GetManyAsync(where);
+            var i = 0;
+            foreach (Notice entity in entities)
+            {
+                i++;
+                entity.IsRead = true;
+                unitOfWork.noticeRepository.Update(entity);
+            }
+            if(i > 0)
+            {
+                await unitOfWork.SaveAsync();
+            }            
+        }
     }
 }

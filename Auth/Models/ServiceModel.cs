@@ -7,6 +7,7 @@ namespace Auth.Models
     {
         public Service _Detail { get; set; }
         public IEnumerable<Service> _Related { get; set; }
+        public string Url { get; set; }
     }
     public class ServiceModel
     {
@@ -18,6 +19,7 @@ namespace Auth.Models
         public double PricePerson { get; set; }
         public double PriceCompany { get; set; }
         public string PriceText { get; set; }
+        public string Url { get; set; }
     }
 
     public class ServiceInputModel

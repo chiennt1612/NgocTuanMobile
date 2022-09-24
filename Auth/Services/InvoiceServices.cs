@@ -41,7 +41,7 @@ namespace Auth.Services
         public async Task<ResponseOK> GetInvoice(InvoiceInput inv)
         {
             var a = await _invoice.GetInvoice(inv);
-            if (a.DataStatus == "00")
+            if (a.DataStatus == "00" || a.DataStatus == "01")
             {
                 a.ItemsData.CompanyID = inv.CompanyID;
                 return new ResponseOK()
@@ -106,7 +106,7 @@ namespace Auth.Services
         public async Task<ResponseOK> GetInvoiceAll(InvoiceAllInput inv)
         {
             var a = await _invoice.GetInvoiceAll(inv);
-            if (a.DataStatus == "00")
+            if (a.DataStatus == "00" || a.DataStatus == "01")
                 return new ResponseOK()
                 {
                     Code = 200,
@@ -120,7 +120,7 @@ namespace Auth.Services
                 return new ResponseOK()
                 {
                     Code = 404,
-                    data = a,
+                    data = null,
                     InternalMessage = LanguageAll.Language.Fail,
                     MoreInfo = LanguageAll.Language.Fail,
                     Status = 0,
@@ -145,7 +145,7 @@ namespace Auth.Services
                 return new ResponseOK()
                 {
                     Code = 404,
-                    data = a,
+                    data = null,
                     InternalMessage = LanguageAll.Language.Fail,
                     MoreInfo = LanguageAll.Language.Fail,
                     Status = 0,
@@ -170,7 +170,7 @@ namespace Auth.Services
                 return new ResponseOK()
                 {
                     Code = 404,
-                    data = a,
+                    data = null,
                     InternalMessage = LanguageAll.Language.Fail,
                     MoreInfo = LanguageAll.Language.Fail,
                     Status = 0,

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -38,31 +39,54 @@ namespace Utils
 
     public static class IloggerExtensions
     {
-        public static void WriteLog(this ILogger _logger, string OK, string Error = "", int type = 0)
+        public static DateTime DebugStart(this ILogger _logger, IConfiguration _configuration, string functionName)
         {
-            switch (type)
-            {
-                case 0:
-                    try
-                    {
-                        _logger.LogInformation(OK);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogInformation($"{Error} Is {ex.Message}");
-                    }
-                    break;
-                case 1:
-                    try
-                    {
-                        _logger.LogError(OK);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"{Error} Is {ex.Message}");
-                    }
-                    break;
+            bool isDebug = false; 
+            var a = DateTime.Now;
+            if (bool.TryParse(_configuration["Logging:Debug"], out isDebug) && isDebug)
+            {                
+                _logger.LogInformation($"Debug {functionName}/ Start {a.ToString("yyyy-MM-dd HH:mm:ss fff")} ");
             }
+            return a;
+        }
+
+        public static void DebugEnd(this ILogger _logger, IConfiguration _configuration, string functionName, DateTime dateStart)
+        {
+            bool isDebug = false;
+            var a = DateTime.Now;
+            if (bool.TryParse(_configuration["Logging:Debug"], out isDebug) && isDebug) 
+                _logger.LogInformation($"Debug {functionName}/ End {a.ToString("yyyy-MM-dd HH:mm:ss fff")}/ Due {(a - dateStart).TotalMilliseconds}");
+        }
+        public static void WriteLog(this ILogger _logger, IConfiguration _configuration, string OK, string Error = "", int type = 0)
+        {
+            bool isDebug = false;
+            var a = DateTime.Now;
+            if (bool.TryParse(_configuration["Logging:Debug"], out isDebug) && isDebug)
+            {
+                switch (type)
+                {
+                    case 0:
+                        try
+                        {
+                            _logger.LogInformation(OK);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogInformation($"{Error} Is {ex.Message}");
+                        }
+                        break;
+                    case 1:
+                        try
+                        {
+                            _logger.LogError(OK);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"{Error} Is {ex.Message}");
+                        }
+                        break;
+                }
+            }                
         }
     }
 
@@ -231,6 +255,18 @@ namespace Utils
             string r = SerializeToBase64String<T>(_obj);
             await _cache.SetStringAsync(Key, r, options, token);
         }
+        public static async Task InvoiceSetAsync<T>(this IDistributedCache _cache, string Key, T _obj)
+        {
+            await _cache.SetAsync(Key, _obj, 14400);
+        }
+        public static async Task InvoiceRemoveAsync(this IDistributedCache _cache, List<string> Keys)
+        {
+            List<Task> t = new List<Task>();
+            foreach(string key in Keys)
+            {
+                await _cache.RemoveAsync(key);
+            }
+        }
         #endregion
 
         #region Base64
@@ -255,16 +291,18 @@ namespace Utils
 
         public static string SerializeToBase64String<T>(T obj)
         {
-            var a = JsonConvert.SerializeObject(obj);
+            //var jsonSettings = new JsonSerializerSettings();
+            //jsonSettings.DateFormatString = "MMM dd yyyy h:mmtt";
+            var a = JsonConvert.SerializeObject(obj);//, jsonSettings);
             return Base64Encode(a);
         }
 
         public static T DeserializeFromBase64String<T>(string content)
         {
-            var ds = new DataContractJsonSerializer(typeof(T));
-            return (T)ds.ReadObject(new MemoryStream(Convert.FromBase64String(content)));
-            //var obj = JsonConvert.DeserializeObject<T>(Base64Decode(content));
-            //return obj;
+            //var ds = new DataContractJsonSerializer(typeof(T));
+            //return (T)ds.ReadObject(new MemoryStream(Convert.FromBase64String(content)));
+            var obj = JsonConvert.DeserializeObject<T>(Base64Decode(content));
+            return obj;
         }
 
         public static string Base64UrlEncode(byte[] s)
@@ -766,6 +804,7 @@ namespace Utils
                     content = model.Content,
                     isHTML = model.IsHTML,
                     author = model.Author,
+                    link = model.Link,
                     isRead = false
                 },
                 notification = new

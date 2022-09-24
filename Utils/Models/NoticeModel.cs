@@ -19,6 +19,10 @@ namespace Utils.Models
         public long UserId { get; set; }
     }
 
+    public class NoticeIdListModel
+    {
+        public IList<long> Ids { get; set; }
+    }
     public class NoticeModel : SearchDateModel
     {
         //public string DeviceId { get; set; }
@@ -39,6 +43,7 @@ namespace Utils.Models
         public string Content { get; set; }
         public bool IsHTML { get; set; }
         public string Author { get; set; }
+        public string Link { get; set; }
     }
 
     public class NoticePushFirebaseModel
@@ -52,6 +57,7 @@ namespace Utils.Models
         public string Content { get; set; }
         public bool IsHTML { get; set; }
         public string Author { get; set; }
+        public string Link { get; set; }
         public bool IsRead { get; set; } = false;
     }
 
