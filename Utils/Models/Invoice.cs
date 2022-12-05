@@ -89,6 +89,7 @@ namespace Utils.Models
         public double TaxPer { get; set; }
         public double InvAmountWithoutTax { get; set; }
         public double InvAmount { get; set; }
+        public string Link { get; set; }
     }
     public class InvoiceStatusBase : InvoiceBase
     {

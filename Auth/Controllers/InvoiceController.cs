@@ -189,6 +189,7 @@ namespace Auth.Controllers
                         for (var j = 0; j < a2.ItemsData.Count; j++)
                         {
                             a2.ItemsData[j].CompanyId = CompanyId;
+                            a2.ItemsData[j].Link = $"https://nuocngoctuan.com/Account/InvoiceView?reservationCode={a2.ItemsData[j].MaSoBiMat}&supplierTaxCode={companyConfig.Companys[inv.CompanyID].Info.Taxcode}& invoiceNo={a2.ItemsData[j].InvSerial}{a2.ItemsData[j].InvNumber}& invoiceType={_configuration["CompanyConfig:InvoiceType"]}";
                         }
                         a.itemsData = a2.ItemsData;
                         itemsCount = itemsCount + int.Parse(a2.Message);
@@ -271,6 +272,7 @@ namespace Auth.Controllers
                 if (a1.DataStatus == "00")
                 {
                     a1.CompanyInfo = companyConfig.Companys[i].Info;
+                    a1.ItemsData.Link = $"https://nuocngoctuan.com/Account/InvoiceView?reservationCode={a1.ItemsData.MaSoBiMat}&supplierTaxCode={companyConfig.Companys[inv.CompanyID].Info.Taxcode}& invoiceNo={a1.ItemsData.InvSerial}{a1.ItemsData.InvNumber}& invoiceType={_configuration["CompanyConfig:InvoiceType"]}";
                     a2 = new ResponseOK()
                     {
                         Code = 200,
@@ -321,6 +323,7 @@ namespace Auth.Controllers
                 invoiceCacheKeys.Add(_key);
                 await _cache.InvoiceSetAsync("InvoiceCacheKeys", invoiceCacheKeys);
             }
+            bool IsFound = false;
             List<ItemsDatum> r = await _cache.GetAsync<List<ItemsDatum>>(_key);
             if (r == null)
             {
@@ -347,11 +350,13 @@ namespace Auth.Controllers
                         CustomerCode = CustomerCode
                     };
                     var a = await _Service.invoiceServices.GetInvoiceA(inv);
+                    if (a.DataStatus == "00" || a.DataStatus == "01") IsFound = true;
                     if (a.DataStatus == "00")
                     {
                         for (var j = 0; j < a.ItemsData.Count; j++)
                         {
                             a.ItemsData[j].CompanyId = CompanyId;
+                            a.ItemsData[j].Link = $"https://nuocngoctuan.com/Account/InvoiceView?reservationCode={a.ItemsData[j].MaSoBiMat}&supplierTaxCode={companyConfig.Companys[inv.CompanyID].Info.Taxcode}& invoiceNo={a.ItemsData[j].InvSerial}{a.ItemsData[j].InvNumber}& invoiceType={_configuration["CompanyConfig:InvoiceType"]}";
                         }
                         r.AddRange(a.ItemsData);
                     }
@@ -366,6 +371,19 @@ namespace Auth.Controllers
                     data = new
                     {
                         itemsData = new { invList = r }
+                    },
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else if (IsFound)
+                a1 = new ResponseOK()
+                {
+                    Code = 200,
+                    data = new
+                    {
+                        itemsData = new { invList = new List<ItemsDatum>() }
                     },
                     InternalMessage = LanguageAll.Language.Success,
                     MoreInfo = LanguageAll.Language.Success,
@@ -530,7 +548,8 @@ namespace Auth.Controllers
                                         CompanyLogo = companyConfig.Companys[inv.CompanyID].Info.CompanyLogo,
                                         CompanyName = companyConfig.Companys[inv.CompanyID].Info.CompanyName,
                                         CompanyNameEn = companyConfig.Companys[inv.CompanyID].Info.CompanyNameEn,
-                                        Taxcode = companyConfig.Companys[inv.CompanyID].Info.Taxcode
+                                        Taxcode = companyConfig.Companys[inv.CompanyID].Info.Taxcode,
+                                        Link = $"https://nuocngoctuan.com/Account/InvoiceView?reservationCode={invq.MaSoBiMat}&supplierTaxCode={companyConfig.Companys[inv.CompanyID].Info.Taxcode}& invoiceNo={invq.InvSerial}{invq.InvNumber}& invoiceType={_configuration["CompanyConfig:InvoiceType"]}"
                                     };
                                     await _Service.iInvoiceSaveServices.AddAsync(orderSave);
                                 }

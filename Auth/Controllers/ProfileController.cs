@@ -423,7 +423,7 @@ namespace Auth.Controllers
         {
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             var a = await _profile.RemoveInvoice(inv);
-            _logger.WriteLog(_configuration, $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+            _logger.WriteLog(_configuration, $"RemoveContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"RemoveContract {inv.CompanyID}/ {inv.CustomerCode}");
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             if (a.Status == 0)
             {

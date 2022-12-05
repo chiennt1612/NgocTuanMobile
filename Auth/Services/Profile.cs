@@ -387,9 +387,9 @@ namespace Auth.Services
             }
 
             var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{inv.CustomerCode}");
-            var _u = await _userManager.GetUsersForClaimAsync(_claim);
-            if (_u.Count == 0)
-            {
+            //var _u = await _userManager.GetUsersForClaimAsync(_claim);
+            //if (_u.Count == 0)
+            //{
                 var u = await _userManager.GetUserAsync(_context.HttpContext.User);
                 await _contract.AddAsync(new Contract()
                 {
@@ -408,17 +408,17 @@ namespace Auth.Services
                 await _userManager.AddClaimAsync(u, _claim);
                 _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                 return await GetProfile(3);
-            }
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return new ResponseOK()
-            {
-                Code = 400,
-                InternalMessage = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
-                MoreInfo = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
-                Status = 0,
-                UserMessage = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
-                data = null
-            };
+            //}
+            //_logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            //return new ResponseOK()
+            //{
+            //    Code = 400,
+            //    InternalMessage = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
+            //    MoreInfo = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
+            //    Status = 0,
+            //    UserMessage = LanguageAll.Language.LinkInvoiceFailCodeHasLink,
+            //    data = null
+            //};
         }
 
         public async Task<ResponseOK> RemoveInvoice(InvoiceInput inv)
@@ -487,8 +487,12 @@ namespace Auth.Services
                     (u.CompanyId >= inv.CompanyID) &&
                     (u.CustomerCode == inv.CustomerCode));
             var contract = await _contract.GetAsync(expression);
-            if (contract != null) await _contract.DeleteAsync(contract.Id);
-            await _userManager.RemoveClaimAsync(u, _claim);
+            _logger.LogInformation($"inv: {contract.Id} | {inv.CustomerCode} | {inv.CompanyID} | {inv.CompanyID}.{inv.CustomerCode}");
+            if (contract != null)
+            {
+                await _contract.DeleteAsync(contract);
+                await _userManager.RemoveClaimAsync(u, _claim);
+            }
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return await GetProfile(4);
         }

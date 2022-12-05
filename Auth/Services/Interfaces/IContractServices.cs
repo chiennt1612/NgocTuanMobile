@@ -18,6 +18,7 @@ namespace Auth.Services.Interfaces
             int page, int pageSize);
         Task<Contract> AddAsync(Contract notice);
         Task DeleteAsync(long id);
+        Task DeleteAsync(Contract notice);
 
         Task<Contract> GetAsync(Expression<Func<Contract, bool>> where);
         Task<IEnumerable<Contract>> GetManyAsync(Expression<Func<Contract, bool>> where);

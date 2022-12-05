@@ -40,5 +40,7 @@ namespace EntityFramework.API.Entities
         [StringLength(30)]
         public string Taxcode { get; set; }
         public long UserId { get; set; }
+        [StringLength(500)]
+        public string Link { get; set; }
     }
 }

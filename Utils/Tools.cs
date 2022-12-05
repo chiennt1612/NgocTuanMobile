@@ -257,10 +257,12 @@ namespace Utils
         }
         public static async Task InvoiceSetAsync<T>(this IDistributedCache _cache, string Key, T _obj)
         {
+            return;
             await _cache.SetAsync(Key, _obj, 14400);
         }
         public static async Task InvoiceRemoveAsync(this IDistributedCache _cache, List<string> Keys)
         {
+            return;
             List<Task> t = new List<Task>();
             foreach(string key in Keys)
             {

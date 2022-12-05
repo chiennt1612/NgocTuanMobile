@@ -78,6 +78,12 @@ namespace Auth.Services
             await unitOfWork.SaveAsync();
         }
 
+        public async Task DeleteAsync(Contract notice)
+        {
+            unitOfWork.contractRepository.Delete(notice);
+            await unitOfWork.SaveAsync();
+        }
+
         public async Task<Contract> GetAsync(Expression<Func<Contract, bool>> where)
         {
             var a = await unitOfWork.contractRepository.GetAsync(where);
