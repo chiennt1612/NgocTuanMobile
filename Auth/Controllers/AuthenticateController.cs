@@ -15,9 +15,11 @@ using Newtonsoft.Json;
 using SMSGetway;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -163,7 +165,7 @@ namespace Auth.Controllers
                                 {
                                     var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
                                     await _userManager.AddClaimAsync(userExists, _claim); //
-                                    await _iInvoiceServices.contractServices.AddAsync(new Contract()
+                                    await _iInvoiceServices.contractServices.AddAsync(new EntityFramework.API.Entities.Contract()
                                     {
                                         Address = customerCode.Address,
                                         CompanyId = inv.CompanyID,
@@ -196,6 +198,23 @@ namespace Auth.Controllers
                 if (!IsExitst)
                 {
                     _logger.LogInformation($"Not found: {model.Username}");
+                    user = new()
+                    {
+                        SecurityStamp = Guid.NewGuid().ToString(),
+                        UserName = model.Username,
+                        PhoneNumber = model.Username,
+                        TwoFactorEnabled = true,
+                    };
+                    var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
+                    if (result.Succeeded)
+                    {
+                        var userExists = await _userManager.FindByNameAsync(model.Username);
+                        // Add role customer
+                        await _userManager.AddToRoleAsync(userExists, "Customer");
+                        await _userManager.AddClaimAsync(userExists, new Claim("Fullname", model.Username));
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                        return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
+                    }
                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
@@ -733,7 +752,7 @@ namespace Auth.Controllers
                                 {
                                     var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
                                     await _userManager.AddClaimAsync(userExists, _claim); // 
-                                    await _iInvoiceServices.contractServices.AddAsync(new Contract()
+                                    await _iInvoiceServices.contractServices.AddAsync(new EntityFramework.API.Entities.Contract()
                                     {
                                         Address = customerCode.Address,
                                         CompanyId = inv.CompanyID,
@@ -1160,6 +1179,175 @@ namespace Auth.Controllers
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> SyncContract()
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var userExists = await _userManager.GetUserAsync(HttpContext.User);
+
+            for (var i = 0; i < companyConfig.Companys.Count; i++)
+            {
+                var inv = new EVNCodeInput()
+                {
+                    CompanyID = companyConfig.Companys[i].Info.CompanyId,
+                    EVNCode = userExists.UserName
+                };
+                var a = await _iInvoiceServices.invoiceServices.getCustomerInfo(inv);
+                if (a.DataStatus == "00")
+                {
+                    // Update address                    
+                    var a1 = await _userManager.GetClaimsAsync(userExists);
+                    Claim claim;
+                    if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
+                    {
+                        claim = a1.Where(u => u.Type == "Address").FirstOrDefault();
+                        if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                        await _userManager.AddClaimAsync(userExists, new Claim("Address", a.ItemsData[0].Address));
+                    }
+                    if (!String.IsNullOrEmpty(a.ItemsData[0].WaterIndexCode))
+                    {
+                        claim = a1.Where(u => u.Type == "WaterCode").FirstOrDefault();
+                        if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                        await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData[0].WaterIndexCode));
+                    }
+                    if (!String.IsNullOrEmpty(a.ItemsData[0].TaxCode))
+                    {
+                        claim = a1.Where(u => u.Type == "TaxCode").FirstOrDefault();
+                        if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                        await _userManager.AddClaimAsync(userExists, new Claim("TaxCode", a.ItemsData[0].TaxCode));
+                    }
+                    claim = a1.Where(u => u.Type == "Fullname").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].CustomerName));
+
+                    foreach (var customerCode in a.ItemsData)
+                    {
+                        Expression<Func<EntityFramework.API.Entities.Contract, bool>> expression = u => (
+                            (u.CompanyId >= inv.CompanyID) &&
+                            (u.CustomerCode == customerCode.CustomerCode));
+                        var contract = await _iInvoiceServices.contractServices.GetAsync(expression);
+                        if (contract == null)
+                        {
+                            var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
+                            await _userManager.AddClaimAsync(userExists, _claim); //
+                            await _iInvoiceServices.contractServices.AddAsync(new EntityFramework.API.Entities.Contract()
+                            {
+                                Address = customerCode.Address,
+                                CompanyId = inv.CompanyID,
+                                CustomerCode = customerCode.CustomerCode,
+                                CustomerName = customerCode.CustomerName,
+                                CustomerType = customerCode.CustomerType,
+                                Email = customerCode.Email,
+                                Mobile = customerCode.Mobile,
+                                TaxCode = customerCode.TaxCode,
+                                UserId = userExists.Id,
+                                WaterIndexCode = customerCode.WaterIndexCode
+                            });
+                        }
+                    }
+                }
+            } 
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.Success, $"{userExists.UserName}: {LanguageAll.Language.Success}!", LanguageAll.Language.Success, 0, 200));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SyncContract([FromBody] LoginModel model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            //int cntDeviceID = 0;
+            _logger.LogInformation($"PushNoticeToDevice. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            string IP = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            string token = Request.Headers["Authorization"].ToString().Substring("Bearer ".Length);
+            _logger.LogInformation($"IP: {IP}; token: {token}: {((fireBaseAPIConfig.IPTrust.Contains(IP) || fireBaseAPIConfig.IPTrust.Contains("*")) && token == fireBaseAPIConfig.ServerKey)}");
+            if ((fireBaseAPIConfig.IPTrust.Contains(IP) || fireBaseAPIConfig.IPTrust.Contains("*")) && token == fireBaseAPIConfig.ServerKey)
+            {
+                var userExists = await _userManager.FindByNameAsync(model.Username);
+                if (userExists != null)
+                {
+                    for (var i = 0; i < companyConfig.Companys.Count; i++)
+                    {
+                        var inv = new EVNCodeInput()
+                        {
+                            CompanyID = companyConfig.Companys[i].Info.CompanyId,
+                            EVNCode = userExists.UserName
+                        };
+                        var a = await _iInvoiceServices.invoiceServices.getCustomerInfo(inv);
+                        if (a.DataStatus == "00")
+                        {
+                            // Update address                    
+                            var a1 = await _userManager.GetClaimsAsync(userExists);
+                            Claim claim;
+                            if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
+                            {
+                                claim = a1.Where(u => u.Type == "Address").FirstOrDefault();
+                                if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                                await _userManager.AddClaimAsync(userExists, new Claim("Address", a.ItemsData[0].Address));
+                            }
+                            if (!String.IsNullOrEmpty(a.ItemsData[0].WaterIndexCode))
+                            {
+                                claim = a1.Where(u => u.Type == "WaterCode").FirstOrDefault();
+                                if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                                await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData[0].WaterIndexCode));
+                            }
+                            if (!String.IsNullOrEmpty(a.ItemsData[0].TaxCode))
+                            {
+                                claim = a1.Where(u => u.Type == "TaxCode").FirstOrDefault();
+                                if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                                await _userManager.AddClaimAsync(userExists, new Claim("TaxCode", a.ItemsData[0].TaxCode));
+                            }
+                            claim = a1.Where(u => u.Type == "Fullname").FirstOrDefault();
+                            if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                            await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].CustomerName));
+
+                            foreach (var customerCode in a.ItemsData)
+                            {
+                                Expression<Func<EntityFramework.API.Entities.Contract, bool>> expression = u => (
+                                    (u.CompanyId >= inv.CompanyID) &&
+                                    (u.CustomerCode == customerCode.CustomerCode));
+                                var contract = await _iInvoiceServices.contractServices.GetAsync(expression);
+                                if (contract == null)
+                                {
+                                    var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
+                                    await _userManager.AddClaimAsync(userExists, _claim); //
+                                    await _iInvoiceServices.contractServices.AddAsync(new EntityFramework.API.Entities.Contract()
+                                    {
+                                        Address = customerCode.Address,
+                                        CompanyId = inv.CompanyID,
+                                        CustomerCode = customerCode.CustomerCode,
+                                        CustomerName = customerCode.CustomerName,
+                                        CustomerType = customerCode.CustomerType,
+                                        Email = customerCode.Email,
+                                        Mobile = customerCode.Mobile,
+                                        TaxCode = customerCode.TaxCode,
+                                        UserId = userExists.Id,
+                                        WaterIndexCode = customerCode.WaterIndexCode
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    return StatusCode(StatusCodes.Status200OK,
+                        new ResponseBase(LanguageAll.Language.Success, $"{userExists.UserName}: {LanguageAll.Language.Success}!", LanguageAll.Language.Success, 0, 200));
+                }
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return Ok(new ResponseOK
+            {
+                Status = 0,
+                UserMessage = $"{model.Username}: Push notice fail",
+                InternalMessage = $"{model.Username}: Push notice fail",
+                Code = 500,
+                MoreInfo = $"{model.Username}: Push notice fail",
+                data = null
+            });
+        }
         //private async Task SetDeviceToClaim(string DeviceId, string IsGetNotice = "0")
         //{
         //    var u = await _userManager.GetUserAsync(User);

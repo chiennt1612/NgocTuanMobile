@@ -51,8 +51,9 @@ namespace Auth.Controllers
                 r = new List<AboutModel>();
                 var _guide = _configuration.GetSection(nameof(AboutPage)).Get<AboutPage>();
                 var a = language == "Vi" ? _guide.ExtendID.Vi : _guide.ExtendID.En;
-                Expression<Func<About, bool>> expression = u =>  a.Contains(u.Id);
-                var items = await _Service.aboutServices.GetManyAsync(expression);
+                //Expression<Func<About, bool>> expression = u =>  a.Contains(u.Id);
+                //var items = await _Service.aboutServices.GetManyAsync(expression);
+                var items = await _Service.aboutServices.GetListAsync(a);
                 int i = 0;
                 foreach(var b in items)
                 {
@@ -90,8 +91,9 @@ namespace Auth.Controllers
                 r = new List<AboutModel>();
                 var _guide = _configuration.GetSection(nameof(AboutPage)).Get<AboutPage>();
                 var a = language == "Vi" ? _guide.GuideID.Vi : _guide.GuideID.En;
-                Expression<Func<About, bool>> expression = u => a.Contains(u.Id);
-                var items = (await _Service.aboutServices.GetManyAsync(expression)).OrderBy(u => u.Title);
+                //Expression<Func<About, bool>> expression = u => a.Contains(u.Id);
+                //var items = (await _Service.aboutServices.GetManyAsync(expression)).OrderBy(u => u.Title);
+                var items = (await _Service.aboutServices.GetListAsync(a)).OrderBy(u => u.Title);
                 int i = 0;
                 foreach (var b in items)
                 {

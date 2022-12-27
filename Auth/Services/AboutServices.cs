@@ -80,6 +80,10 @@ namespace Auth.Services
                 return default;
             }
         }
-
+        public async Task<IEnumerable<About>> GetListAsync(IEnumerable<long> Ids)
+        {
+            var a = await unitOfWork.aboutRepository.GetListAsync(Ids);
+            return a;
+        }
     }
 }

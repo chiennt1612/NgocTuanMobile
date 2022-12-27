@@ -469,19 +469,19 @@ namespace Auth.Services
             var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{inv.CustomerCode}");
             var u = await _userManager.GetUserAsync(_context.HttpContext.User);
             var a = await _userManager.GetClaimsAsync(u);
-            if (a.Where(u => u.Type == _claim.Type && u.Value == _claim.Value).FirstOrDefault() == default)
-            {
-                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                return new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.NotFound,
-                    MoreInfo = LanguageAll.Language.NotFound,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.NotFound,
-                    data = null
-                };
-            }
+            //if (a.Where(u => u.Type == _claim.Type && u.Value == _claim.Value).FirstOrDefault() == default)
+            //{
+            //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            //    return new ResponseOK()
+            //    {
+            //        Code = 400,
+            //        InternalMessage = LanguageAll.Language.NotFound,
+            //        MoreInfo = LanguageAll.Language.NotFound,
+            //        Status = 0,
+            //        UserMessage = LanguageAll.Language.NotFound,
+            //        data = null
+            //    };
+            //}
 
             Expression<Func<Contract, bool>> expression = u => (
                     (u.CompanyId >= inv.CompanyID) &&

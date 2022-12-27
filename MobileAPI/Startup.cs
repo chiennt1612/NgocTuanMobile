@@ -1,3 +1,4 @@
+using MobileAPI.Helper;
 using Decryptor;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
@@ -5,9 +6,11 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MobileAPI.Helper;
+using SMSGetway;
 using System.Reflection;
 using Utils;
+using Utils.Tokens;
+using Utils.Tokens.Interfaces;
 
 namespace MobileAPI
 {
@@ -28,14 +31,15 @@ namespace MobileAPI
             services.AddHttpContextAccessor();
             services.AddServiceLanguage();
 
+            services.AddSenders(Configuration);
             services.AddSingleton<IDecryptorProvider, DecryptorProvider>();
+            services.AddSingleton<ISMSVietel, SMSVietel>();
+            services.AddSingleton<ITokenCreationService, TokenCreationService>();
+            services.AddServices();
 
             services.RegisterDbContexts(Configuration, migrationsAssembly);
-
-
-
-            //services.RegisterAuthentication(Configuration);
-            services.AddAuthenticationToken(Configuration);
+            services.RegisterAuthentication(Configuration);
+            //services.AddAuthenticationToken(Configuration);
             services.AddDistributedMemoryCache();
             //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
             services.AddSwaggerGen();
@@ -51,7 +55,7 @@ namespace MobileAPI
             //    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth v1"));
             //}
 
-            app.UseSwagger("Nuoc Ngoc Tuan Mobile/ Auth v1");
+            app.UseSwagger("Nuoc Ngoc Tuan Mobile Staff v1.0");
 
             app.UseHttpsRedirection();
 
@@ -62,16 +66,14 @@ namespace MobileAPI
             app.UseAuthentication();
 
             app.UseAuthorization();
-
             //app.UseAntiforgeryToken();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapHealthChecks("/health", new HealthCheckOptions
                 {
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                }).RequireAuthorization();
+                });
             });
         }
     }

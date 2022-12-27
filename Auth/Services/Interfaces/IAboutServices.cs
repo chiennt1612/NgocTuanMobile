@@ -10,6 +10,7 @@ namespace Auth.Services.Interfaces
     public interface IAboutServices
     {
         Task<IEnumerable<About>> GetManyAsync(Expression<Func<About, bool>> where);
+        Task<IEnumerable<About>> GetListAsync(IEnumerable<long> Ids);
         Task<IEnumerable<About>> GetAllAsync();
         Task<About> GetByIdAsync(long Id);
         Task<BaseEntityList<About>> GetListAsync(
