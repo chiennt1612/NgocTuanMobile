@@ -189,7 +189,7 @@ namespace Auth.Controllers
                         for (var j = 0; j < a2.ItemsData.Count; j++)
                         {
                             a2.ItemsData[j].CompanyId = CompanyId;
-                            a2.ItemsData[j].Link = $"https://nuocngoctuan.com/Account/InvoiceView?reservationCode={a2.ItemsData[j].MaSoBiMat}&supplierTaxCode={companyConfig.Companys[inv.CompanyID].Info.Taxcode}& invoiceNo={a2.ItemsData[j].InvSerial}{a2.ItemsData[j].InvNumber}& invoiceType={_configuration["CompanyConfig:InvoiceType"]}";
+                            a2.ItemsData[j].Link = $"https://nuocngoctuan.com/Account/InvoiceView?reservationCode={a2.ItemsData[j].MaSoBiMat}&supplierTaxCode={companyConfig.Companys[inv.CompanyID].Info.Taxcode}&invoiceNo={a2.ItemsData[j].InvSerial}{a2.ItemsData[j].InvNumber}&invoiceType={_configuration["CompanyConfig:InvoiceType"]}";
                         }
                         a.itemsData = a2.ItemsData;
                         itemsCount = itemsCount + int.Parse(a2.Message);

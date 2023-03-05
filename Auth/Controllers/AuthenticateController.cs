@@ -515,7 +515,7 @@ namespace Auth.Controllers
             //{
             //    claims.Add(claim);
             //}
-            claims.Add(new Claim("DeviceId", DeviceId));
+            if (!String.IsNullOrEmpty(DeviceId)) claims.Add(new Claim("DeviceId", DeviceId));
             var _IsGetNotice = new Claim("IsGetNotice", "0");
             claims.Add(_IsGetNotice);
             claims.Add(new Claim("username", user.UserName));

@@ -64,6 +64,7 @@ namespace Utils.Models
     public enum OSType
     {
         IOs = 2,
-        Android = 1
+        Android = 1,
+        PC = 0
     }
 }
