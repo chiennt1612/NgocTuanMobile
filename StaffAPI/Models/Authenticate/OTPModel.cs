@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StaffAPI.Models
+namespace StaffAPI.Models.Authenticate
 {
     public class OTPModel
     {
@@ -8,6 +8,6 @@ namespace StaffAPI.Models
         public string Code { get; set; }
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string Username { get; set; }
-        public string? DeviceId { get; set; }
+        public string DeviceId { get; set; }
     }
 }

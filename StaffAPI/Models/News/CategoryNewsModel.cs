@@ -1,4 +1,4 @@
-﻿namespace StaffAPI.Models
+﻿namespace StaffAPI.Models.News
 {
     public class CategoryNewsModel
     {

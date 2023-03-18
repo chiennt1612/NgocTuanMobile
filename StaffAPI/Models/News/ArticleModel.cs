@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace StaffAPI.Models
+namespace StaffAPI.Models.News
 {
     public class ArticleModel
     {

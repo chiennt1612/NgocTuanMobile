@@ -156,6 +156,9 @@
   <data name="LinkInvoiceSuccess" xml:space="preserve">
     <value>Link invoice is success</value>
   </data>
+  <data name="LoginFail" xml:space="preserve">
+    <value>Username or password is wrong</value>
+  </data>
   <data name="ModelStateInValid" xml:space="preserve">
     <value>ModelState InValid</value>
   </data>
@@ -224,5 +227,8 @@
   </data>
   <data name="VerifyOTP" xml:space="preserve">
     <value>Please verify OTP</value>
+  </data>
+  <data name="VerifyPassword" xml:space="preserve">
+    <value>Please enter your password</value>
   </data>
 </root>

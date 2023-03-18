@@ -1,5 +1,4 @@
 ﻿using StaffAPI.Helper;
-using StaffAPI.Models;
 using StaffAPI.Repository.Interfaces;
 using StaffAPI.Services;
 using StaffAPI.Services.Interfaces;
@@ -24,13 +23,15 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
+using Utils.Extensions;
 using Utils.Models;
 using Utils.Tokens.Interfaces;
+using StaffAPI.Models.Authenticate;
 
 namespace StaffAPI.Controllers
 {
     [ApiVersion("1.0")]
-    [Route("api/v1.0/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [TypeFilter(typeof(ControllerExceptionFilterAttribute))]
     [Produces("application/json", "application/problem+json")]
@@ -43,6 +44,7 @@ namespace StaffAPI.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly ISMSVietel _smsVietel;
+        private readonly IEmailSender _emailSender;
         private readonly ITokenCreationService _jwtToken;
         private readonly ILogger<AuthenticateController> _logger;
         private readonly LoginConfiguration _loginConfiguration;
@@ -52,6 +54,7 @@ namespace StaffAPI.Controllers
         private HtmlXSSFilter htmlXSS { get; set; }
         private FireBaseConfig fireBaseConfig { get; set; }
         private FireBaseAPIConfig fireBaseAPIConfig { get; set; }
+        private readonly SmtpConfiguration _smtpConfiguration;
 
         public AuthenticateController(
             ILogger<AuthenticateController> logger,
@@ -59,14 +62,17 @@ namespace StaffAPI.Controllers
             SignInManager<AppUser> signInManager,
             IConfiguration configuration,
             ISMSVietel smsVietel,
+            IEmailSender emailSender,
             ITokenCreationService jwtToken,
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             LoginConfiguration loginConfiguration, IAllService iInvoiceServices,
-            IUserDeviceRepository iUserDeviceRepository)
+            IUserDeviceRepository iUserDeviceRepository,
+            SmtpConfiguration smtpConfiguration)
         {
             _userManager = userManager;
             _configuration = configuration;
             _smsVietel = smsVietel;
+            _emailSender = emailSender;
             _logger = logger;
             _jwtToken = jwtToken;
             _signInManager = signInManager;
@@ -78,38 +84,162 @@ namespace StaffAPI.Controllers
             htmlXSS = this._configuration.GetSection(nameof(HtmlXSSFilter)).Get<HtmlXSSFilter>();
             fireBaseConfig = this._configuration.GetSection(nameof(FireBaseConfig)).Get<FireBaseConfig>();
             fireBaseAPIConfig = this._configuration.GetSection(nameof(FireBaseAPIConfig)).Get<FireBaseAPIConfig>();
+            _smtpConfiguration = smtpConfiguration;
         }
 
 
         #region Authen
+        #region Private
+        private async Task<AppUser> FindUser(string Username)
+        {
+            var user = await _userManager.FindByNameAsync(Username);
+            if (user == null)
+            {
+                // Finding the staff by Mobile
+                user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == Username);
+                if (user != null)
+                {
+                    var listUser = await _userManager.GetUsersForClaimAsync(new Claim("Mobile2", Username));
+                    if (listUser.Count > 0) user = listUser[0];
+                }
+
+            }
+            return user;
+        }
+        private async Task<IActionResult> SendSMSPassword(AppUser user, LoginModel model, string Password = "")
+        {
+            _logger.LogInformation($"SendSMSPassword: {model.Username}/ {Password}");
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            if (String.IsNullOrEmpty(Password))
+            {
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                {
+                    Code = 200,
+                    InternalMessage = LanguageAll.Language.VerifyPassword,
+                    MoreInfo = LanguageAll.Language.VerifyPassword,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.VerifyPassword,
+                    data = model
+                });
+            }
+            else
+            {
+                var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", Password);
+                if (user.EmailConfirmed)
+                {
+                    IList<string> r = new List<string>() { user.UserName, user.Email, "", Password };
+                    string subject = _smtpConfiguration.SubjectPassword.Replace(_smtpConfiguration.p, r);
+                    string content = _smtpConfiguration.ContentPassword.Replace(_smtpConfiguration.p, r);
+                    _logger.LogInformation($"Send by email: {subject}/ {content}");
+                    
+                    await _emailSender.SendEmailAsync(user.Email,
+                        subject, content
+                        );
+                }
+                else
+                {
+                    _logger.LogInformation($"Send by SMS: {message}");
+                    _smsVietel.SendSMS(user.PhoneNumber, message);
+                }
+                    
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                {
+                    Code = 200,
+                    InternalMessage = LanguageAll.Language.VerifyPassword,
+                    MoreInfo = LanguageAll.Language.VerifyPassword,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.VerifyPassword,
+                    data = model
+                });
+            }
+        }
+        private async Task<IActionResult> SendSMSOTP(AppUser user, LoginModel model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            int IsNotAllowSend = 0;
+            if (user.OTPSendTime.HasValue)
+            {
+                TimeSpan span = DateTime.Now.Subtract(user.OTPSendTime.Value);
+                if ((int)span.TotalDays == 0)
+                {
+                    if ((int)span.TotalMinutes < _loginConfiguration.OTPTimeLife)
+                    {
+                        IsNotAllowSend = 2;
+                    }
+                    else if (user.TotalOTP >= _loginConfiguration.OTPLimitedOnDay)
+                    {
+                        IsNotAllowSend = 3;
+                    }
+                    else IsNotAllowSend = 1;
+                }
+            }
+            // For test
+            if (_loginConfiguration.MobileTest.Contains(user.UserName)) IsNotAllowSend = 4;
+            switch (IsNotAllowSend)
+            {
+                case 2:
+                    _logger.LogWarning("You needs request OTP after 3 minutes.");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    return StatusCode(StatusCodes.Status200OK,
+                        new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPWait}!", $"{model.Username}: {LanguageAll.Language.OTPWait}!"));
+                case 3:
+                    _logger.LogWarning("You request too more OTP on this day.");
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    return StatusCode(StatusCodes.Status200OK,
+                        new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPLimited}!", $"{model.Username}: {LanguageAll.Language.OTPLimited}!"));
+                case 4:
+                    user.TotalOTP = user.TotalOTP + 1;
+                    user.OTPSendTime = DateTime.Now;
+                    await _userManager.UpdateAsync(user);
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                    {
+                        Code = 200,
+                        InternalMessage = LanguageAll.Language.VerifyOTP,
+                        MoreInfo = LanguageAll.Language.VerifyOTP,
+                        Status = 1,
+                        UserMessage = LanguageAll.Language.VerifyOTP,
+                        data = model
+                    });
+                //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+                default:
+                    //var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
+                    //var message = $"Your security code is: {code}";
+                    //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
+                    if (IsNotAllowSend == 0)
+                        user.TotalOTP = 1;
+                    else
+                        user.TotalOTP = user.TotalOTP + 1;
+                    user.OTPSendTime = DateTime.Now;
+                    await _userManager.UpdateAsync(user);
+                    var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber);
+                    var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
+                    if (user.EmailConfirmed)
+                    {
+                        IList<string> r = new List<string>() { user.UserName, user.Email, "", code };
+                        await _emailSender.SendEmailAsync(user.Email,
+                            _smtpConfiguration.SubjectOTP.Replace(_smtpConfiguration.p, r),
+                            _smtpConfiguration.ContentOTP.Replace(_smtpConfiguration.p, r));
+                    }
+                    else
+                        _smsVietel.SendSMS(user.PhoneNumber, message);
+                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                    {
+                        Code = 200,
+                        InternalMessage = LanguageAll.Language.VerifyOTP,
+                        MoreInfo = LanguageAll.Language.VerifyOTP,
+                        Status = 1,
+                        UserMessage = LanguageAll.Language.VerifyOTP,
+                        data = model
+                    });
+                    //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+            }
+        }
+        #endregion
         // Login -> Input Staff code, Mobile1, Mobile 2 -> If the first -> SMS Password
-
-        // Verify -> Input Staff code, Mobile1, Mobile 2 and Password
-
-        // Forget password -> SMS password (Create token/ Reset password)
-
-        // Change password -> Submit change password
-        #endregion
-
-        #region Notice
-        // Register receive noties (Push deviceid to server)
-
-        // Check status of the register receive noties
-
-        // Get the noties
-
-        // Set read mark to noties
-
-        // Push the noties to deviceid
-        #endregion
-
-        #region Sync contract by area
-        // Register area
-
-        // Sync contract
-        #endregion
-
-
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -120,106 +250,97 @@ namespace StaffAPI.Controllers
             {
                 bool IsExitst = false;
                 _logger.LogInformation($"Finding username: {model.Username}");
-                var user = await _userManager.FindByNameAsync(model.Username);
+                // Finding the Staff, priority by 1. Username, 2. Mobile, 3. Mobile2 (Tel)
+                var user = await FindUser(model.Username);
                 if (user != null)
                 {
                     IsExitst = true;
                     _logger.LogInformation($"Found: {model.Username}");
-                    var result = await _signInManager.PasswordSignInAsync(user.UserName, _configuration["Password:Default"], bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
-                    if (result.Succeeded || result.RequiresTwoFactor)
-                    {
-                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                        return await SendSMSOTP(user, model);
-                    }
-                    else if (result.IsLockedOut)
-                    {
-                        _logger.LogWarning("User account locked out.");
-                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                        return StatusCode(StatusCodes.Status200OK,
-                                    new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!", 0, 400));
-                    }
+                    //var result = await _signInManager.PasswordSignInAsync(user.UserName, _configuration["Password:Default"], bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
+                    //if (result.Succeeded || result.RequiresTwoFactor)
+                    //{
+                    //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    //    return await SendSMSOTP(user, model);
+                    //}
+                    //else if (result.IsLockedOut)
+                    //{
+                    //    _logger.LogWarning("User account locked out.");
+                    //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                    //    return StatusCode(StatusCodes.Status200OK,
+                    //                new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!", 0, 400));
+                    //}
+                    return await SendSMSPassword(user, new LoginModel() { Username = user.UserName });
                 }
 
                 if (!IsExitst)
                 {
                     for (var i = 0; i < companyConfig.Companys.Count; i++)
                     {
-                        var inv = new EVNCodeInput()
+                        var inv = new StaffCodeInput()
                         {
                             CompanyID = companyConfig.Companys[i].Info.CompanyId,
-                            EVNCode = model.Username
+                            StaffCode = model.Username
                         };
-                        var a = await _iInvoiceServices.invoiceServices.getCustomerInfo(inv);
+                        var a = await _iInvoiceServices.invoiceServices.getStaffInfo(inv);
                         if (a.DataStatus == "00")
                         {
-                            if (a.ItemsData[0].Email.IsValidEmail())
+                            string email = a.ItemsData[0].Email;
+                            if (!String.IsNullOrEmpty(email)) email = email.Replace("[]", "@");
+                            if (email.IsValidEmail())
                                 user = new()
                                 {
                                     SecurityStamp = Guid.NewGuid().ToString(),
-                                    UserName = a.ItemsData[0].Mobile,
-                                    Email = a.ItemsData[0].Email,
+                                    UserName = a.ItemsData[0].StaffCode,
+                                    Email = email,
                                     PhoneNumber = a.ItemsData[0].Mobile,
-                                    TwoFactorEnabled = true,
+                                    //TwoFactorEnabled = true,
+                                    PhoneNumberConfirmed = true,
+                                    EmailConfirmed = true
                                 };
                             else
                                 user = new()
                                 {
                                     SecurityStamp = Guid.NewGuid().ToString(),
-                                    UserName = a.ItemsData[0].Mobile,
+                                    UserName = a.ItemsData[0].StaffCode,
                                     PhoneNumber = a.ItemsData[0].Mobile,
-                                    TwoFactorEnabled = true,
+                                    //TwoFactorEnabled = true,
+                                    PhoneNumberConfirmed = true                                    
                                 };
-                            var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
+                            var password = user.UserName.Password(_configuration["Password:Default"]);
+                            var result = await _userManager.CreateAsync(user, password);
                             if (result.Succeeded)
                             {
-                                var userExists = await _userManager.FindByNameAsync(a.ItemsData[0].Mobile);
-                                // Add role customer
-                                await _userManager.AddToRoleAsync(userExists, "Customer");
+                                var userExists = await _userManager.FindByNameAsync(a.ItemsData[0].StaffCode);
+                                // Add role Staff/CTV
+                                if (companyConfig.StaffType.IndexOf(a.ItemsData[0].TypeCode) > -1) // Staff
+                                {
+                                    await _userManager.AddToRoleAsync(userExists, "Staff");
+                                }
+                                else
+                                {
+                                    await _userManager.AddToRoleAsync(userExists, "Partner");
+                                }
+                                
                                 // Update address
-                                var a1 = await _userManager.GetClaimsAsync(userExists);
                                 if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
                                 {
                                     await _userManager.AddClaimAsync(userExists, new Claim("Address", a.ItemsData[0].Address));
                                 }
-                                if (!String.IsNullOrEmpty(a.ItemsData[0].WaterIndexCode))
+                                if (!String.IsNullOrEmpty(a.ItemsData[0].Mobile2))
                                 {
-                                    await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData[0].WaterIndexCode));
+                                    await _userManager.AddClaimAsync(userExists, new Claim("Mobile2", a.ItemsData[0].Mobile2));
                                 }
                                 if (!String.IsNullOrEmpty(a.ItemsData[0].TaxCode))
                                 {
                                     await _userManager.AddClaimAsync(userExists, new Claim("TaxCode", a.ItemsData[0].TaxCode));
                                 }
-                                await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].CustomerName));
+                                await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].StaffName));
+                                await _userManager.AddClaimAsync(userExists, new Claim("TypeCode", a.ItemsData[0].TypeCode));
+                                await _userManager.AddClaimAsync(userExists, new Claim("TypeName", a.ItemsData[0].TypeName));
 
-                                foreach (var customerCode in a.ItemsData)
-                                {
-                                    var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
-                                    await _userManager.AddClaimAsync(userExists, _claim); //
-                                    await _iInvoiceServices.contractServices.AddAsync(new EntityFramework.API.Entities.Contract()
-                                    {
-                                        Address = customerCode.Address,
-                                        CompanyId = inv.CompanyID,
-                                        CustomerCode = customerCode.CustomerCode,
-                                        CustomerName = customerCode.CustomerName,
-                                        CustomerType = customerCode.CustomerType,
-                                        Email = customerCode.Email,
-                                        Mobile = customerCode.Mobile,
-                                        TaxCode = customerCode.TaxCode,
-                                        UserId = userExists.Id,
-                                        WaterIndexCode = customerCode.WaterIndexCode
-                                    });
-                                }
-
-                                // Send SMS
-                                //userExists.TotalOTP = 1;
-                                //userExists.OTPSendTime = DateTime.Now;
-                                //await _userManager.UpdateAsync(userExists);
-                                //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(userExists, a.ItemsData.Mobile);
-                                //var message = $"Your security code is: {code}";
-                                //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(userExists), message);
-                                //return Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", $"{a.ItemsData.Mobile}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
                                 _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                                return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
+                                //return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
+                                return await SendSMSPassword(userExists, new LoginModel() { Username = userExists.UserName }, password);
                             }
                         }
                     }
@@ -228,23 +349,6 @@ namespace StaffAPI.Controllers
                 if (!IsExitst)
                 {
                     _logger.LogInformation($"Not found: {model.Username}");
-                    user = new()
-                    {
-                        SecurityStamp = Guid.NewGuid().ToString(),
-                        UserName = model.Username,
-                        PhoneNumber = model.Username,
-                        TwoFactorEnabled = true,
-                    };
-                    var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
-                    if (result.Succeeded)
-                    {
-                        var userExists = await _userManager.FindByNameAsync(model.Username);
-                        // Add role customer
-                        await _userManager.AddToRoleAsync(userExists, "Customer");
-                        await _userManager.AddClaimAsync(userExists, new Claim("Fullname", model.Username));
-                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                        return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
-                    }
                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
@@ -264,134 +368,58 @@ namespace StaffAPI.Controllers
                 new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
         }
 
-        //[HttpPost]
-        //[Route("verifyCode")]
-        //public async Task<IActionResult> VerifyCode([FromBody] OTPModel model)
-        //{
-        //    _logger.LogInformation($"ModelState: {ModelState.IsValid}");
-        //    if (ModelState.IsValid)
-        //    {
-        //        _logger.LogInformation($"Validating OTP: {model.Code}");
-        //        var result = await _signInManager.TwoFactorSignInAsync(_configuration["Password:Provider"], model.Code, bool.Parse(_configuration["Password:RememberLogin"]), bool.Parse(_configuration["Password:RememberBrowser"]));
-        //        if (result.Succeeded)
-        //        {
-        //            var user = await GetCurrentUserAsync();
-        //            return await LoginOK(user);
-        //        }
-        //        if (result.IsLockedOut)
-        //        {
-        //            _logger.LogWarning("User account locked out.");
-        //            return StatusCode(StatusCodes.Status200OK,
-        //                new ResponseBase("Login fail!", $"User account locked out!", "Login fail!"));
-        //        }
-        //    }
-        //    _logger.LogWarning("Invalid code.");
-        //    return StatusCode(StatusCodes.Status200OK,
-        //        new ResponseBase("Invalid code.", $"Invalid code.", "Login fail!"));
-        //}
-
+        // Verify Password -> Input StaffCode Password and deviceId
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        public async Task<IActionResult> VerifyPassword([FromBody] LoginPassModel model)
         {
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
-                if (_smsVietel.FormatMobile(model.Username) != "")
+                var user = await FindUser(model.Username);
+                if(user != null)
                 {
-                    LoginModel loginModel = new LoginModel()
-                    {
-                        Username = model.Username
-                    };
-                    var userExists = await _userManager.FindByNameAsync(model.Username);
-                    if (userExists != null)
+                    var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
+                    if (result.Succeeded)
                     {
                         _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                        return await SendSMSOTP(userExists, loginModel);
+                        return await LoginOK(model.DeviceId, user);
                     }
-                    else
+                    else if (result.RequiresTwoFactor)
                     {
-                        if (!String.IsNullOrEmpty(model.Fullname))
-                        {
-                            AppUser user;
-                            if (model.Email.IsValidEmail())
-                                user = new()
-                                {
-                                    SecurityStamp = Guid.NewGuid().ToString(),
-                                    UserName = model.Username,
-                                    Email = model.Email,
-                                    PhoneNumber = model.Username,
-                                    TwoFactorEnabled = true,
-                                };
-                            else
-                                user = new()
-                                {
-                                    SecurityStamp = Guid.NewGuid().ToString(),
-                                    UserName = model.Username,
-                                    PhoneNumber = model.Username,
-                                    TwoFactorEnabled = true,
-                                };
-                            var result = await _userManager.CreateAsync(user, _configuration["Password:Default"]);
-                            if (result.Succeeded)
-                            {
-                                userExists = await _userManager.FindByNameAsync(model.Username);
-                                // Add role customer
-                                await _userManager.AddToRoleAsync(userExists, "Customer");
-                                // Update address
-                                var a = await _userManager.GetClaimsAsync(userExists);
-                                await _userManager.AddClaimAsync(userExists, new Claim("Fullname", model.Fullname));
-                                if (!String.IsNullOrEmpty(model.Address))
-                                {
-                                    if (String.IsNullOrEmpty(a.Where(u => u.Type == "Address").FirstOrDefault()?.Value))
-                                    {
-                                        await _userManager.AddClaimAsync(userExists, new Claim("Address", model.Address));
-                                    }
-                                    else
-                                    {
-                                        await _userManager.ReplaceClaimAsync(userExists, a.Where(u => u.Type == "Address").FirstOrDefault(), new Claim("Address", model.Address));
-                                    }
-                                }
-                                // Send SMS
-                                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                                return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
-                            }
-                        }
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                        return await SendSMSOTP(user, new LoginModel() { Username = model.Username });
                     }
-                }
-                else
-                {
-                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                    else if (result.IsLockedOut)
                     {
-                        Code = 400,
-                        InternalMessage = LanguageAll.Language.FormatPhoneNumberFail,
-                        MoreInfo = LanguageAll.Language.FormatPhoneNumberFail,
-                        Status = 0,
-                        UserMessage = LanguageAll.Language.FormatPhoneNumberFail,
-                        data = null
-                    });
-                }
+                        _logger.LogWarning("User account locked out.");
+                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                        return StatusCode(StatusCodes.Status200OK,
+                                    new ResponseBase(LanguageAll.Language.LoginFail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!", 0, 400));
+                    }
+                }                
             }
-            _logger.LogError($"{model.Username}: {LanguageAll.Language.UserCreateFail}");
+            _logger.LogError($"{model.Username}: {LanguageAll.Language.LoginFail}");
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
-                new ResponseBase(LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail, LanguageAll.Language.UserCreateFail));
+                new ResponseBase(LanguageAll.Language.LoginFail, LanguageAll.Language.LoginFail, LanguageAll.Language.LoginFail));
         }
 
+        // Verify OTP -> Input StaffCode OTP and deviceId
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> VerifyPhoneNumber([FromBody] OTPModel model)
+        public async Task<IActionResult> VerifyOTP([FromBody] OTPModel model)
         {
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"VerifyPhoneNumber. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
                 //var user = await GetCurrentUserAsync();
-                var user = await _userManager.FindByNameAsync(model.Username);
+                var user = await FindUser(model.Username);
                 if (user != null)
                 {
-                    string PhoneNumber = user.UserName;
+                    string PhoneNumber = user.PhoneNumber;
                     if (_loginConfiguration.MobileTest.Contains(PhoneNumber))
                     {
                         _logger.LogInformation($"Validating OTP: {model.Code} with phone number: {PhoneNumber}; [TEST]");
@@ -432,6 +460,83 @@ namespace StaffAPI.Controllers
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid, LanguageAll.Language.OTPInvalid));
         }
+
+        // Forget password -> SMS password (Create token/ Reset password)
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ForgotPassword([FromBody] LoginModel model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Login. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                _logger.LogInformation($"Finding username: {model.Username}");
+                // Finding the Staff, priority by 1. Username, 2. Mobile, 3. Mobile2 (Tel)
+                var user = await FindUser(model.Username);
+                if (user != null)
+                {
+                    _logger.LogInformation($"Found: {model.Username}");
+                    var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var password = user.UserName.Password(_configuration["Password:Default"]);
+                    var resetPass = await _userManager.ResetPasswordAsync(user, code, password);
+                    if (resetPass.Succeeded)
+                        return await SendSMSPassword(user, new LoginModel() { Username = user.UserName }, password);
+                }
+            }
+
+            _logger.LogInformation($"Not found: {model.Username}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
+        }
+
+        // Change password -> Submit change password
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Login. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var user = await FindUser(model.Username);
+                if (user != null)
+                {
+                    var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                    if (changePasswordResult.Succeeded)
+                    {
+                        return await SendSMSPassword(user, new LoginModel() { Username = user.UserName }, model.NewPassword);
+                    }
+                }
+            }
+
+            _logger.LogInformation($"Not found: {model.Username}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.NotFound}!", LanguageAll.Language.Fail));
+        }
+        #endregion
+
+        #region Notice
+        // Register receive noties (Push deviceid to server)
+
+        // Check status of the register receive noties
+
+        // Get the noties
+
+        // Set read mark to noties
+
+        // Push the noties to deviceid
+        #endregion
+
+        #region Sync contract by area
+        // Register area
+
+        // Sync contract
+        #endregion
+
+
+
 
         [HttpPost]
         [Route("[action]")]
@@ -513,21 +618,7 @@ namespace StaffAPI.Controllers
             return Ok(new ResponseBase(LanguageAll.Language.Success, LanguageAll.Language.Success, LanguageAll.Language.Success, 1, 200));
         }
 
-        //[Authorize]
-        //[HttpPost]
-        //[Route("revoke-all")]
-        //public async Task<IActionResult> RevokeAll()
-        //{
-        //    var users = _userManager.Users.ToList();
-        //    foreach (var user in users)
-        //    {
-        //        user.RefreshToken = null;
-        //        await _userManager.UpdateAsync(user);
-        //    }
-
-        //    return Ok(new ResponseBase("Invalid code.", $"Invalid code.", "Login fail!"));
-        //}
-
+        
         private async Task<IActionResult> LoginOK(string DeviceId, AppUser user)
         {
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -616,82 +707,7 @@ namespace StaffAPI.Controllers
             return _userManager.GetUserAsync(user);
         }
 
-        private async Task<IActionResult> SendSMSOTP(AppUser user, LoginModel model)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            int IsNotAllowSend = 0;
-            if (user.OTPSendTime.HasValue)
-            {
-                TimeSpan span = DateTime.Now.Subtract(user.OTPSendTime.Value);
-                if ((int)span.TotalDays == 0)
-                {
-                    if ((int)span.TotalMinutes < _loginConfiguration.OTPTimeLife)
-                    {
-                        IsNotAllowSend = 2;
-                    }
-                    else if (user.TotalOTP >= _loginConfiguration.OTPLimitedOnDay)
-                    {
-                        IsNotAllowSend = 3;
-                    }
-                    else IsNotAllowSend = 1;
-                }
-            }
-            // For test
-            if (_loginConfiguration.MobileTest.Contains(user.UserName)) IsNotAllowSend = 4;
-            switch (IsNotAllowSend)
-            {
-                case 2:
-                    _logger.LogWarning("You needs request OTP after 3 minutes.");
-                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                    return StatusCode(StatusCodes.Status200OK,
-                        new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPWait}!", $"{model.Username}: {LanguageAll.Language.OTPWait}!"));
-                case 3:
-                    _logger.LogWarning("You request too more OTP on this day.");
-                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                    return StatusCode(StatusCodes.Status200OK,
-                        new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPLimited}!", $"{model.Username}: {LanguageAll.Language.OTPLimited}!"));
-                case 4:
-                    user.TotalOTP = user.TotalOTP + 1;
-                    user.OTPSendTime = DateTime.Now;
-                    await _userManager.UpdateAsync(user);
-                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
-                    {
-                        Code = 200,
-                        InternalMessage = LanguageAll.Language.VerifyOTP,
-                        MoreInfo = LanguageAll.Language.VerifyOTP,
-                        Status = 1,
-                        UserMessage = LanguageAll.Language.VerifyOTP,
-                        data = model
-                    });
-                //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
-                default:
-                    //var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
-                    //var message = $"Your security code is: {code}";
-                    //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
-                    if (IsNotAllowSend == 0)
-                        user.TotalOTP = 1;
-                    else
-                        user.TotalOTP = user.TotalOTP + 1;
-                    user.OTPSendTime = DateTime.Now;
-                    await _userManager.UpdateAsync(user);
-                    var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Username);
-                    var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
-                    _smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
-                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
-                    {
-                        Code = 200,
-                        InternalMessage = LanguageAll.Language.VerifyOTP,
-                        MoreInfo = LanguageAll.Language.VerifyOTP,
-                        Status = 1,
-                        UserMessage = LanguageAll.Language.VerifyOTP,
-                        data = model
-                    });
-                    //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
-            }
-        }
-
+        
         [Authorize]
         [HttpPost]
         [Route("[action]")]

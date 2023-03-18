@@ -7,6 +7,7 @@ namespace Utils.Models
         public List<Company> Companys { get; set; }
         public string AvatarFolder { get; set; }
         public string InvoiceType { get; set; }
+        public IList<string> StaffType { get; set; }
     }
     public class Company
     {

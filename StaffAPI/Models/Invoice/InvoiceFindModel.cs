@@ -1,6 +1,6 @@
 ﻿using Utils.Models;
 
-namespace StaffAPI.Models
+namespace StaffAPI.Models.Invoice
 {
     public class InvoiceFindModel : SearchDateModel
     {

@@ -1,5 +1,4 @@
 ﻿using StaffAPI.Helper;
-using StaffAPI.Models;
 using StaffAPI.Services.Interfaces;
 using EntityFramework.API.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +14,12 @@ using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
+using StaffAPI.Models.About;
 
 namespace StaffAPI.Controllers
 {
     [ApiVersion("1.0")]
-    [Route("api/v1.0/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [TypeFilter(typeof(ControllerExceptionFilterAttribute))]
     [Produces("application/json", "application/problem+json")]

@@ -1,6 +1,6 @@
 ﻿using Utils.Models;
 
-namespace StaffAPI.Models
+namespace StaffAPI.Models.Authenticate
 {
     public class LoginSuccessModel : ResponseBase
     {
@@ -9,7 +9,7 @@ namespace StaffAPI.Models
 
     public class LoginData
     {
-        public string? Token { get; set; }
-        public string? RefreshToken { get; set; }
+        public string Token { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

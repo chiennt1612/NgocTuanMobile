@@ -159,6 +159,9 @@
   <data name="LinkInvoiceSuccess" xml:space="preserve">
     <value>Gán mã khách nhận hóa đơn thành công</value>
   </data>
+  <data name="LoginFail" xml:space="preserve">
+    <value>Tài khoản hoặc mật khẩu không đúng.</value>
+  </data>
   <data name="ModelStateInValid" xml:space="preserve">
     <value>Dữ liệu không hợp lệ</value>
   </data>
@@ -227,5 +230,8 @@
   </data>
   <data name="VerifyOTP" xml:space="preserve">
     <value>Vui lòng xác thực tài khoản với OTP</value>
+  </data>
+  <data name="VerifyPassword" xml:space="preserve">
+    <value>Vui lòng nhập mật khẩu xác thực</value>
   </data>
 </root>

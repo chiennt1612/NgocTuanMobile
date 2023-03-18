@@ -58,6 +58,32 @@ namespace Utils.Models
         public string InvoiceNumber { get; set; }
     }
     #endregion
+
+    #region Staff
+    public class StaffCodeInput
+    {
+        public int CompanyID { get; set; } = 0;
+        public string StaffCode { get; set; }
+    }
+
+    public class StaffInfoResult : DataResultBase
+    {
+        public List<StaffInfo> ItemsData { get; set; }
+    }
+
+    public class StaffInfo : ContractInputBase
+    {
+        public string StaffCode { get; set; }
+        public string StaffName { get; set; }
+        public string TypeName { get; set; }
+        public string TypeCode { get; set; }
+        public string Address { get; set; }
+        public string Email { get; set; }
+        public string Mobile2 { get; set; }
+        public string TaxCode { get; set; }
+    }
+    #endregion
+
     #region base class
     public class CustomerInfo : ContractInputBase
     {

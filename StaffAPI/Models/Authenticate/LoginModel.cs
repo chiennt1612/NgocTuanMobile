@@ -1,12 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Utils.Models;
 
-namespace StaffAPI.Models
+namespace StaffAPI.Models.Authenticate
 {
     public class LoginModel
     {
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
         public string Username { get; set; }
+    }
+
+    public class LoginPassModel
+    {
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Username { get; set; }
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Password { get; set; }
+        public string DeviceId { get; set; }
     }
 
     public class LoginEVNModel
@@ -42,5 +51,19 @@ namespace StaffAPI.Models
     public class DeviceTokenModel
     {
         public string Token { get; set; }
+    }
+
+    public class ChangePasswordModel
+    {
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Username { get; set; }
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string OldPassword { get; set; }
+
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string NewPassword { get; set; }
+
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string ConfirmPassword { get; set; }
     }
 }

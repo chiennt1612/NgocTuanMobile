@@ -1,5 +1,6 @@
 ﻿using EntityFramework.API.Entities;
-namespace StaffAPI.Models
+
+namespace StaffAPI.Models.About
 {
     public class AdvModel
     {

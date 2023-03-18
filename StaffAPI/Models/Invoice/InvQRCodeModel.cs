@@ -1,4 +1,4 @@
-﻿namespace StaffAPI.Models
+﻿namespace StaffAPI.Models.Invoice
 {
     public class InvQRCodeModel
     {

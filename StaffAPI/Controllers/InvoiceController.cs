@@ -21,11 +21,12 @@ using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
+using StaffAPI.Models.Invoice;
 
 namespace StaffAPI.Controllers
 {
     [ApiVersion("1.0")]
-    [Route("api/v1.0/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [TypeFilter(typeof(ControllerExceptionFilterAttribute))]
     [Produces("application/json", "application/problem+json")]

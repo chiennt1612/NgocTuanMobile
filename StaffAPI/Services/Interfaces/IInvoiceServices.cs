@@ -5,16 +5,37 @@ namespace StaffAPI.Services.Interfaces
 {
     public interface IInvoiceServices
     {
+        #region Invoice
         Task<ResponseOK> GetInvoice(InvoiceInput inv);
-        Task<ResponseOK> GetInvoiceAll(InvoiceAllInput inv);
+        Task<InvoiceResult> CheckInvoice(InvoiceInput inv);
+        Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv);
         Task<ResponseOK> PayInvoice(PayInput inv);
         Task<ResponseOK> CheckPayInvoice(CheckPayInput inv);
         Task<ResponseOK> UndoPayInvoice(InvoiceInput inv);
-        Task<InvoiceResult> CheckInvoice(InvoiceInput inv);
+        #endregion
+
+        #region Customer
+        Task<ResponseOK> GetInvoiceAll(InvoiceAllInput inv);
         Task<InvoiceAllResult> CheckAllInvoice(InvoiceAllInput inv);
         Task<InvoiceDataResult> GetInvoiceA(InvoiceInput inv);
         Task<InvoiceDataResult> GetInvoiceAllA(InvoiceAllAInput inv);
         Task<CustomerInfoResult> getCustomerInfo(EVNCodeInput inv);
-        Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv);
+        #endregion
+
+        #region Staff
+        Task<StaffInfoResult> getStaffInfo(StaffCodeInput inv);
+        #endregion
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
 }

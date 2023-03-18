@@ -22,6 +22,25 @@ namespace StaffAPI.Helper
         public string OTPTest { get; set; }
     }
 
+    public class SmtpConfiguration
+    {
+        public string From { get; set; }
+        public string Host { get; set; }
+        public string Login { get; set; }
+        public string Password { get; set; }
+        public int Port { get; set; } = 587; // default smtp port
+        public bool UseSSL { get; set; } = true;
+        public string Subject { get; set; }
+        public string Content { get; set; }
+        public string SubjectOTP { get; set; }
+        public string ContentOTP { get; set; }
+        public string SubjectPassword { get; set; }
+        public string ContentPassword { get; set; }
+        public string SubjectConfirm { get; set; }
+        public string ContentConfirm { get; set; }
+        public IList<string> p { get; set; }
+    }
+
     public class AboutID
     {
         public long Vi { get; set; }
@@ -39,15 +58,5 @@ namespace StaffAPI.Helper
     {
         public List<long> Vi { get; set; }
         public List<long> En { get; set; }
-    }
-
-    public class SmtpConfiguration
-    {
-        public string From { get; set; }
-        public string Host { get; set; }
-        public string Login { get; set; }
-        public string Password { get; set; }
-        public int Port { get; set; } = 587; // default smtp port
-        public bool UseSSL { get; set; } = true;
     }
 }
