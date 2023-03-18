@@ -1,5 +1,5 @@
 /Auth/bin
-/MobileAPI/bin
+/StaffAPI/bin
 /Paygate/bin
 /SMSGetway/bin
 /EntityFramework.API/bin
@@ -9,11 +9,13 @@
 /Utils/obj
 /LanguageAll/obj
 /Auth/obj
-/MobileAPI/obj
+/StaffAPI/obj
 /Paygate/obj
 /SMSGetway/obj
 /.vs
 /Auth/appsettings.json
+/StaffAPI/Log
+/StaffAPI/appsettings.json
 /Auth/Log
 /UnitTestMobile/obj
 /UnitTestMobile/bin

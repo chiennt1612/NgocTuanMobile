@@ -13,11 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paygate", "Paygate\Paygate.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMSGetway", "SMSGetway\SMSGetway.csproj", "{F7E2BABC-65DE-48BE-B001-91D8816B84D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobileAPI", "MobileAPI\MobileAPI.csproj", "{7096CEEF-151F-4B91-B56A-75531D21F5A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaffAPI", "StaffAPI\StaffAPI.csproj", "{7096CEEF-151F-4B91-B56A-75531D21F5A8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "Utils\Utils.csproj", "{1E4DF1BC-CB79-4AA0-819F-CEE0FF2C4574}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestMobile", "UnitTestMobile\UnitTestMobile.csproj", "{9B901114-98A5-4096-AC67-DA19F2BC8BF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTestMobile", "UnitTestMobile\UnitTestMobile.csproj", "{9B901114-98A5-4096-AC67-DA19F2BC8BF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
