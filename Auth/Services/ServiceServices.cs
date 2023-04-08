@@ -24,7 +24,7 @@ namespace Auth.Services
         public async Task<IEnumerable<Service>> GetManyAsync(Expression<Func<Service, bool>> where)
         {
             if (ilogger != null) ilogger.LogInformation($"GetManyAsync");
-            
+
             return await unitOfWork.serviceRepository.GetManyAsync(where); ;
         }
 

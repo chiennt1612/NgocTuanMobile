@@ -13,7 +13,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
-using System.Runtime.Serialization.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,10 +40,10 @@ namespace Utils
     {
         public static DateTime DebugStart(this ILogger _logger, IConfiguration _configuration, string functionName)
         {
-            bool isDebug = false; 
+            bool isDebug = false;
             var a = DateTime.Now;
             if (bool.TryParse(_configuration["Logging:Debug"], out isDebug) && isDebug)
-            {                
+            {
                 _logger.LogInformation($"Debug {functionName}/ Start {a.ToString("yyyy-MM-dd HH:mm:ss fff")} ");
             }
             return a;
@@ -54,7 +53,7 @@ namespace Utils
         {
             bool isDebug = false;
             var a = DateTime.Now;
-            if (bool.TryParse(_configuration["Logging:Debug"], out isDebug) && isDebug) 
+            if (bool.TryParse(_configuration["Logging:Debug"], out isDebug) && isDebug)
                 _logger.LogInformation($"Debug {functionName}/ End {a.ToString("yyyy-MM-dd HH:mm:ss fff")}/ Due {(a - dateStart).TotalMilliseconds}");
         }
         public static void WriteLog(this ILogger _logger, IConfiguration _configuration, string OK, string Error = "", int type = 0)
@@ -86,7 +85,7 @@ namespace Utils
                         }
                         break;
                 }
-            }                
+            }
         }
     }
 
@@ -264,7 +263,7 @@ namespace Utils
         {
             return;
             List<Task> t = new List<Task>();
-            foreach(string key in Keys)
+            foreach (string key in Keys)
             {
                 await _cache.RemoveAsync(key);
             }

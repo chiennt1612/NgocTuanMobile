@@ -1,8 +1,8 @@
-﻿using StaffAPI.Repository.Interfaces;
-using EntityFramework.API.DBContext;
+﻿using EntityFramework.API.DBContext;
 using EntityFramework.API.Entities.Ordering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using StaffAPI.Repository.Interfaces;
 //using X.PagedList;
 
 namespace StaffAPI.Repository

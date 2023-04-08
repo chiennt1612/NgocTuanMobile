@@ -1,5 +1,5 @@
-﻿using StaffAPI.Services.Interfaces;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using StaffAPI.Services.Interfaces;
 using System.Threading.Tasks;
 
 namespace StaffAPI.Services

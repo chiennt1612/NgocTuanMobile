@@ -81,6 +81,14 @@ namespace Utils.Models
         public string Email { get; set; }
         public string Mobile2 { get; set; }
         public string TaxCode { get; set; }
+
+        public string DepartmentName { get; set; }
+        public string DepartmentCode { get; set; }
+        public string DepartmentId { get; set; }
+
+        public string POSName { get; set; }
+        public string POSCode { get; set; }
+        public string POSId { get; set; }
     }
     #endregion
 

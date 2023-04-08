@@ -50,7 +50,7 @@ namespace Utils.Extensions
         public static string Replace(this string s, IList<string> p, IList<string> r)
         {
             string s1 = s;
-            for(var i = 0; i < p.Count; i++)
+            for (var i = 0; i < p.Count; i++)
             {
                 s1 = s1.Replace(p[i], r[i]);
             }

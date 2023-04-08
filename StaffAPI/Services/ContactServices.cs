@@ -1,8 +1,8 @@
-﻿using StaffAPI.Repository.Interfaces;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.EntityBase;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Repository.Interfaces;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;

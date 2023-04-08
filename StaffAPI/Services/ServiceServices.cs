@@ -1,8 +1,8 @@
-﻿using StaffAPI.Repository.Interfaces;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.EntityBase;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Repository.Interfaces;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -24,7 +24,7 @@ namespace StaffAPI.Services
         public async Task<IEnumerable<Service>> GetManyAsync(Expression<Func<Service, bool>> where)
         {
             if (ilogger != null) ilogger.LogInformation($"GetManyAsync");
-            
+
             return await unitOfWork.serviceRepository.GetManyAsync(where); ;
         }
 

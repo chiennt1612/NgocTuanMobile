@@ -1,7 +1,7 @@
-﻿using StaffAPI.Repository.Interfaces;
-using EntityFramework.API.DBContext;
+﻿using EntityFramework.API.DBContext;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Http;
+using StaffAPI.Repository.Interfaces;
 
 namespace StaffAPI.Repository
 {

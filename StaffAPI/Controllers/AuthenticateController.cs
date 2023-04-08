@@ -1,8 +1,4 @@
-﻿using StaffAPI.Helper;
-using StaffAPI.Repository.Interfaces;
-using StaffAPI.Services;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,13 +8,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SMSGetway;
+using StaffAPI.Helper;
+using StaffAPI.Models.Authenticate;
+using StaffAPI.Repository.Interfaces;
+using StaffAPI.Services;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -26,7 +25,6 @@ using Utils.ExceptionHandling;
 using Utils.Extensions;
 using Utils.Models;
 using Utils.Tokens.Interfaces;
-using StaffAPI.Models.Authenticate;
 
 namespace StaffAPI.Controllers
 {
@@ -90,6 +88,80 @@ namespace StaffAPI.Controllers
 
         #region Authen
         #region Private
+        private Task<AppUser> GetCurrentUserAsync(ClaimsPrincipal user)
+        {
+            //_logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return _userManager.GetUserAsync(user);
+        }
+        private async Task<IActionResult> LoginOK(string DeviceId, AppUser user)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"LoginOK -> Logined: {user.UserName}; DeviceId: {DeviceId}");
+            ClaimsPrincipal userClaims = await _userClaimsPrincipalFactory.CreateAsync(user);
+            List<Claim> claims = userClaims.Claims.ToList();
+            claims.Add(new Claim("DeviceId", DeviceId));
+            var _IsGetNotice = new Claim("IsGetNotice", "0");
+            claims.Add(_IsGetNotice);
+            claims.Add(new Claim("username", user.UserName));
+            claims.Add(new Claim("aud", _configuration["JWT:ValidAudience"]));
+
+            var token = await _jwtToken.CreateTokenAsync(_jwtToken.CreateAccessTokenAsync(claims));
+            var refreshToken = _jwtToken.GenerateRefreshToken();
+
+            _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
+            _logger.LogInformation($"RefreshToken: {refreshToken}\nToken: {token}\n");
+            await _userManager.UpdateAsync(user);
+            if (!String.IsNullOrEmpty(DeviceId))
+            {
+                Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == DeviceId);
+                var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);
+                if (UserByDevice != default)
+                {
+                    _logger.LogInformation($"Found device {DeviceId}");
+                    //if (UserByDevice.Username == user.UserName)
+                    //{
+                    claims.Remove(_IsGetNotice);
+                    claims.Add(new Claim("IsGetNotice", UserByDevice.IsGetNotice ? "1" : "0"));
+                    _logger.LogInformation($"Found device {DeviceId}/{user.UserName}");
+                    UserByDevice.Username = user.UserName;
+                    UserByDevice.RefreshToken = user.RefreshToken;
+                    UserByDevice.RefreshTokenExpiryTime = user.RefreshTokenExpiryTime;
+                    await _iUserDeviceRepository.Update(UserByDevice);
+                    //}
+                }
+                else
+                {
+                    _logger.LogInformation($"Addnew device {DeviceId}/{user.UserName}");
+                    UserByDevice = new AppUserDevice()
+                    {
+                        DeviceID = DeviceId,
+                        IsGetNotice = false,
+                        OS = OSType.Android,
+                        Username = user.UserName,
+                        RefreshToken = user.RefreshToken,
+                        RefreshTokenExpiryTime = user.RefreshTokenExpiryTime
+                    };
+                    await _iUserDeviceRepository.AddAsync(UserByDevice);
+                }
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return Ok(new LoginSuccessModel
+            {
+                Status = 1,
+                UserMessage = "Login success!",
+                InternalMessage = $"{user.UserName}: Login success!",
+                Code = 200,
+                MoreInfo = $"Login success!",
+                data = new LoginData
+                {
+                    Token = token,
+                    RefreshToken = refreshToken
+                }
+            });
+        }
         private async Task<AppUser> FindUser(string Username)
         {
             var user = await _userManager.FindByNameAsync(Username);
@@ -108,22 +180,14 @@ namespace StaffAPI.Controllers
         }
         private async Task<IActionResult> SendSMSPassword(AppUser user, LoginModel model, string Password = "")
         {
+            LoginOutput newModel = new LoginOutput()
+            {
+                Username = model.Username,
+                Type = "Password"
+            };
             _logger.LogInformation($"SendSMSPassword: {model.Username}/ {Password}");
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            if (String.IsNullOrEmpty(Password))
-            {
-                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
-                {
-                    Code = 200,
-                    InternalMessage = LanguageAll.Language.VerifyPassword,
-                    MoreInfo = LanguageAll.Language.VerifyPassword,
-                    Status = 1,
-                    UserMessage = LanguageAll.Language.VerifyPassword,
-                    data = model
-                });
-            }
-            else
+            if (!String.IsNullOrEmpty(Password))
             {
                 var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", Password);
                 if (user.EmailConfirmed)
@@ -132,7 +196,7 @@ namespace StaffAPI.Controllers
                     string subject = _smtpConfiguration.SubjectPassword.Replace(_smtpConfiguration.p, r);
                     string content = _smtpConfiguration.ContentPassword.Replace(_smtpConfiguration.p, r);
                     _logger.LogInformation($"Send by email: {subject}/ {content}");
-                    
+
                     await _emailSender.SendEmailAsync(user.Email,
                         subject, content
                         );
@@ -142,21 +206,25 @@ namespace StaffAPI.Controllers
                     _logger.LogInformation($"Send by SMS: {message}");
                     _smsVietel.SendSMS(user.PhoneNumber, message);
                 }
-                    
-                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
-                {
-                    Code = 200,
-                    InternalMessage = LanguageAll.Language.VerifyPassword,
-                    MoreInfo = LanguageAll.Language.VerifyPassword,
-                    Status = 1,
-                    UserMessage = LanguageAll.Language.VerifyPassword,
-                    data = model
-                });
             }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.VerifyPassword,
+                MoreInfo = LanguageAll.Language.VerifyPassword,
+                Status = 1,
+                UserMessage = LanguageAll.Language.VerifyPassword,
+                data = newModel
+            });
         }
         private async Task<IActionResult> SendSMSOTP(AppUser user, LoginModel model)
         {
+            LoginOutput newModel = new LoginOutput()
+            {
+                Username = model.Username,
+                Type = "OTP"
+            };
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             int IsNotAllowSend = 0;
             if (user.OTPSendTime.HasValue)
@@ -189,32 +257,25 @@ namespace StaffAPI.Controllers
                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK,
                         new ResponseBase(LanguageAll.Language.Fail, $"{model.Username}: {LanguageAll.Language.OTPLimited}!", $"{model.Username}: {LanguageAll.Language.OTPLimited}!"));
-                case 4:
-                    user.TotalOTP = user.TotalOTP + 1;
-                    user.OTPSendTime = DateTime.Now;
-                    await _userManager.UpdateAsync(user);
-                    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                    return StatusCode(StatusCodes.Status200OK, new ResponseOK()
-                    {
-                        Code = 200,
-                        InternalMessage = LanguageAll.Language.VerifyOTP,
-                        MoreInfo = LanguageAll.Language.VerifyOTP,
-                        Status = 1,
-                        UserMessage = LanguageAll.Language.VerifyOTP,
-                        data = model
-                    });
-                //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
+
                 default:
-                    //var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
-                    //var message = $"Your security code is: {code}";
-                    //_smsVietel.SendSMS(await _userManager.GetPhoneNumberAsync(user), message);
                     if (IsNotAllowSend == 0)
                         user.TotalOTP = 1;
                     else
                         user.TotalOTP = user.TotalOTP + 1;
                     user.OTPSendTime = DateTime.Now;
                     await _userManager.UpdateAsync(user);
-                    var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber);
+                    string PhoneNumber = await _userManager.GetPhoneNumberAsync(user);
+                    string code = "";
+                    if (_loginConfiguration.MobileTest.Contains(PhoneNumber))
+                    {
+                        code = _loginConfiguration.OTPTest;
+                    }
+                    else
+                    {
+                        code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, PhoneNumber);
+                    }
+
                     var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
                     if (user.EmailConfirmed)
                     {
@@ -224,21 +285,23 @@ namespace StaffAPI.Controllers
                             _smtpConfiguration.ContentOTP.Replace(_smtpConfiguration.p, r));
                     }
                     else
-                        _smsVietel.SendSMS(user.PhoneNumber, message);
+                        _smsVietel.SendSMS(PhoneNumber, message);
                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
-                        Code = 200,
+                        Code = 201,
                         InternalMessage = LanguageAll.Language.VerifyOTP,
                         MoreInfo = LanguageAll.Language.VerifyOTP,
                         Status = 1,
                         UserMessage = LanguageAll.Language.VerifyOTP,
-                        data = model
+                        data = newModel
                     });
                     //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
             }
         }
         #endregion
+
+        #region Login/Change/Forgot
         // Login -> Input Staff code, Mobile1, Mobile 2 -> If the first -> SMS Password
         [HttpPost]
         [Route("[action]")]
@@ -304,7 +367,7 @@ namespace StaffAPI.Controllers
                                     UserName = a.ItemsData[0].StaffCode,
                                     PhoneNumber = a.ItemsData[0].Mobile,
                                     //TwoFactorEnabled = true,
-                                    PhoneNumberConfirmed = true                                    
+                                    PhoneNumberConfirmed = true
                                 };
                             var password = user.UserName.Password(_configuration["Password:Default"]);
                             var result = await _userManager.CreateAsync(user, password);
@@ -320,7 +383,7 @@ namespace StaffAPI.Controllers
                                 {
                                     await _userManager.AddToRoleAsync(userExists, "Partner");
                                 }
-                                
+
                                 // Update address
                                 if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
                                 {
@@ -337,6 +400,14 @@ namespace StaffAPI.Controllers
                                 await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].StaffName));
                                 await _userManager.AddClaimAsync(userExists, new Claim("TypeCode", a.ItemsData[0].TypeCode));
                                 await _userManager.AddClaimAsync(userExists, new Claim("TypeName", a.ItemsData[0].TypeName));
+
+                                await _userManager.AddClaimAsync(userExists, new Claim("DepartmentName", a.ItemsData[0].DepartmentName));
+                                await _userManager.AddClaimAsync(userExists, new Claim("DepartmentCode", a.ItemsData[0].DepartmentCode));
+                                await _userManager.AddClaimAsync(userExists, new Claim("DepartmentId", a.ItemsData[0].DepartmentId));
+
+                                await _userManager.AddClaimAsync(userExists, new Claim("POSName", a.ItemsData[0].POSName));
+                                await _userManager.AddClaimAsync(userExists, new Claim("POSCode", a.ItemsData[0].POSCode));
+                                await _userManager.AddClaimAsync(userExists, new Claim("POSId", a.ItemsData[0].POSId));
 
                                 _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                                 //return await SendSMSOTP(userExists, new LoginModel() { Username = userExists.UserName });
@@ -378,7 +449,7 @@ namespace StaffAPI.Controllers
             if (ModelState.IsValid)
             {
                 var user = await FindUser(model.Username);
-                if(user != null)
+                if (user != null)
                 {
                     var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
                     if (result.Succeeded)
@@ -398,7 +469,7 @@ namespace StaffAPI.Controllers
                         return StatusCode(StatusCodes.Status200OK,
                                     new ResponseBase(LanguageAll.Language.LoginFail, $"{model.Username}: {LanguageAll.Language.AccountLockout}!", $"{model.Username}: {LanguageAll.Language.AccountLockout}!", 0, 400));
                     }
-                }                
+                }
             }
             _logger.LogError($"{model.Username}: {LanguageAll.Language.LoginFail}");
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
@@ -419,7 +490,7 @@ namespace StaffAPI.Controllers
                 var user = await FindUser(model.Username);
                 if (user != null)
                 {
-                    string PhoneNumber = user.PhoneNumber;
+                    string PhoneNumber = await _userManager.GetPhoneNumberAsync(user);
                     if (_loginConfiguration.MobileTest.Contains(PhoneNumber))
                     {
                         _logger.LogInformation($"Validating OTP: {model.Code} with phone number: {PhoneNumber}; [TEST]");
@@ -517,27 +588,7 @@ namespace StaffAPI.Controllers
         }
         #endregion
 
-        #region Notice
-        // Register receive noties (Push deviceid to server)
-
-        // Check status of the register receive noties
-
-        // Get the noties
-
-        // Set read mark to noties
-
-        // Push the noties to deviceid
-        #endregion
-
-        #region Sync contract by area
-        // Register area
-
-        // Sync contract
-        #endregion
-
-
-
-
+        #region Token
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> RenewToken([FromBody] RefreshTokenModel model)
@@ -561,7 +612,7 @@ namespace StaffAPI.Controllers
                 {
                     //Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == model.DeviceId && u.Username == user.UserName);
                     Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.RefreshToken == model.RefreshToken && u.Username == user.UserName);
-                    var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);                  
+                    var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);
                     if (UserByDevice != default)
                     {
                         model.DeviceId = UserByDevice.DeviceID;
@@ -617,97 +668,36 @@ namespace StaffAPI.Controllers
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(new ResponseBase(LanguageAll.Language.Success, LanguageAll.Language.Success, LanguageAll.Language.Success, 1, 200));
         }
+        #endregion
+        #endregion
 
-        
-        private async Task<IActionResult> LoginOK(string DeviceId, AppUser user)
+        #region Notice
+        #region Private
+        private async Task PushFirebase(List<string> token_ids, List<string> device_ids, NoticeInputModel model, AppUser u)
         {
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            _logger.LogInformation($"LoginOK -> Logined: {user.UserName}; DeviceId: {DeviceId}");
-            ClaimsPrincipal userClaims = await _userClaimsPrincipalFactory.CreateAsync(user);
-            List<Claim> claims = userClaims.Claims.ToList();
-            //var userRoles = await _userManager.GetRolesAsync(user);
-            //foreach (var userRole in userRoles)
-            //{
-            //    claims.Add(new Claim(ClaimTypes.Role, userRole));
-            //}
-            //var userClaim = await _userManager.GetClaimsAsync(user);
-            ////claims.AddRange(userClaim);
-            //foreach (var claim in userClaim)
-            //{
-            //    claims.Add(claim);
-            //}
-            claims.Add(new Claim("DeviceId", DeviceId));
-            var _IsGetNotice = new Claim("IsGetNotice", "0");
-            claims.Add(_IsGetNotice);
-            claims.Add(new Claim("username", user.UserName));
-            claims.Add(new Claim("aud", _configuration["JWT:ValidAudience"]));
-            //claims.Add(new Claim("oldid", user.OldId.ToString()));
-
-            var token = await _jwtToken.CreateTokenAsync(_jwtToken.CreateAccessTokenAsync(claims));
-            var refreshToken = _jwtToken.GenerateRefreshToken();
-
-            _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
-
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
-            _logger.LogInformation($"RefreshToken: {refreshToken}\nToken: {token}\n");
-            await _userManager.UpdateAsync(user);
-            if (!String.IsNullOrEmpty(DeviceId))
+            if (token_ids.Count > 0)
             {
-                Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == DeviceId);
-                var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);
-                if (UserByDevice != default)
+                var model1 = new NoticePushFirebaseModel()
                 {
-                    _logger.LogInformation($"Found device {DeviceId}");
-                    //if (UserByDevice.Username == user.UserName)
-                    //{
-                        claims.Remove(_IsGetNotice);
-                        claims.Add(new Claim("IsGetNotice", UserByDevice.IsGetNotice ? "1" : "0"));
-                        _logger.LogInformation($"Found device {DeviceId}/{user.UserName}");
-                        UserByDevice.Username = user.UserName;
-                        UserByDevice.RefreshToken = user.RefreshToken;
-                        UserByDevice.RefreshTokenExpiryTime = user.RefreshTokenExpiryTime;
-                        await _iUserDeviceRepository.Update(UserByDevice);
-                    //}
-                }
-                else
-                {
-                    _logger.LogInformation($"Addnew device {DeviceId}/{user.UserName}");
-                    UserByDevice = new AppUserDevice()
-                    {
-                        DeviceID = DeviceId,
-                        IsGetNotice = false,
-                        OS = OSType.Android,
-                        Username = user.UserName,
-                        RefreshToken = user.RefreshToken,
-                        RefreshTokenExpiryTime = user.RefreshTokenExpiryTime
-                    };
-                    await _iUserDeviceRepository.AddAsync(UserByDevice);
-                }
+                    Author = model.Author,
+                    Content = model.Content,
+                    DeviceID = device_ids,
+                    Token = token_ids,
+                    IsHTML = model.IsHTML,
+                    IsRead = false,
+                    NoticeTypeId = model.NoticeTypeId,
+                    NoticeTypeName = model.NoticeTypeName,
+                    Subject = model.Subject,
+                    Link = model.Link,
+                    Username = u.UserName
+                };
+                await Tools.PushFireBase(model1, fireBaseConfig, _logger);
             }
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return Ok(new LoginSuccessModel
-            {
-                Status = 1,
-                UserMessage = "Login success!",
-                InternalMessage = $"{user.UserName}: Login success!",
-                Code = 200,
-                MoreInfo = $"Login success!",
-                data = new LoginData
-                {
-                    Token = token,
-                    RefreshToken = refreshToken
-                }
-            });
         }
-
-        private Task<AppUser> GetCurrentUserAsync(ClaimsPrincipal user)
-        {
-            //_logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return _userManager.GetUserAsync(user);
-        }
-
-        
+        #endregion
+        // Register receive noties (Push deviceid to server)
         [Authorize]
         [HttpPost]
         [Route("[action]")]
@@ -734,10 +724,10 @@ namespace StaffAPI.Controllers
                                     _logger.LogInformation($"PushDeviceID/model: {JsonConvert.SerializeObject(model)} --> Update");
                                     //if (device.Username == user.UserName)
                                     //{
-                                        device.Token = model.Token;
-                                        device.OS = model.OS;
-                                        device.IsGetNotice = model.IsGetNotice;
-                                        await _iUserDeviceRepository.Update(device);
+                                    device.Token = model.Token;
+                                    device.OS = model.OS;
+                                    device.IsGetNotice = model.IsGetNotice;
+                                    await _iUserDeviceRepository.Update(device);
                                     //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
                                     //}
                                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
@@ -793,7 +783,7 @@ namespace StaffAPI.Controllers
                 data = device
             });
         }
-
+        // Check status of the register receive noties
         [Authorize]
         [HttpPost]
         [Route("[action]")]
@@ -869,7 +859,7 @@ namespace StaffAPI.Controllers
                 }
             });
         }
-
+        // Get the noties
         [Authorize]
         [HttpPost]
         [Route("[action]")]
@@ -939,7 +929,7 @@ namespace StaffAPI.Controllers
                 data = device
             });
         }
-
+        // Set read mark to noties
         [Authorize]
         [HttpPost]
         [Route("[action]")]
@@ -961,7 +951,7 @@ namespace StaffAPI.Controllers
                 data = null
             });
         }
-
+        // Push the noties to deviceid
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> PushNoticeToDevice([FromBody] NoticeInputModel model)
@@ -979,13 +969,13 @@ namespace StaffAPI.Controllers
                 if (model.CustomerCode == "*")
                 {
                     _u = await _userManager.GetUsersInRoleAsync("Customer");
-                }                    
+                }
                 else
                 {
                     var _claim = new Claim("GetInvoice", $"{model.CompanyId}.{model.CustomerCode}");
                     _u = await _userManager.GetUsersForClaimAsync(_claim);
                 }
-                
+
                 _logger.LogInformation($"GetInvoice: {model.CompanyId}.{model.CustomerCode}; Count: {_u.Count}");
                 model.Content = model.Content.XSSFilter(htmlXSS);
                 if (_u.Count > 0)
@@ -1057,31 +1047,12 @@ namespace StaffAPI.Controllers
                 data = null
             });
         }
+        #endregion
 
-        private async Task PushFirebase(List<string> token_ids, List<string> device_ids, NoticeInputModel model, AppUser u)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            if (token_ids.Count > 0)
-            {
-                var model1 = new NoticePushFirebaseModel()
-                {
-                    Author = model.Author,
-                    Content = model.Content,
-                    DeviceID = device_ids,
-                    Token = token_ids,
-                    IsHTML = model.IsHTML,
-                    IsRead = false,
-                    NoticeTypeId = model.NoticeTypeId,
-                    NoticeTypeName = model.NoticeTypeName,
-                    Subject = model.Subject,
-                    Link = model.Link,
-                    Username = u.UserName
-                };
-                await Tools.PushFireBase(model1, fireBaseConfig, _logger);
-            }
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-        }
+        #region Sync contract by area
+        // Register area
 
+        // Sync contract
         [Authorize]
         [HttpGet]
         [Route("[action]")]
@@ -1093,28 +1064,49 @@ namespace StaffAPI.Controllers
 
             for (var i = 0; i < companyConfig.Companys.Count; i++)
             {
-                var inv = new EVNCodeInput()
+                var inv = new StaffCodeInput()
                 {
                     CompanyID = companyConfig.Companys[i].Info.CompanyId,
-                    EVNCode = userExists.UserName
+                    StaffCode = userExists.UserName
                 };
-                var a = await _iInvoiceServices.invoiceServices.getCustomerInfo(inv);
+                var a = await _iInvoiceServices.invoiceServices.getStaffInfo(inv);
+                Claim claim;
                 if (a.DataStatus == "00")
                 {
-                    // Update address                    
                     var a1 = await _userManager.GetClaimsAsync(userExists);
-                    Claim claim;
+                    string email = a.ItemsData[0].Email;
+                    if (!String.IsNullOrEmpty(email))
+                    {
+                        email = email.Replace("[]", "@");
+                        userExists.Email = email;
+                        await _userManager.UpdateAsync(userExists);
+                    }
+                    // Add role Staff/CTV
+                    if (companyConfig.StaffType.IndexOf(a.ItemsData[0].TypeCode) > -1) // Staff
+                    {
+                        claim = a1.Where(u => u.Type == "Staff").FirstOrDefault();
+                        if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                        await _userManager.AddToRoleAsync(userExists, "Staff");
+                    }
+                    else
+                    {
+                        claim = a1.Where(u => u.Type == "Partner").FirstOrDefault();
+                        if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                        await _userManager.AddToRoleAsync(userExists, "Partner");
+                    }
+
+                    // Update address
                     if (!String.IsNullOrEmpty(a.ItemsData[0].Address))
                     {
                         claim = a1.Where(u => u.Type == "Address").FirstOrDefault();
                         if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
                         await _userManager.AddClaimAsync(userExists, new Claim("Address", a.ItemsData[0].Address));
                     }
-                    if (!String.IsNullOrEmpty(a.ItemsData[0].WaterIndexCode))
+                    if (!String.IsNullOrEmpty(a.ItemsData[0].Mobile2))
                     {
-                        claim = a1.Where(u => u.Type == "WaterCode").FirstOrDefault();
+                        claim = a1.Where(u => u.Type == "Mobile2").FirstOrDefault();
                         if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
-                        await _userManager.AddClaimAsync(userExists, new Claim("WaterCode", a.ItemsData[0].WaterIndexCode));
+                        await _userManager.AddClaimAsync(userExists, new Claim("Mobile2", a.ItemsData[0].Mobile2));
                     }
                     if (!String.IsNullOrEmpty(a.ItemsData[0].TaxCode))
                     {
@@ -1124,35 +1116,36 @@ namespace StaffAPI.Controllers
                     }
                     claim = a1.Where(u => u.Type == "Fullname").FirstOrDefault();
                     if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
-                    await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].CustomerName));
+                    await _userManager.AddClaimAsync(userExists, new Claim("Fullname", a.ItemsData[0].StaffName));
 
-                    foreach (var customerCode in a.ItemsData)
-                    {
-                        Expression<Func<EntityFramework.API.Entities.Contract, bool>> expression = u => (
-                            (u.CompanyId >= inv.CompanyID) &&
-                            (u.CustomerCode == customerCode.CustomerCode));
-                        var contract = await _iInvoiceServices.contractServices.GetAsync(expression);
-                        if (contract == null)
-                        {
-                            var _claim = new Claim("GetInvoice", $"{inv.CompanyID}.{customerCode.CustomerCode}");
-                            await _userManager.AddClaimAsync(userExists, _claim); //
-                            await _iInvoiceServices.contractServices.AddAsync(new EntityFramework.API.Entities.Contract()
-                            {
-                                Address = customerCode.Address,
-                                CompanyId = inv.CompanyID,
-                                CustomerCode = customerCode.CustomerCode,
-                                CustomerName = customerCode.CustomerName,
-                                CustomerType = customerCode.CustomerType,
-                                Email = customerCode.Email,
-                                Mobile = customerCode.Mobile,
-                                TaxCode = customerCode.TaxCode,
-                                UserId = userExists.Id,
-                                WaterIndexCode = customerCode.WaterIndexCode
-                            });
-                        }
-                    }
+                    claim = a1.Where(u => u.Type == "TypeCode").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("TypeCode", a.ItemsData[0].TypeCode));
+                    claim = a1.Where(u => u.Type == "TypeName").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("TypeName", a.ItemsData[0].TypeName));
+
+                    claim = a1.Where(u => u.Type == "DepartmentName").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("DepartmentName", a.ItemsData[0].DepartmentName));
+                    claim = a1.Where(u => u.Type == "DepartmentCode").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("DepartmentCode", a.ItemsData[0].DepartmentCode));
+                    claim = a1.Where(u => u.Type == "DepartmentId").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("DepartmentId", a.ItemsData[0].DepartmentId));
+
+                    claim = a1.Where(u => u.Type == "POSName").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("POSName", a.ItemsData[0].POSName));
+                    claim = a1.Where(u => u.Type == "POSCode").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("POSCode", a.ItemsData[0].POSCode));
+                    claim = a1.Where(u => u.Type == "POSId").FirstOrDefault();
+                    if (claim != null) await _userManager.RemoveClaimAsync(userExists, claim);
+                    await _userManager.AddClaimAsync(userExists, new Claim("POSId", a.ItemsData[0].POSId));
                 }
-            } 
+            }
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.Success, $"{userExists.UserName}: {LanguageAll.Language.Success}!", LanguageAll.Language.Success, 0, 200));
@@ -1251,29 +1244,6 @@ namespace StaffAPI.Controllers
                 data = null
             });
         }
-        //private async Task SetDeviceToClaim(string DeviceId, string IsGetNotice = "0")
-        //{
-        //    var u = await _userManager.GetUserAsync(User);
-        //    var a = await _userManager.GetClaimsAsync(u);
-        //    var _d = a.Where(u => u.Type == "DeviceId").FirstOrDefault();
-        //    if (_d == null)
-        //    {
-        //        await _userManager.AddClaimAsync(u, new Claim("DeviceId", DeviceId));
-        //    }
-        //    else
-        //    {
-        //        await _userManager.ReplaceClaimAsync(u, _d, new Claim("DeviceId", DeviceId));
-        //    }
-
-        //    var _n = a.Where(u => u.Type == "IsGetNotice").FirstOrDefault();
-        //    if (_n == null)
-        //    {
-        //        await _userManager.AddClaimAsync(u, new Claim("IsGetNotice", IsGetNotice));
-        //    }
-        //    else
-        //    {
-        //        await _userManager.ReplaceClaimAsync(u, _n, new Claim("IsGetNotice", IsGetNotice));
-        //    }
-        //}
+        #endregion
     }
 }

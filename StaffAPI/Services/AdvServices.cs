@@ -1,7 +1,7 @@
-﻿using StaffAPI.Repository.Interfaces;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Repository.Interfaces;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;

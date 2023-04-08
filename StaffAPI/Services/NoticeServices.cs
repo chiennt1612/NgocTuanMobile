@@ -1,8 +1,8 @@
-﻿using StaffAPI.Repository.Interfaces;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using EntityFramework.API.Entities.EntityBase;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Repository.Interfaces;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -89,10 +89,10 @@ namespace StaffAPI.Services
                 entity.IsRead = true;
                 unitOfWork.noticeRepository.Update(entity);
             }
-            if(i > 0)
+            if (i > 0)
             {
                 await unitOfWork.SaveAsync();
-            }            
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using StaffAPI.Helper;
-using StaffAPI.Services.Interfaces;
-using Decryptor;
+﻿using Decryptor;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Helper;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Net.Mail;
 using System.Threading.Tasks;

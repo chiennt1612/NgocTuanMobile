@@ -89,10 +89,10 @@ namespace Auth.Services
                 entity.IsRead = true;
                 unitOfWork.noticeRepository.Update(entity);
             }
-            if(i > 0)
+            if (i > 0)
             {
                 await unitOfWork.SaveAsync();
-            }            
+            }
         }
     }
 }

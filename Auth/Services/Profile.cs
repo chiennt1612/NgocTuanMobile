@@ -390,24 +390,24 @@ namespace Auth.Services
             //var _u = await _userManager.GetUsersForClaimAsync(_claim);
             //if (_u.Count == 0)
             //{
-                var u = await _userManager.GetUserAsync(_context.HttpContext.User);
-                await _contract.AddAsync(new Contract()
-                {
-                    Address = ir.ItemsData[0].Address,
-                    CompanyId = inv.CompanyID,
-                    CustomerCode = ir.ItemsData[0].CustomerCode,
-                    CustomerName = ir.ItemsData[0].CustomerName,
-                    CustomerType = ir.ItemsData[0].CustomerType,
-                    Email = ir.ItemsData[0].Email,
-                    Mobile = ir.ItemsData[0].Mobile,
-                    TaxCode = ir.ItemsData[0].TaxCode,
-                    UserId = u.Id,
-                    WaterIndexCode = ir.ItemsData[0].WaterIndexCode
-                });
+            var u = await _userManager.GetUserAsync(_context.HttpContext.User);
+            await _contract.AddAsync(new Contract()
+            {
+                Address = ir.ItemsData[0].Address,
+                CompanyId = inv.CompanyID,
+                CustomerCode = ir.ItemsData[0].CustomerCode,
+                CustomerName = ir.ItemsData[0].CustomerName,
+                CustomerType = ir.ItemsData[0].CustomerType,
+                Email = ir.ItemsData[0].Email,
+                Mobile = ir.ItemsData[0].Mobile,
+                TaxCode = ir.ItemsData[0].TaxCode,
+                UserId = u.Id,
+                WaterIndexCode = ir.ItemsData[0].WaterIndexCode
+            });
 
-                await _userManager.AddClaimAsync(u, _claim);
-                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                return await GetProfile(3);
+            await _userManager.AddClaimAsync(u, _claim);
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return await GetProfile(3);
             //}
             //_logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             //return new ResponseOK()

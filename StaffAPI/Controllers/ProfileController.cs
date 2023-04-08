@@ -1,12 +1,12 @@
-﻿using StaffAPI.Models;
-using StaffAPI.Services;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Models;
+using StaffAPI.Services;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;

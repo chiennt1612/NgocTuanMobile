@@ -59,7 +59,7 @@ namespace Auth.Controllers
             this._logger.WriteLog(_configuration, "Starting invoice page");
             companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
             _userManager = userManager;
-            
+
             var b = _cache.GetAsync<List<string>>("InvoiceCacheKeys").GetAwaiter();
             invoiceCacheKeys = b.GetResult();
             if (invoiceCacheKeys == null)
@@ -83,11 +83,12 @@ namespace Auth.Controllers
                 PaymentStatus = (invM.PaymentStatus.HasValue ? invM.PaymentStatus.Value.ToString() : "")
             };
             string _key = $"ListAll{inv.CompanyID}.{inv.CustomerCode}.{Page}.{inv.Page}.{inv.FromDate}.{inv.ToDate}.{inv.PaymentStatus}".ToMD5Hash();
-            if (!invoiceCacheKeys.Contains(_key)) {
+            if (!invoiceCacheKeys.Contains(_key))
+            {
                 invoiceCacheKeys.Add(_key);
                 await _cache.InvoiceSetAsync("InvoiceCacheKeys", invoiceCacheKeys);
             }
-            
+
             ResponseOK a = await _cache.GetAsync<ResponseOK>(_key);
             if (a == null)
             {
@@ -114,8 +115,8 @@ namespace Auth.Controllers
             if (a == null)
             {*/
                 a = await _Service.invoiceServices.GetInvoice(inv);
-               /* await _cache.InvoiceSetAsync(_key, a);
-            }*/
+            /* await _cache.InvoiceSetAsync(_key, a);
+         }*/
             _logger.WriteLog(_configuration, $"List {JsonConvert.SerializeObject(inv)}: {a.UserMessage}", "List");
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return Ok(a);
@@ -260,7 +261,7 @@ namespace Auth.Controllers
                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return Ok(a2);
                 }
-                    
+
 
                 InvQrCodeInput inv = new InvQrCodeInput()
                 {
@@ -613,7 +614,7 @@ namespace Auth.Controllers
                     Status = 1,
                     UserMessage = LanguageAll.Language.Success,
                     data = invoiceCacheKeys
-                }); 
+                });
             else
                 return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                 {

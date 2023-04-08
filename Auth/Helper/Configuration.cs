@@ -50,4 +50,30 @@ namespace Auth.Helper
         public int Port { get; set; } = 587; // default smtp port
         public bool UseSSL { get; set; } = true;
     }
+
+    public class LoggingFiles
+    {
+        public string FileName { get; set; }
+        public long FileSizeLimitBytes { get; set; }
+        public int RollingInterval { get; set; }
+        public string OutputTemplate { get; set; }
+    }
+
+    public class LoggingMongoDB
+    {
+        public string URI { get; set; }
+        public string Collection { get; set; }
+    }
+
+    public class LoggingProvider
+    {
+        public LoggingMongoDB LogMongoDB { get; set; }
+        public LoggingFiles LogFiles { get; set; }
+        public int LoggingType { get; set; }
+        public LoggingProvider()
+        {
+            LogMongoDB = new LoggingMongoDB();
+            LogFiles = new LoggingFiles();
+        }
+    }
 }

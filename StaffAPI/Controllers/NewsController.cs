@@ -1,10 +1,11 @@
-﻿using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
+﻿using EntityFramework.API.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StaffAPI.Models.News;
+using StaffAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,6 @@ using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
-using StaffAPI.Models.News;
 
 namespace StaffAPI.Controllers
 {

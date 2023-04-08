@@ -15,11 +15,9 @@ using Newtonsoft.Json;
 using SMSGetway;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Utils;
@@ -426,7 +424,7 @@ namespace Auth.Controllers
                 {
                     //Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.DeviceID == model.DeviceId && u.Username == user.UserName);
                     Expression<Func<AppUserDevice, bool>> sqlWhere = u => (u.RefreshToken == model.RefreshToken && u.Username == user.UserName);
-                    var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);                  
+                    var UserByDevice = await _iUserDeviceRepository.GetAsync(sqlWhere);
                     if (UserByDevice != default)
                     {
                         model.DeviceId = UserByDevice.DeviceID;
@@ -540,13 +538,13 @@ namespace Auth.Controllers
                     _logger.LogInformation($"Found device {DeviceId}");
                     //if (UserByDevice.Username == user.UserName)
                     //{
-                        claims.Remove(_IsGetNotice);
-                        claims.Add(new Claim("IsGetNotice", UserByDevice.IsGetNotice ? "1" : "0"));
-                        _logger.LogInformation($"Found device {DeviceId}/{user.UserName}");
-                        UserByDevice.Username = user.UserName;
-                        UserByDevice.RefreshToken = user.RefreshToken;
-                        UserByDevice.RefreshTokenExpiryTime = user.RefreshTokenExpiryTime;
-                        await _iUserDeviceRepository.Update(UserByDevice);
+                    claims.Remove(_IsGetNotice);
+                    claims.Add(new Claim("IsGetNotice", UserByDevice.IsGetNotice ? "1" : "0"));
+                    _logger.LogInformation($"Found device {DeviceId}/{user.UserName}");
+                    UserByDevice.Username = user.UserName;
+                    UserByDevice.RefreshToken = user.RefreshToken;
+                    UserByDevice.RefreshTokenExpiryTime = user.RefreshTokenExpiryTime;
+                    await _iUserDeviceRepository.Update(UserByDevice);
                     //}
                 }
                 else
@@ -831,10 +829,10 @@ namespace Auth.Controllers
                                     _logger.LogInformation($"PushDeviceID/model: {JsonConvert.SerializeObject(model)} --> Update");
                                     //if (device.Username == user.UserName)
                                     //{
-                                        device.Token = model.Token;
-                                        device.OS = model.OS;
-                                        device.IsGetNotice = model.IsGetNotice;
-                                        await _iUserDeviceRepository.Update(device);
+                                    device.Token = model.Token;
+                                    device.OS = model.OS;
+                                    device.IsGetNotice = model.IsGetNotice;
+                                    await _iUserDeviceRepository.Update(device);
                                     //await SetDeviceToClaim(model.DeviceId, model.IsGetNotice ? "1" : "0");
                                     //}
                                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
@@ -1076,13 +1074,13 @@ namespace Auth.Controllers
                 if (model.CustomerCode == "*")
                 {
                     _u = await _userManager.GetUsersInRoleAsync("Customer");
-                }                    
+                }
                 else
                 {
                     var _claim = new Claim("GetInvoice", $"{model.CompanyId}.{model.CustomerCode}");
                     _u = await _userManager.GetUsersForClaimAsync(_claim);
                 }
-                
+
                 _logger.LogInformation($"GetInvoice: {model.CompanyId}.{model.CustomerCode}; Count: {_u.Count}");
                 model.Content = model.Content.XSSFilter(htmlXSS);
                 if (_u.Count > 0)
@@ -1249,7 +1247,7 @@ namespace Auth.Controllers
                         }
                     }
                 }
-            } 
+            }
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.Success, $"{userExists.UserName}: {LanguageAll.Language.Success}!", LanguageAll.Language.Success, 0, 200));

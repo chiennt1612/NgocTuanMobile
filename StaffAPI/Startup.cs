@@ -1,4 +1,3 @@
-using StaffAPI.Helper;
 using Decryptor;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
@@ -7,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SMSGetway;
+using StaffAPI.Helper;
 using System.Reflection;
 using Utils;
 using Utils.Tokens;

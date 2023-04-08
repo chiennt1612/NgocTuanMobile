@@ -1,15 +1,12 @@
 ﻿using Auth.Helper;
 using Auth.Models;
 using Auth.Services.Interfaces;
-using EntityFramework.API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Utils;
@@ -55,7 +52,7 @@ namespace Auth.Controllers
                 //var items = await _Service.aboutServices.GetManyAsync(expression);
                 var items = await _Service.aboutServices.GetListAsync(a);
                 int i = 0;
-                foreach(var b in items)
+                foreach (var b in items)
                 {
                     r.Add(new AboutModel()
                     {

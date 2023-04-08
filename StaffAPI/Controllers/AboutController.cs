@@ -1,20 +1,17 @@
-﻿using StaffAPI.Helper;
-using StaffAPI.Services.Interfaces;
-using EntityFramework.API.Entities;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
+using StaffAPI.Helper;
+using StaffAPI.Models.About;
+using StaffAPI.Services.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Utils;
 using Utils.ExceptionHandling;
 using Utils.Models;
-using StaffAPI.Models.About;
 
 namespace StaffAPI.Controllers
 {
@@ -55,7 +52,7 @@ namespace StaffAPI.Controllers
                 //var items = await _Service.aboutServices.GetManyAsync(expression);
                 var items = await _Service.aboutServices.GetListAsync(a);
                 int i = 0;
-                foreach(var b in items)
+                foreach (var b in items)
                 {
                     r.Add(new AboutModel()
                     {

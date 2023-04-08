@@ -1,8 +1,8 @@
-﻿using StaffAPI.Repository.Interfaces;
-using EntityFramework.API.DBContext;
+﻿using EntityFramework.API.DBContext;
 using EntityFramework.API.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using StaffAPI.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

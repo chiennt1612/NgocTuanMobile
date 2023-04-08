@@ -1,6 +1,6 @@
-﻿using StaffAPI.Repository.Interfaces;
-using EntityFramework.API.DBContext;
+﻿using EntityFramework.API.DBContext;
 using Microsoft.AspNetCore.Http;
+using StaffAPI.Repository.Interfaces;
 using System;
 using System.Threading.Tasks;
 

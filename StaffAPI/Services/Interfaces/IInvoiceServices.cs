@@ -26,16 +26,16 @@ namespace StaffAPI.Services.Interfaces
         Task<StaffInfoResult> getStaffInfo(StaffCodeInput inv);
         #endregion
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
     }
 }

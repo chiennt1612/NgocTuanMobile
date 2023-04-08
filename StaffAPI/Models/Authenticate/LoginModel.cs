@@ -3,6 +3,11 @@ using Utils.Models;
 
 namespace StaffAPI.Models.Authenticate
 {
+    public class LoginOutput
+    {
+        public string Username { get; set; }
+        public string Type { get; set; } = "Password";
+    }
     public class LoginModel
     {
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]

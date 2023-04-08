@@ -71,18 +71,18 @@ namespace Auth.Controllers
                 r = new List<ServiceModel>();
                 Expression<Func<Service, bool>> expression = u => u.Id == 11;
                 r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
-                     select new ServiceModel()
-                     {
-                         Description = p.Description,
-                         Id = p.Id,
-                         Img = p.Img,
-                         PriceCompany = p.Price1,
-                         PricePerson = p.Price,
-                         PriceText = p.PriceText,
-                         Summary = p.Summary,
-                         Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
-                         Title = p.Title
-                     }));
+                            select new ServiceModel()
+                            {
+                                Description = p.Description,
+                                Id = p.Id,
+                                Img = p.Img,
+                                PriceCompany = p.Price1,
+                                PricePerson = p.Price,
+                                PriceText = p.PriceText,
+                                Summary = p.Summary,
+                                Url = Utils.Tools.GetUrlById("Service/Details", p.Id),
+                                Title = p.Title
+                            }));
                 expression = u => u.Id == 12;
                 r.AddRange((from p in (await _Service.serviceServices.GetManyAsync(expression))
                             select new ServiceModel()
@@ -490,7 +490,7 @@ namespace Auth.Controllers
                         Img = Img,
                         Img2 = Img2
                     };
-                    
+
                     if (User.Identity.IsAuthenticated)
                     {
                         _contact.Fullname = User.Claims.GetClaimValue("Fullname");

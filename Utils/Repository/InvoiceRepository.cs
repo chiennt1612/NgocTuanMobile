@@ -215,6 +215,7 @@ namespace Utils.Repository
             }
             return a;
         }
+        // Pay invoice by cash
         #endregion
     }
 }
