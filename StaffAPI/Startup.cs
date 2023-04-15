@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SMSGetway;
 using StaffAPI.Helper;
+using StaffAPI.Services;
+using StaffAPI.Services.Interfaces;
 using System.Reflection;
 using Utils;
 using Utils.Tokens;
@@ -35,6 +38,9 @@ namespace StaffAPI
             services.AddSingleton<IDecryptorProvider, DecryptorProvider>();
             services.AddSingleton<ISMSVietel, SMSVietel>();
             services.AddSingleton<ITokenCreationService, TokenCreationService>();
+            services.Configure<DBSetting>(Configuration.GetSection(nameof(DBSetting)));
+            services.AddSingleton<IDBSetting>(sp => sp.GetRequiredService<IOptions<DBSetting>>().Value);
+            services.AddSingleton<ITaskService, TaskService>();
             services.AddServices();
 
             services.RegisterDbContexts(Configuration, migrationsAssembly);

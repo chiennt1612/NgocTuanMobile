@@ -106,6 +106,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Xóa dữ liệu thành công.
+        /// </summary>
+        public static string DeleteSuccess {
+            get {
+                return ResourceManager.GetString("DeleteSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Địa chỉ Email sai định dạng..
         /// </summary>
         public static string EmailIsNotValid {

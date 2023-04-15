@@ -129,6 +129,9 @@
   <data name="ConfirmPassword" xml:space="preserve">
     <value>Confirm password</value>
   </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Delete is success</value>
+  </data>
   <data name="EmailIsNotValid" xml:space="preserve">
     <value>The Email field is not a valid e-mail address.</value>
   </data>

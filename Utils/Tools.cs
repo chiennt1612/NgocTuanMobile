@@ -819,5 +819,19 @@ namespace Utils
             return await httpWebRequest.GetURL(_logger, data);
         }
         #endregion
+
+        #region Upload
+        public static async Task<string> Upload(string avatar, string folder, string fileName, string fileExt = ".jpg")
+        {
+            if (string.IsNullOrEmpty(fileName)) fileName = "admin";
+            string path = folder;
+            fileName = fileName + fileExt;
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            if (File.Exists(path + @"/" + fileName)) File.Delete(path + @"/" + fileName);
+            await File.WriteAllBytesAsync(path + @"/" + fileName, Convert.FromBase64String(avatar));
+            avatar = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
+            return avatar;
+        }
+        #endregion
     }
 }

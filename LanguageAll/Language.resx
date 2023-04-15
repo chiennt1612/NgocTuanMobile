@@ -132,6 +132,9 @@
   <data name="ConfirmPassword" xml:space="preserve">
     <value>Xác nhận mật khẩu</value>
   </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Xóa dữ liệu thành công</value>
+  </data>
   <data name="EmailIsNotValid" xml:space="preserve">
     <value>Địa chỉ Email sai định dạng.</value>
   </data>
