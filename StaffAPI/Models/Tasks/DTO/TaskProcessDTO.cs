@@ -1,7 +1,7 @@
 ﻿using System;
 using Utils.Models;
 
-namespace StaffAPI.Models.Tasks
+namespace StaffAPI.Models.Tasks.DTO
 {
     public class TaskProcessDTO
     {
@@ -9,6 +9,5 @@ namespace StaffAPI.Models.Tasks
         public StaffInfo Staff { get; set; }
         public string Content { get; set; }
         public DateTime? CreateDate { get; set; }
-        public DateTime? ModifyDate { get; set; }
     }
 }

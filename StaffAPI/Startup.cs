@@ -8,10 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SMSGetway;
 using StaffAPI.Helper;
+using StaffAPI.Models.Tasks;
 using StaffAPI.Services;
 using StaffAPI.Services.Interfaces;
 using System.Reflection;
 using Utils;
+using Utils.Models;
 using Utils.Tokens;
 using Utils.Tokens.Interfaces;
 
@@ -38,10 +40,14 @@ namespace StaffAPI
             services.AddSingleton<IDecryptorProvider, DecryptorProvider>();
             services.AddSingleton<ISMSVietel, SMSVietel>();
             services.AddSingleton<ITokenCreationService, TokenCreationService>();
-            services.Configure<DBSetting>(Configuration.GetSection(nameof(DBSetting)));
-            services.AddSingleton<IDBSetting>(sp => sp.GetRequiredService<IOptions<DBSetting>>().Value);
-            services.AddSingleton<ITaskService, TaskService>();
+
+            // Company config
+            services.Configure<CompanyConfig>(Configuration.GetSection(nameof(CompanyConfig)));
+            services.AddScoped<ICompanyConfig>(sp => sp.GetRequiredService<IOptions<CompanyConfig>>().Value);
+            // add services
             services.AddServices();
+            // workfolow
+            services.AddWorkFlowServices(Configuration);
 
             services.RegisterDbContexts(Configuration, migrationsAssembly);
             services.RegisterAuthentication(Configuration);

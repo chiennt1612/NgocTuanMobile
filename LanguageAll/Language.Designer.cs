@@ -79,6 +79,24 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Đã gán người thu.
+        /// </summary>
+        public static string CasherIsExists {
+            get {
+                return ResourceManager.GetString("CasherIsExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Người sửa trống.
+        /// </summary>
+        public static string ChangedUserIsNull {
+            get {
+                return ResourceManager.GetString("ChangedUserIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mã nhà máy nước không để trống.
         /// </summary>
         public static string CompanyIDInvalid {
@@ -102,6 +120,69 @@ namespace LanguageAll {
         public static string ConfirmPassword {
             get {
                 return ResourceManager.GetString("ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chưa nhập nội dung công việc.
+        /// </summary>
+        public static string ContentIsNull {
+            get {
+                return ResourceManager.GetString("ContentIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chưa nhập nội dung xử lý.
+        /// </summary>
+        public static string ContentOfTaskIsNull {
+            get {
+                return ResourceManager.GetString("ContentOfTaskIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ngày tạo/Ngày thực hiện trống.
+        /// </summary>
+        public static string CreateDateIsNull {
+            get {
+                return ResourceManager.GetString("CreateDateIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chưa chọn khách hàng.
+        /// </summary>
+        public static string CustomerIsNull {
+            get {
+                return ResourceManager.GetString("CustomerIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bạn chọn khách hàng không phù hợp dịch vụ.
+        /// </summary>
+        public static string CustomerIsWrong {
+            get {
+                return ResourceManager.GetString("CustomerIsWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bạn chưa nhập từ ngày &gt; ngày hiện tại.
+        /// </summary>
+        public static string DateFromIsWrong {
+            get {
+                return ResourceManager.GetString("DateFromIsWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bạn chưa nhập đến ngày &gt; từ ngày.
+        /// </summary>
+        public static string DateToIsWrong {
+            get {
+                return ResourceManager.GetString("DateToIsWrong", resourceCulture);
             }
         }
         
@@ -214,6 +295,24 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ngày sửa đổi trống.
+        /// </summary>
+        public static string ModifyDateIsNull {
+            get {
+                return ResourceManager.GetString("ModifyDateIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không có quyền.
+        /// </summary>
+        public static string NoPermission {
+            get {
+                return ResourceManager.GetString("NoPermission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không tìm thấy.
         /// </summary>
         public static string NotFound {
@@ -268,6 +367,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Người tạo trống.
+        /// </summary>
+        public static string OwnerIsNull {
+            get {
+                return ResourceManager.GetString("OwnerIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mật khẩu.
         /// </summary>
         public static string Password {
@@ -282,6 +390,15 @@ namespace LanguageAll {
         public static string PasswordLength {
             get {
                 return ResourceManager.GetString("PasswordLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trạng thái thanh toán không đúng.
+        /// </summary>
+        public static string PaymentStatusIsWrong {
+            get {
+                return ResourceManager.GetString("PaymentStatusIsWrong", resourceCulture);
             }
         }
         
@@ -318,6 +435,15 @@ namespace LanguageAll {
         public static string RenewTokenFail {
             get {
                 return ResourceManager.GetString("RenewTokenFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chưa chọn dịch vụ/Loại công việc.
+        /// </summary>
+        public static string ServiceIsNull {
+            get {
+                return ResourceManager.GetString("ServiceIsNull", resourceCulture);
             }
         }
         
@@ -376,11 +502,65 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Đã gán nhân sự.
+        /// </summary>
+        public static string StaffIsExists {
+            get {
+                return ResourceManager.GetString("StaffIsExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chưa chọn nhân viên.
+        /// </summary>
+        public static string StaffIsNull {
+            get {
+                return ResourceManager.GetString("StaffIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nhân sự chưa được gán.
+        /// </summary>
+        public static string StaffNotExists {
+            get {
+                return ResourceManager.GetString("StaffNotExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trạng thái công việc không đúng.
+        /// </summary>
+        public static string StatusIsWrong {
+            get {
+                return ResourceManager.GetString("StatusIsWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Thành công.
         /// </summary>
         public static string Success {
             get {
                 return ResourceManager.GetString("Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên công việc trống.
+        /// </summary>
+        public static string TaskNameIsNull {
+            get {
+                return ResourceManager.GetString("TaskNameIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tồn tại công việc bạn tìm.
+        /// </summary>
+        public static string TaskNotFound {
+            get {
+                return ResourceManager.GetString("TaskNotFound", resourceCulture);
             }
         }
         

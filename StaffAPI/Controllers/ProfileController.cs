@@ -35,17 +35,17 @@ namespace StaffAPI.Controllers
         private readonly IContractServices _contract;
         private readonly AppUserManager _userManager;
         private readonly ILogger<ProfileController> _logger;
-        public CompanyConfig companyConfig { get; set; }
+        public ICompanyConfig companyConfig { get; set; }
         private IConfiguration _configuration;
 
         public ProfileController(IProfile profile, AppUserManager userManager, ILogger<ProfileController> logger,
-            IConfiguration _configuration, IContractServices _contract)
+            IConfiguration _configuration, IContractServices _contract, ICompanyConfig companyConfig)
         {
             _profile = profile;
             _userManager = userManager;
             _logger = logger;
             this._configuration = _configuration;
-            companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
+            this.companyConfig = companyConfig;
             _logger.WriteLog(_configuration, "Starting profile");
             this._contract = _contract;
         }

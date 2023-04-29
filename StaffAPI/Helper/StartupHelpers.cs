@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Paygate.OnePay;
+using StaffAPI.Models.Tasks;
 using StaffAPI.Repository;
 using StaffAPI.Repository.Interfaces;
 using StaffAPI.Services;
@@ -50,6 +52,16 @@ namespace StaffAPI.Helper
 
             services.AddSingleton(paygateInfo);
             services.AddSingleton<IVPCRequest, VPCRequest>();
+        }
+
+        public static void AddWorkFlowServices(this IServiceCollection services, IConfiguration Configuration)
+        {
+            services.Configure<WorkFlowConfig>(Configuration.GetSection(nameof(WorkFlowConfig)));
+            services.AddScoped<IWorkFlowConfig>(sp => sp.GetRequiredService<IOptions<WorkFlowConfig>>().Value);
+            services.Configure<DBSetting>(Configuration.GetSection(nameof(DBSetting)));
+            services.AddScoped<IDBSetting>(sp => sp.GetRequiredService<IOptions<DBSetting>>().Value);
+            services.AddScoped<ITaskRepository, TaskRepository>();
+            services.AddScoped<ITaskService, TaskService>();
         }
 
         public static void AddServices(this IServiceCollection services)

@@ -1,9 +1,9 @@
 ﻿using Utils.Models;
 
-namespace StaffAPI.Models.Tasks
+namespace StaffAPI.Models.Tasks.DTO
 {
     public class TaskResultDTO : ResponseBase
     {
-        public TaskDTO data { get; set; }
+        public TaskDTO Data { get; set; }
     }
 }

@@ -39,7 +39,7 @@ namespace StaffAPI.Controllers
         private readonly IStringLocalizer<ServiceController> _localizer;
         private PaygateInfo paygateInfo;
         private readonly IEmailSender _emailSender;
-        public CompanyConfig companyConfig { get; set; }
+        public ICompanyConfig companyConfig;
 
         public ServiceController(
             IDistributedCache cache,
@@ -47,7 +47,7 @@ namespace StaffAPI.Controllers
             IAllService Service,
             IConfiguration configuration,
             IStringLocalizer<ServiceController> _localizer,
-            IEmailSender _emailSender)
+            IEmailSender _emailSender, ICompanyConfig companyConfig)
         {
             this._logger = logger;
             this._Service = Service;
@@ -56,7 +56,7 @@ namespace StaffAPI.Controllers
             this._localizer = _localizer;
             this._emailSender = _emailSender;
             paygateInfo = this._configuration.GetSection(nameof(PaygateInfo)).Get<PaygateInfo>();
-            companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
+            this.companyConfig = companyConfig;
             _logger.WriteLog(_configuration, "Starting news page");
         }
 

@@ -2,7 +2,14 @@
 
 namespace Utils.Models
 {
-    public class CompanyConfig
+    public interface ICompanyConfig
+    {
+        public List<Company> Companys { get; set; }
+        public string AvatarFolder { get; set; }
+        public string InvoiceType { get; set; }
+        public IList<string> StaffType { get; set; }
+    }
+    public class CompanyConfig : ICompanyConfig
     {
         public List<Company> Companys { get; set; }
         public string AvatarFolder { get; set; }

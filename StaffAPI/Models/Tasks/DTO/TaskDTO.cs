@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Utils.Models;
 
-namespace StaffAPI.Models.Tasks
+namespace StaffAPI.Models.Tasks.DTO
 {
     // StaffDTO = StaffInfo
     // ServiceDTO = ServiceModel
@@ -19,6 +19,7 @@ namespace StaffAPI.Models.Tasks
         // 1. In-Progress
         // 2. Done
         // 3. Re-open
+        // -9. Cancle
         public int? Status { get; set; }
         // 0. Un-payment
         // 1. Payment
@@ -30,7 +31,10 @@ namespace StaffAPI.Models.Tasks
         public CustomerDTO? Customer { get; set; }
         public List<DepartmentDTO>? Department { get; set; }
         public List<TaskProcessDTO>? TaskProcess { get; set; }
+        public string Content { get; set; }
         public StaffDTO? Owner { get; set; }
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
         public StaffDTO? ChangedUser { get; set; }

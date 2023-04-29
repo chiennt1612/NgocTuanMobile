@@ -123,6 +123,12 @@
   <data name="AuthenticatorCode" xml:space="preserve">
     <value>Mã bảo mật OTP</value>
   </data>
+  <data name="CasherIsExists" xml:space="preserve">
+    <value>Đã gán người thu</value>
+  </data>
+  <data name="ChangedUserIsNull" xml:space="preserve">
+    <value>Người sửa trống</value>
+  </data>
   <data name="CompanyIDInvalid" xml:space="preserve">
     <value>Mã nhà máy nước không để trống</value>
   </data>
@@ -131,6 +137,27 @@
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
     <value>Xác nhận mật khẩu</value>
+  </data>
+  <data name="ContentIsNull" xml:space="preserve">
+    <value>Chưa nhập nội dung công việc</value>
+  </data>
+  <data name="ContentOfTaskIsNull" xml:space="preserve">
+    <value>Chưa nhập nội dung xử lý</value>
+  </data>
+  <data name="CreateDateIsNull" xml:space="preserve">
+    <value>Ngày tạo/Ngày thực hiện trống</value>
+  </data>
+  <data name="CustomerIsNull" xml:space="preserve">
+    <value>Chưa chọn khách hàng</value>
+  </data>
+  <data name="CustomerIsWrong" xml:space="preserve">
+    <value>Bạn chọn khách hàng không phù hợp dịch vụ</value>
+  </data>
+  <data name="DateFromIsWrong" xml:space="preserve">
+    <value>Bạn chưa nhập từ ngày &gt; ngày hiện tại</value>
+  </data>
+  <data name="DateToIsWrong" xml:space="preserve">
+    <value>Bạn chưa nhập đến ngày &gt; từ ngày</value>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
     <value>Xóa dữ liệu thành công</value>
@@ -168,6 +195,12 @@
   <data name="ModelStateInValid" xml:space="preserve">
     <value>Dữ liệu không hợp lệ</value>
   </data>
+  <data name="ModifyDateIsNull" xml:space="preserve">
+    <value>Ngày sửa đổi trống</value>
+  </data>
+  <data name="NoPermission" xml:space="preserve">
+    <value>Không có quyền</value>
+  </data>
   <data name="NotFound" xml:space="preserve">
     <value>Không tìm thấy</value>
   </data>
@@ -186,11 +219,17 @@
   <data name="OTPWait" xml:space="preserve">
     <value>Vui lòng đăng nhập lại sau 3 phút</value>
   </data>
+  <data name="OwnerIsNull" xml:space="preserve">
+    <value>Người tạo trống</value>
+  </data>
   <data name="Password" xml:space="preserve">
     <value>Mật khẩu</value>
   </data>
   <data name="PasswordLength" xml:space="preserve">
     <value>{0} bắt buộc ít nhất {2} và tối đa {1} ký tự.</value>
+  </data>
+  <data name="PaymentStatusIsWrong" xml:space="preserve">
+    <value>Trạng thái thanh toán không đúng</value>
   </data>
   <data name="RecoveryCode" xml:space="preserve">
     <value>Mã khôi phục</value>
@@ -203,6 +242,9 @@
   </data>
   <data name="RenewTokenFail" xml:space="preserve">
     <value>Tạo token mới không thành công</value>
+  </data>
+  <data name="ServiceIsNull" xml:space="preserve">
+    <value>Chưa chọn dịch vụ/Loại công việc</value>
   </data>
   <data name="ServiceNotFound" xml:space="preserve">
     <value>Dịch vụ bạn chọn không có</value>
@@ -222,8 +264,26 @@
   <data name="SetProfileSuccess" xml:space="preserve">
     <value>Cài đặt thông tin cá nhân thành công</value>
   </data>
+  <data name="StaffIsExists" xml:space="preserve">
+    <value>Đã gán nhân sự</value>
+  </data>
+  <data name="StaffIsNull" xml:space="preserve">
+    <value>Chưa chọn nhân viên</value>
+  </data>
+  <data name="StaffNotExists" xml:space="preserve">
+    <value>Nhân sự chưa được gán</value>
+  </data>
+  <data name="StatusIsWrong" xml:space="preserve">
+    <value>Trạng thái công việc không đúng</value>
+  </data>
   <data name="Success" xml:space="preserve">
     <value>Thành công</value>
+  </data>
+  <data name="TaskNameIsNull" xml:space="preserve">
+    <value>Tên công việc trống</value>
+  </data>
+  <data name="TaskNotFound" xml:space="preserve">
+    <value>Không tồn tại công việc bạn tìm</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Không có quyền truy cập hoặc token hết hạn</value>

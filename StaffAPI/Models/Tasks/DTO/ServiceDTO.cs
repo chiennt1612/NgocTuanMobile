@@ -1,4 +1,4 @@
-﻿namespace StaffAPI.Models.Tasks
+﻿namespace StaffAPI.Models.Tasks.DTO
 {
     public class ServiceDTO : ServiceModel
     {

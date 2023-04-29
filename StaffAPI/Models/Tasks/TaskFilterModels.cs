@@ -2,19 +2,13 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 
-namespace StaffAPI.Models.Tasks
+namespace StaffAPI.Models.Tasks.DTO
 {
-    public class TaskFilterDTO
+    public class TaskFilterModels
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-        public string Name { get; set; }
-
-        public string PIC { get; set; }
-        public string Owner { get; set; }
-        public string StaffCode { get; set; }
-        public string DepartmentCode { get; set; }
+        public string Keyword { get; set; }        
         public string CustomerCode { get; set; }
         public int? Status { get; set; }
         public bool? IsExpired { get; set; }

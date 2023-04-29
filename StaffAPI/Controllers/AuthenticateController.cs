@@ -48,7 +48,7 @@ namespace StaffAPI.Controllers
         private readonly LoginConfiguration _loginConfiguration;
         private readonly IAllService _iInvoiceServices;
         private readonly IUserDeviceRepository _iUserDeviceRepository;
-        private CompanyConfig companyConfig { get; set; }
+        private ICompanyConfig companyConfig { get; set; }
         private HtmlXSSFilter htmlXSS { get; set; }
         private FireBaseConfig fireBaseConfig { get; set; }
         private FireBaseAPIConfig fireBaseAPIConfig { get; set; }
@@ -65,7 +65,7 @@ namespace StaffAPI.Controllers
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             LoginConfiguration loginConfiguration, IAllService iInvoiceServices,
             IUserDeviceRepository iUserDeviceRepository,
-            SmtpConfiguration smtpConfiguration)
+            SmtpConfiguration smtpConfiguration, ICompanyConfig companyConfig)
         {
             _userManager = userManager;
             _configuration = configuration;
@@ -78,7 +78,7 @@ namespace StaffAPI.Controllers
             _loginConfiguration = loginConfiguration;
             _iInvoiceServices = iInvoiceServices;
             _iUserDeviceRepository = iUserDeviceRepository;
-            companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
+            this.companyConfig = companyConfig;
             htmlXSS = this._configuration.GetSection(nameof(HtmlXSSFilter)).Get<HtmlXSSFilter>();
             fireBaseConfig = this._configuration.GetSection(nameof(FireBaseConfig)).Get<FireBaseConfig>();
             fireBaseAPIConfig = this._configuration.GetSection(nameof(FireBaseAPIConfig)).Get<FireBaseAPIConfig>();
@@ -180,51 +180,60 @@ namespace StaffAPI.Controllers
         }
         private async Task<IActionResult> SendSMSPassword(AppUser user, LoginModel model, string Password = "")
         {
-            LoginOutput newModel = new LoginOutput()
-            {
-                Username = model.Username,
-                Type = "Password"
-            };
             _logger.LogInformation($"SendSMSPassword: {model.Username}/ {Password}");
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            if (!String.IsNullOrEmpty(Password))
+            if (user.TwoFactorEnabled) // Need to OTP
             {
-                var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", Password);
-                if (user.EmailConfirmed)
+                LoginOutput newModel = new LoginOutput()
                 {
-                    IList<string> r = new List<string>() { user.UserName, user.Email, "", Password };
-                    string subject = _smtpConfiguration.SubjectPassword.Replace(_smtpConfiguration.p, r);
-                    string content = _smtpConfiguration.ContentPassword.Replace(_smtpConfiguration.p, r);
-                    _logger.LogInformation($"Send by email: {subject}/ {content}");
-
-                    await _emailSender.SendEmailAsync(user.Email,
-                        subject, content
-                        );
-                }
-                else
-                {
-                    _logger.LogInformation($"Send by SMS: {message}");
-                    _smsVietel.SendSMS(user.PhoneNumber, message);
-                }
+                    Username = model.Username,
+                    Type = "OTP"
+                };
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                return await SendSMSOTP(user, newModel);
             }
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+            else
             {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.VerifyPassword,
-                MoreInfo = LanguageAll.Language.VerifyPassword,
-                Status = 1,
-                UserMessage = LanguageAll.Language.VerifyPassword,
-                data = newModel
-            });
+                LoginOutput newModel = new LoginOutput()
+                {
+                    Username = model.Username,
+                    Type = "Password"
+                };
+                
+                if (!String.IsNullOrEmpty(Password))
+                {
+                    var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", Password);
+                    if (user.EmailConfirmed)
+                    {
+                        IList<string> r = new List<string>() { user.UserName, user.Email, "", Password };
+                        string subject = _smtpConfiguration.SubjectPassword.Replace(_smtpConfiguration.p, r);
+                        string content = _smtpConfiguration.ContentPassword.Replace(_smtpConfiguration.p, r);
+                        _logger.LogInformation($"Send by email: {subject}/ {content}");
+
+                        await _emailSender.SendEmailAsync(user.Email,
+                            subject, content
+                            );
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"Send by SMS: {message}");
+                        _smsVietel.SendSMS(user.PhoneNumber, message);
+                    }
+                }
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                {
+                    Code = 200,
+                    InternalMessage = LanguageAll.Language.VerifyPassword,
+                    MoreInfo = LanguageAll.Language.VerifyPassword,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.VerifyPassword,
+                    data = newModel
+                });
+            }
         }
-        private async Task<IActionResult> SendSMSOTP(AppUser user, LoginModel model)
+        private async Task<IActionResult> SendSMSOTP(AppUser user, LoginOutput model)
         {
-            LoginOutput newModel = new LoginOutput()
-            {
-                Username = model.Username,
-                Type = "OTP"
-            };
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             int IsNotAllowSend = 0;
             if (user.OTPSendTime.HasValue)
@@ -274,18 +283,18 @@ namespace StaffAPI.Controllers
                     else
                     {
                         code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, PhoneNumber);
+                        var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
+                        if (user.EmailConfirmed)
+                        {
+                            IList<string> r = new List<string>() { user.UserName, user.Email, "", code };
+                            await _emailSender.SendEmailAsync(user.Email,
+                                _smtpConfiguration.SubjectOTP.Replace(_smtpConfiguration.p, r),
+                                _smtpConfiguration.ContentOTP.Replace(_smtpConfiguration.p, r));
+                        }
+                        else
+                            _smsVietel.SendSMS(PhoneNumber, message);
                     }
-
-                    var message = _loginConfiguration.OTPSMSContent.Replace("{OTPCODE}", code);
-                    if (user.EmailConfirmed)
-                    {
-                        IList<string> r = new List<string>() { user.UserName, user.Email, "", code };
-                        await _emailSender.SendEmailAsync(user.Email,
-                            _smtpConfiguration.SubjectOTP.Replace(_smtpConfiguration.p, r),
-                            _smtpConfiguration.ContentOTP.Replace(_smtpConfiguration.p, r));
-                    }
-                    else
-                        _smsVietel.SendSMS(PhoneNumber, message);
+                    
                     _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                     return StatusCode(StatusCodes.Status200OK, new ResponseOK()
                     {
@@ -294,7 +303,7 @@ namespace StaffAPI.Controllers
                         MoreInfo = LanguageAll.Language.VerifyOTP,
                         Status = 1,
                         UserMessage = LanguageAll.Language.VerifyOTP,
-                        data = newModel
+                        data = model
                     });
                     //Ok(new ResponseBase(LanguageAll.Language.VerifyOTP, $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", $"{model.Username}: {LanguageAll.Language.VerifyOTP}!", 1, 200));
             }
@@ -457,12 +466,7 @@ namespace StaffAPI.Controllers
                         _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
                         return await LoginOK(model.DeviceId, user);
                     }
-                    else if (result.RequiresTwoFactor)
-                    {
-                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                        return await SendSMSOTP(user, new LoginModel() { Username = model.Username });
-                    }
-                    else if (result.IsLockedOut)
+                    else
                     {
                         _logger.LogWarning("User account locked out.");
                         _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);

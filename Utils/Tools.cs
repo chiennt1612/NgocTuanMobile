@@ -821,15 +821,15 @@ namespace Utils
         #endregion
 
         #region Upload
-        public static async Task<string> Upload(string avatar, string folder, string fileName, string fileExt = ".jpg")
+        public static async Task<string> Upload(string avatar, string fileName, string subfolder, string folder = "E:\\DOMAIN\\admin.nuocngoctuan.com\\wwwroot\\Upload\\Avatar", string fileExt = ".jpg")
         {
             if (string.IsNullOrEmpty(fileName)) fileName = "admin";
-            string path = folder;
+            string path = folder + "\\" + subfolder;
             fileName = fileName + fileExt;
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             if (File.Exists(path + @"/" + fileName)) File.Delete(path + @"/" + fileName);
             await File.WriteAllBytesAsync(path + @"/" + fileName, Convert.FromBase64String(avatar));
-            avatar = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
+            avatar = $"https://admin.nuocngoctuan.com/Upload/Avatar/{subfolder}/" + fileName;
             return avatar;
         }
         #endregion

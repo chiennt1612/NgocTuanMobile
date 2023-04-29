@@ -26,8 +26,9 @@ namespace Utils.Repository.Interfaces
         #endregion
 
         #region Staff
-        // Staff "getInvoiceList", "payInvoice", "checkPayInvocie", "undoPayInvocie", "getStaffInfo", "", "", "", "", "getInvoiceByQRCode"
+        // Staff "getInvoiceList", "payInvoice", "checkPayInvocie", "undoPayInvocie", "getStaffInfo", "getContractAllList", "", "", "", "getInvoiceByQRCode"
         Task<StaffInfoResult> getStaffInfo(StaffCodeInput inv);     //Index: 4
+        //Task<ContractResult> GetContract(ContractInput inv);        //Index: 5
         #endregion
     }
 }

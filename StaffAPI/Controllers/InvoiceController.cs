@@ -42,13 +42,13 @@ namespace StaffAPI.Controllers
         private PaygateInfo paygateInfo;
         private IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
-        public CompanyConfig companyConfig { get; set; }
+        public ICompanyConfig companyConfig;
         private List<string> invoiceCacheKeys;
         #endregion
 
         public InvoiceController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
             ILogger<InvoiceController> _logger, IStringLocalizer<InvoiceController> _localizer, IAllService _Service,
-            UserManager<AppUser> userManager)
+            UserManager<AppUser> userManager, ICompanyConfig companyConfig)
         {
             this._logger = _logger;
             this._Service = _Service;
@@ -58,7 +58,7 @@ namespace StaffAPI.Controllers
             this._configuration = _configuration;
             paygateInfo = this._configuration.GetSection(nameof(PaygateInfo)).Get<PaygateInfo>();
             this._logger.WriteLog(_configuration, "Starting invoice page");
-            companyConfig = this._configuration.GetSection(nameof(CompanyConfig)).Get<CompanyConfig>();
+            this.companyConfig = companyConfig;
             _userManager = userManager;
 
             var b = _cache.GetAsync<List<string>>("InvoiceCacheKeys").GetAwaiter();
