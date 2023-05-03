@@ -7,8 +7,13 @@ namespace StaffAPI.Services.Interfaces
 {
     public interface ITaskService
     {
+        #region Other
+        // Finding staff
+        Task<StaffInfoResult> GetStaff(StaffCodeInput inv);
         // Finding customer
         Task<ContractResult> GetCustomer(ContractInput inv);
+        #endregion
+        #region Task
         // Finding the task by ID
         Task<TaskResultDTO> GetTaskById(string Id);
         // Finding the task list
@@ -17,7 +22,15 @@ namespace StaffAPI.Services.Interfaces
         Task<TaskResultDTO> CreateTask(TaskDTO task);
         // Update a work.
         Task<TaskResultDTO> UpdateTask(TaskDTO task);
-
+        // Assign staff
+        Task<TaskResultDTO> AssignStaff(string id, StaffDTO staff, bool isAdd = true);
+        // Assign casher
+        Task<TaskResultDTO> AssignCasher(string id, CasherDTO staff);
+        // Task process
+        Task<TaskResultDTO> TaskProcess(string id, TaskProcessDTO taskProcess, int Status);
+        // Task process
+        Task<TaskResultDTO> TaskProcess(string id, TaskProcessDTO taskProcess, int NextDepertment, IWorkFlowConfig workFlow, int Status);
+        #endregion
         //Task<TaskListResultDTO> GetAsync(TaskFilterDTO _filter);
         //Task<TaskResultDTO> GetAsync(string id);
         //Task<TaskResultDTO> CreateAsync(TaskDTO task);

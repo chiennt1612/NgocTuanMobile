@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+using System;
 using Utils.Models;
 
 namespace StaffAPI.Models.Tasks.DTO

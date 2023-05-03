@@ -22,6 +22,7 @@ using Utils.ExceptionHandling;
 using Utils.Models;
 using Utils.Repository.Interfaces;
 using StaffAPI.Models;
+using System.Collections;
 
 namespace StaffAPI.Controllers
 {
@@ -75,6 +76,72 @@ namespace StaffAPI.Controllers
         }
 
         #region Private
+        private async Task<StaffInfoResult> GetStaffInfo(ClaimsPrincipal _user)
+        {
+            var user = await GetCurrentUserAsync(_user);
+            StaffInfoResult staff = null;
+            for (var i = 0; i < companyConfig.Companys.Count; i++)
+            {
+                var inv = new StaffCodeInput()
+                {
+                    CompanyID = companyConfig.Companys[i].Info.CompanyId,
+                    StaffCode = user.UserName
+                };
+                staff = await _Service.invoiceServices.getStaffInfo(inv);
+                if (staff.DataStatus == "00") break;
+            }
+            return staff;
+        }
+        private async Task<StaffDTO> GetStaff(ClaimsPrincipal _user)
+        {
+            var staff = await GetStaffInfo(_user);
+            if (staff == null) return null;
+            if (staff.DataStatus != "00") return null;
+            StaffDTO Owner = new StaffDTO()
+            {
+                Address = staff.ItemsData[0].Address,
+                DepartmentCode = staff.ItemsData[0].DepartmentCode,
+                DepartmentId = staff.ItemsData[0].DepartmentId,
+                DepartmentName = staff.ItemsData[0].DepartmentName,
+                Email = staff.ItemsData[0].Email,
+                StaffCode = staff.ItemsData[0].StaffCode,
+                StaffName = staff.ItemsData[0].StaffName,
+                TypeName = staff.ItemsData[0].TypeName,
+                TypeCode = staff.ItemsData[0].TypeCode,
+                Mobile2 = staff.ItemsData[0].Mobile2,
+                Mobile = staff.ItemsData[0].Mobile,
+                TaxCode = staff.ItemsData[0].TaxCode,
+                POSName = staff.ItemsData[0].POSName,
+                POSCode = staff.ItemsData[0].POSCode,
+                POSId = staff.ItemsData[0].POSId
+            };
+            return Owner;
+        }
+        private async Task<CasherDTO> GetCasher(ClaimsPrincipal _user)
+        {
+            var staff = await GetStaffInfo(_user);
+            if (staff == null) return null;
+            if (staff.DataStatus != "00") return null;
+            CasherDTO Owner = new CasherDTO()
+            {
+                Address = staff.ItemsData[0].Address,
+                DepartmentCode = staff.ItemsData[0].DepartmentCode,
+                DepartmentId = staff.ItemsData[0].DepartmentId,
+                DepartmentName = staff.ItemsData[0].DepartmentName,
+                Email = staff.ItemsData[0].Email,
+                StaffCode = staff.ItemsData[0].StaffCode,
+                StaffName = staff.ItemsData[0].StaffName,
+                TypeName = staff.ItemsData[0].TypeName,
+                TypeCode = staff.ItemsData[0].TypeCode,
+                Mobile2 = staff.ItemsData[0].Mobile2,
+                Mobile = staff.ItemsData[0].Mobile,
+                TaxCode = staff.ItemsData[0].TaxCode,
+                POSName = staff.ItemsData[0].POSName,
+                POSCode = staff.ItemsData[0].POSCode,
+                POSId = staff.ItemsData[0].POSId
+            };
+            return Owner;
+        }
         private Task<AppUser> GetCurrentUserAsync(ClaimsPrincipal user)
         {
             return _userManager.GetUserAsync(user);
@@ -134,7 +201,7 @@ namespace StaffAPI.Controllers
             }
             return null;
         }
-        private ResponseOK Validate(Models.Tasks.Services _workFlow, StaffInfoResult staff)
+        private ResponseOK Validate(Models.Tasks.Services _workFlow, StaffDTO staff)
         {
             if (staff == null)
             {
@@ -150,7 +217,7 @@ namespace StaffAPI.Controllers
             }
             if (_workFlow.Id.Value != 99)
             {
-                if (!_WorkFlow.DepartmentAlow.Contains(staff.ItemsData[0].DepartmentCode))
+                if (!_WorkFlow.DepartmentAlow.Contains(staff.DepartmentCode))
                 {
                     return new ResponseOK()
                     {
@@ -313,6 +380,7 @@ namespace StaffAPI.Controllers
             #region Create new Task Object
             TaskDTO task = new TaskDTO()
             {
+                WorkFlowId = taskInput.ServiceId,
                 Name = taskInput.Name,
                 // 0. Create new
                 // 1. In-Progress
@@ -386,40 +454,10 @@ namespace StaffAPI.Controllers
             #endregion
 
             #region Owner
-            var user = await GetCurrentUserAsync(HttpContext.User);
-            StaffInfoResult staff = null;
-            for (var i = 0; i < companyConfig.Companys.Count; i++)
-            {
-                var inv = new StaffCodeInput()
-                {
-                    CompanyID = companyConfig.Companys[i].Info.CompanyId,
-                    StaffCode = user.UserName
-                };
-                staff = await _Service.invoiceServices.getStaffInfo(inv);
-                if (staff.DataStatus == "00") break;
-            }
+            var Owner = await GetStaff(HttpContext.User);
 
-            r1 = Validate(_workFlow, staff);
+            r1 = Validate(_workFlow, Owner);
             if (r1 != null) return StatusCode(StatusCodes.Status200OK, r1);
-            StaffDTO Owner = new StaffDTO()
-            {
-                Address = staff.ItemsData[0].Address,
-                DepartmentCode = staff.ItemsData[0].DepartmentCode,
-                DepartmentId = staff.ItemsData[0].DepartmentId,
-                DepartmentName = staff.ItemsData[0].DepartmentName,
-                Email = staff.ItemsData[0].Email,
-                StaffCode = staff.ItemsData[0].StaffCode,
-                StaffName = staff.ItemsData[0].StaffName,
-                TypeName = staff.ItemsData[0].TypeName,
-                TypeCode = staff.ItemsData[0].TypeCode,
-                Mobile2 = staff.ItemsData[0].Mobile2,
-                Mobile = staff.ItemsData[0].Mobile,
-                TaxCode = staff.ItemsData[0].TaxCode,
-                POSName = staff.ItemsData[0].POSName,
-                POSCode = staff.ItemsData[0].POSCode,
-                POSId = staff.ItemsData[0].POSId
-            };
-
             task.Owner = Owner;
             #endregion
 
@@ -515,40 +553,10 @@ namespace StaffAPI.Controllers
             #endregion
 
             #region Owner
-            var user = await GetCurrentUserAsync(HttpContext.User);
-            StaffInfoResult staff = null;
-            for (var i = 0; i < companyConfig.Companys.Count; i++)
-            {
-                var inv = new StaffCodeInput()
-                {
-                    CompanyID = companyConfig.Companys[i].Info.CompanyId,
-                    StaffCode = user.UserName
-                };
-                staff = await _Service.invoiceServices.getStaffInfo(inv);
-                if (staff.DataStatus == "00") break;
-            }
+            var Owner = await GetStaff(HttpContext.User);
 
-            r1 = Validate(_workFlow, staff);
+            r1 = Validate(_workFlow, Owner);
             if (r1 != null) return StatusCode(StatusCodes.Status200OK, r1);
-            StaffDTO Owner = new StaffDTO()
-            {
-                Address = staff.ItemsData[0].Address,
-                DepartmentCode = staff.ItemsData[0].DepartmentCode,
-                DepartmentId = staff.ItemsData[0].DepartmentId,
-                DepartmentName = staff.ItemsData[0].DepartmentName,
-                Email = staff.ItemsData[0].Email,
-                StaffCode = staff.ItemsData[0].StaffCode,
-                StaffName = staff.ItemsData[0].StaffName,
-                TypeName = staff.ItemsData[0].TypeName,
-                TypeCode = staff.ItemsData[0].TypeCode,
-                Mobile2 = staff.ItemsData[0].Mobile2,
-                Mobile = staff.ItemsData[0].Mobile,
-                TaxCode = staff.ItemsData[0].TaxCode,
-                POSName = staff.ItemsData[0].POSName,
-                POSCode = staff.ItemsData[0].POSCode,
-                POSId = staff.ItemsData[0].POSId
-            };
-
             task.Owner = Owner;
             #endregion
 
@@ -616,7 +624,7 @@ namespace StaffAPI.Controllers
         // The list task assign to me
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> TaskAssignMe([FromBody] TaskFilterModels model)
+        public async Task<IActionResult> TaskAssignedMe([FromBody] TaskFilterModels model)
         {
             var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
             _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
@@ -643,10 +651,94 @@ namespace StaffAPI.Controllers
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
         }
+        
+        // Assign staff
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskAssign([FromBody] TaskAssignModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var a = await _TaskService.AssignStaff(model.TaskId, model.Staff);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+
+        // Assign Casher
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskCasher([FromBody] TaskCasherModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var a = await _TaskService.AssignCasher(model.TaskId, model.Casher);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+
+        // Task process
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskProcess([FromBody] TaskProcessModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                TaskProcessDTO taskProcess = new TaskProcessDTO()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreateDate = DateTime.Now,
+                    Content = model.Content,
+                    Staff = await GetStaff(HttpContext.User)
+                };
+
+                var a = await _TaskService.TaskProcess(model.TaskId, taskProcess, model.Status);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.Fail, LanguageAll.Language.Fail, LanguageAll.Language.Fail));
+        }
+
+        // Task process department
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskProcessWorkflow([FromBody] TaskProcessDepartmentModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                TaskProcessDTO taskProcess = new TaskProcessDTO()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreateDate = DateTime.Now,
+                    Content = model.Content,
+                    Staff = await GetStaff(HttpContext.User)
+                };
+                TaskResultDTO a = await _TaskService.TaskProcess(model.TaskId, taskProcess, model.NextDepartment.Value, _WorkFlow, model.Status);
+
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.Fail, LanguageAll.Language.Fail, LanguageAll.Language.Fail));
+        }
         #endregion
 
         #region Other
-        // The list task of mine
+        // Finding the customer
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> GetCustomer([FromBody] CustomerModel model)
@@ -667,6 +759,55 @@ namespace StaffAPI.Controllers
                     if (cust.DataStatus == "00")
                     {
                         ContractList.AddRange(cust.ItemsData.ContractList);
+                    }
+                }
+                if (ContractList.Count() > 0)
+                    return Ok(new ResponseOK()
+                    {
+                        Code = 200,
+                        InternalMessage = LanguageAll.Language.Success,
+                        MoreInfo = LanguageAll.Language.Success,
+                        Status = 1,
+                        UserMessage = LanguageAll.Language.Success,
+                        data = ContractList
+                    });
+                else
+                    return Ok(new ResponseOK()
+                    {
+                        Code = 400,
+                        InternalMessage = LanguageAll.Language.NotFound,
+                        MoreInfo = LanguageAll.Language.NotFound,
+                        Status = 0,
+                        UserMessage = LanguageAll.Language.NotFound,
+                        data = null
+                    });
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+        
+        // Finding the staff
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> GetStaff([FromBody] StaffModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                List<StaffInfo> ContractList = new List<StaffInfo>();
+                for (var i = 0; i < companyConfig.Companys.Count; i++)
+                {
+                    var inv = new StaffCodeInput()
+                    {
+                        CompanyID = companyConfig.Companys[i].Info.CompanyId,
+                        StaffCode = model.StaffCode
+                    };
+                    var cust = await _TaskService.GetStaff(inv);
+                    if (cust.DataStatus == "00")
+                    {
+                        ContractList.AddRange(cust.ItemsData);
                     }
                 }
                 if (ContractList.Count() > 0)

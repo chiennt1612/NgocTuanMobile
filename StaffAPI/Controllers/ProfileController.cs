@@ -57,16 +57,6 @@ namespace StaffAPI.Controllers
         // Update profile information
         #endregion
 
-        #region The work (Only staff not CTV)
-        // Create my task/ reminder (Can be search by status)
-
-        // List of task by assigne me (Can be search by status)
-
-        // List of task assigne by me (Can be search by status)
-
-        // List of task follow by me (Can be search by status)
-        #endregion
-
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> GetCompanyList()

@@ -21,7 +21,7 @@ namespace StaffAPI.Repository
         private readonly ICompanyConfig _companyConfig;
         private readonly IWorkFlowConfig _workFlow;
         private readonly IInvoiceRepository _iInvoiceServices;
-        private readonly List<int> _status = new List<int>() { 0, 1, 2, 3, -9 };
+        private readonly List<int> _status = new List<int>() { 1, 2, 3, -9 };
         private readonly List<int> _paymentStatus = new List<int>() { 0, 1 };
         public TaskRepository(IDBSetting settings, ILogger<TaskRepository> Log, ICompanyConfig companyConfig, IInvoiceRepository iInvoiceServices, IWorkFlowConfig workFlow)
         {
@@ -514,26 +514,22 @@ namespace StaffAPI.Repository
             };
         }
 
-        public async Task<TaskResultDTO> UpdateAsync(string id, TaskProcessDTO taskProcess, DepartmentDTO department, int Status)
+        public async Task<TaskResultDTO> UpdateAsync(TaskDTO task, TaskProcessDTO taskProcess)//, int Status)
         {
-            TaskResultDTO a1 = Validate(Status, false);
-            if (a1 != null) return a1;
+            //TaskResultDTO a1 = Validate(Status, false);
+            //if (a1 != null) return a1;
 
-            TaskResultDTO a = await GetAsync(id);
-            if (a.Code == 500) return a;
-            TaskDTO task = a.Data;
+            //TaskResultDTO a = await GetAsync(id);
+            //if (a.Code == 500) return a;
+            //TaskDTO task = a.Data;
 
             TaskResultDTO a2 = Validate(task, taskProcess);
             if (a2 != null) return a2;
 
             task.TaskProcess.Add(taskProcess);
-            task.Status = Status;
-            for (var i = 0; i < task.Department.Count(); i++)
-            {
-                if (task.Department[i].DepartmentId == department.DepartmentId) task.Department[i].StatusId = department.StatusId;
-            }
+            //task.Status = Status;
 
-            await _Task.ReplaceOneAsync(task => task.Id == id, task);
+            await _Task.ReplaceOneAsync(task => task.Id == task.Id, task);
             return new TaskResultDTO()
             {
                 Data = task,

@@ -460,7 +460,7 @@ namespace StaffAPI.Controllers
                 var user = await FindUser(model.Username);
                 if (user != null)
                 {
-                    var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
+                    var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, bool.Parse(_configuration["Password:RememberLogin"]), lockoutOnFailure: true);
                     if (result.Succeeded)
                     {
                         _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);

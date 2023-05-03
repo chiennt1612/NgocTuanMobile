@@ -26,6 +26,7 @@ namespace StaffAPI.Models.Tasks.DTO
         public int? PaymentStatus { get; set; }
         public CasherDTO? Casher { get; set; }
         public List<string>? Attachment { get; set; }
+        public long? WorkFlowId { get; set; }
         public ServiceDTO? Service { get; set; }
         public List<StaffDTO>? Staff { get; set; }
         public CustomerDTO? Customer { get; set; }
