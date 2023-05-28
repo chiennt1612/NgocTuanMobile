@@ -53,8 +53,73 @@ namespace StaffAPI.Controllers
 
         #region Profile information
         // Get profile information
-
+        [HttpPost]
+        [Route("[action]/{IsToken}")]
+        public async Task<IActionResult> GetProfile(int IsToken)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            var a = await _profile.GetProfile(IsToken);
+            _logger.WriteLog(_configuration, $"GetProfile {IsToken}: {a.UserMessage}", $"GetProfile {IsToken}");
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return Ok(a);
+        }
         // Update profile information
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SetProfile([FromBody] StaffProfileInputModel model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.WriteLog(_configuration, $"0. SetProfile {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                // Check Avatar and save to admin.nuocngoctuan.com                
+                if (!string.IsNullOrEmpty(model.Avatar))
+                {
+                    model.Avatar = await Tools.Upload(model.Avatar, "", "", companyConfig.AvatarFolder);
+                }
+
+                ProfileInputModel inv = new ProfileInputModel()
+                {
+                    IsCompany = false,
+                    CompanyName = "",
+                    Email = model.Email,
+                    Address = model.Address,
+                    Fullname = model.Fullname,
+                    Birthday = null,
+                    PersonID = model.PersonID,
+                    IssueDate = model.IssueDate,
+                    IssuePlace = model.IssuePlace,
+                    Avatar = model.Avatar
+                };
+                var a = await _profile.SetProfile(inv);
+                _logger.WriteLog(_configuration, $"SetProfile: {a.UserMessage}", $"SetProfile");
+                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+                if (a.Status == 0)
+                {
+                    switch (a.Code)
+                    {
+                        case 400:
+                            return StatusCode(StatusCodes.Status200OK, a);
+                        default:
+                            return StatusCode(StatusCodes.Status200OK, a);
+
+                    }
+                }
+                return Ok(a);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
+                {
+                    Code = 400,
+                    InternalMessage = LanguageAll.Language.SetProfileFailEmail,
+                    MoreInfo = LanguageAll.Language.SetProfileFailEmail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.SetProfileFailEmail,
+                    data = ModelState.ToList()
+                });
+            }
+        }
         #endregion
 
         [HttpGet]
@@ -68,233 +133,233 @@ namespace StaffAPI.Controllers
             return Ok(a);
         }
 
-        #region contract from AYs
-        [HttpGet]
-        [Route("[action]/{CompanyID}")]
-        public async Task<IActionResult> AYsContractList(int CompanyID)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            ContractInput inv = new ContractInput()
-            {
-                CompanyID = CompanyID,
-                Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName
-            };
-            var a = await _profile.GetContractAllList(inv);
-            _logger.WriteLog(_configuration, $"GetContractList {inv.CompanyID}/ {inv.Mobile}: {a.UserMessage}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return Ok(a);
-        }
+        //#region contract from AYs
+        //[HttpGet]
+        //[Route("[action]/{CompanyID}")]
+        //public async Task<IActionResult> AYsContractList(int CompanyID)
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    ContractInput inv = new ContractInput()
+        //    {
+        //        CompanyID = CompanyID,
+        //        Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName
+        //    };
+        //    var a = await _profile.GetContractAllList(inv);
+        //    _logger.WriteLog(_configuration, $"GetContractList {inv.CompanyID}/ {inv.Mobile}: {a.UserMessage}", $"GetContractList {inv.CompanyID}/ {inv.Mobile}");
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    return Ok(a);
+        //}
 
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> AYsContractList()
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName;
-            List<ContractInfo> r = new List<ContractInfo>();
-            foreach (var companyInfo in companyConfig.Companys)
-            {
-                ContractInput inv = new ContractInput()
-                {
-                    CompanyID = companyInfo.Info.CompanyId,
-                    Mobile = Mobile
-                };
-                var a = await _profile.GetContractList(inv);
-                if (a.DataStatus == "00")
-                {
-                    r.Add(new ContractInfo()
-                    {
-                        CompanyInfo = companyInfo.Info,
-                        ContractList = a.ItemsData.ContractList
-                    });
-                }
-            }
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            if (r.Count < 1)
-            {
-                return Ok(
-                    new ResponseOK()
-                    {
-                        Code = 400,
-                        InternalMessage = LanguageAll.Language.NotFound,
-                        MoreInfo = LanguageAll.Language.NotFound,
-                        Status = 0,
-                        UserMessage = LanguageAll.Language.NotFound,
-                        data = null
-                    });
-            }
-            _logger.WriteLog(_configuration, $"GetContractList");
-            return Ok(new ResponseOK()
-            {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 0,
-                UserMessage = LanguageAll.Language.Success,
-                data = r
-            });
-        }
+        //[HttpGet]
+        //[Route("[action]")]
+        //public async Task<IActionResult> AYsContractList()
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    var Mobile = (await _userManager.GetUserAsync(HttpContext.User)).UserName;
+        //    List<ContractInfo> r = new List<ContractInfo>();
+        //    foreach (var companyInfo in companyConfig.Companys)
+        //    {
+        //        ContractInput inv = new ContractInput()
+        //        {
+        //            CompanyID = companyInfo.Info.CompanyId,
+        //            Mobile = Mobile
+        //        };
+        //        var a = await _profile.GetContractList(inv);
+        //        if (a.DataStatus == "00")
+        //        {
+        //            r.Add(new ContractInfo()
+        //            {
+        //                CompanyInfo = companyInfo.Info,
+        //                ContractList = a.ItemsData.ContractList
+        //            });
+        //        }
+        //    }
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    if (r.Count < 1)
+        //    {
+        //        return Ok(
+        //            new ResponseOK()
+        //            {
+        //                Code = 400,
+        //                InternalMessage = LanguageAll.Language.NotFound,
+        //                MoreInfo = LanguageAll.Language.NotFound,
+        //                Status = 0,
+        //                UserMessage = LanguageAll.Language.NotFound,
+        //                data = null
+        //            });
+        //    }
+        //    _logger.WriteLog(_configuration, $"GetContractList");
+        //    return Ok(new ResponseOK()
+        //    {
+        //        Code = 200,
+        //        InternalMessage = LanguageAll.Language.Success,
+        //        MoreInfo = LanguageAll.Language.Success,
+        //        Status = 0,
+        //        UserMessage = LanguageAll.Language.Success,
+        //        data = r
+        //    });
+        //}
 
-        [HttpGet]
-        [Route("[action]/{CustomerCode}")]
-        public async Task<IActionResult> AYsContractInfo(string CustomerCode)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            ContractOneInfo r = new ContractOneInfo();
-            foreach (var companyInfo in companyConfig.Companys)
-            {
-                ContractInput inv = new ContractInput()
-                {
-                    CompanyID = companyInfo.Info.CompanyId,
-                    Mobile = CustomerCode
-                };
-                r.CompanyInfo = companyInfo.Info;
-                var a = await _profile.GetContractList(inv);
-                if (a.DataStatus == "00")
-                {
-                    var f = a.ItemsData.ContractList.Where(u => u.CustomerCode == CustomerCode).FirstOrDefault();
-                    if (f != default)
-                    {
-                        r.ContractInfo = f;
-                        _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                        return Ok(new ResponseOK()
-                        {
-                            Code = 200,
-                            InternalMessage = LanguageAll.Language.Success,
-                            MoreInfo = LanguageAll.Language.Success,
-                            Status = 0,
-                            UserMessage = LanguageAll.Language.Success,
-                            data = r
-                        });
-                    }
-                }
-            }
+        //[HttpGet]
+        //[Route("[action]/{CustomerCode}")]
+        //public async Task<IActionResult> AYsContractInfo(string CustomerCode)
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    ContractOneInfo r = new ContractOneInfo();
+        //    foreach (var companyInfo in companyConfig.Companys)
+        //    {
+        //        ContractInput inv = new ContractInput()
+        //        {
+        //            CompanyID = companyInfo.Info.CompanyId,
+        //            Mobile = CustomerCode
+        //        };
+        //        r.CompanyInfo = companyInfo.Info;
+        //        var a = await _profile.GetContractList(inv);
+        //        if (a.DataStatus == "00")
+        //        {
+        //            var f = a.ItemsData.ContractList.Where(u => u.CustomerCode == CustomerCode).FirstOrDefault();
+        //            if (f != default)
+        //            {
+        //                r.ContractInfo = f;
+        //                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //                return Ok(new ResponseOK()
+        //                {
+        //                    Code = 200,
+        //                    InternalMessage = LanguageAll.Language.Success,
+        //                    MoreInfo = LanguageAll.Language.Success,
+        //                    Status = 0,
+        //                    UserMessage = LanguageAll.Language.Success,
+        //                    data = r
+        //                });
+        //            }
+        //        }
+        //    }
 
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            _logger.WriteLog(_configuration, $"GetContractList");
-            return Ok(new ResponseOK()
-            {
-                Code = 404,
-                InternalMessage = LanguageAll.Language.Fail,
-                MoreInfo = LanguageAll.Language.Fail,
-                Status = 1,
-                UserMessage = LanguageAll.Language.Fail,
-                data = null
-            });
-        }
-        #endregion
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    _logger.WriteLog(_configuration, $"GetContractList");
+        //    return Ok(new ResponseOK()
+        //    {
+        //        Code = 404,
+        //        InternalMessage = LanguageAll.Language.Fail,
+        //        MoreInfo = LanguageAll.Language.Fail,
+        //        Status = 1,
+        //        UserMessage = LanguageAll.Language.Fail,
+        //        data = null
+        //    });
+        //}
+        //#endregion
 
-        #region contract
-        [HttpGet]
-        [Route("[action]/{CompanyID}")]
-        public async Task<IActionResult> GetContractList(int CompanyID)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
-            Expression<Func<Contract, bool>> expression = u => (
-                    (u.CompanyId >= CompanyID) &&
-                    (u.UserId == UserId));
-            var contract = await _contract.GetManyAsync(expression);
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            if (contract.Count() < 1)
-            {
-                return Ok(new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.NotFound,
-                    MoreInfo = LanguageAll.Language.NotFound,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.NotFound,
-                    data = null
-                });
-            }
-            return Ok(new ResponseOK()
-            {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 0,
-                UserMessage = LanguageAll.Language.Success,
-                data = new
-                {
-                    companyInfo = companyConfig.Companys[CompanyID].Info,
-                    contractList = contract
-                }
-            });
-        }
+        //#region contract
+        //[HttpGet]
+        //[Route("[action]/{CompanyID}")]
+        //public async Task<IActionResult> GetContractList(int CompanyID)
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
+        //    Expression<Func<Contract, bool>> expression = u => (
+        //            (u.CompanyId >= CompanyID) &&
+        //            (u.UserId == UserId));
+        //    var contract = await _contract.GetManyAsync(expression);
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    if (contract.Count() < 1)
+        //    {
+        //        return Ok(new ResponseOK()
+        //        {
+        //            Code = 400,
+        //            InternalMessage = LanguageAll.Language.NotFound,
+        //            MoreInfo = LanguageAll.Language.NotFound,
+        //            Status = 0,
+        //            UserMessage = LanguageAll.Language.NotFound,
+        //            data = null
+        //        });
+        //    }
+        //    return Ok(new ResponseOK()
+        //    {
+        //        Code = 200,
+        //        InternalMessage = LanguageAll.Language.Success,
+        //        MoreInfo = LanguageAll.Language.Success,
+        //        Status = 0,
+        //        UserMessage = LanguageAll.Language.Success,
+        //        data = new
+        //        {
+        //            companyInfo = companyConfig.Companys[CompanyID].Info,
+        //            contractList = contract
+        //        }
+        //    });
+        //}
 
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> GetContractList()
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
-            Expression<Func<Contract, bool>> expression = u => (u.UserId == UserId);
-            var contract = await _contract.GetManyAsync(expression);
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            if (contract.Count() < 1)
-            {
-                return Ok(new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.NotFound,
-                    MoreInfo = LanguageAll.Language.NotFound,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.NotFound,
-                    data = null
-                });
-            }
-            return Ok(new ResponseOK()
-            {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 0,
-                UserMessage = LanguageAll.Language.Success,
-                data = new
-                {
-                    companyInfo = companyConfig.Companys[0].Info,
-                    contractList = contract
-                }
-            });
-        }
+        //[HttpGet]
+        //[Route("[action]")]
+        //public async Task<IActionResult> GetContractList()
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
+        //    Expression<Func<Contract, bool>> expression = u => (u.UserId == UserId);
+        //    var contract = await _contract.GetManyAsync(expression);
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    if (contract.Count() < 1)
+        //    {
+        //        return Ok(new ResponseOK()
+        //        {
+        //            Code = 400,
+        //            InternalMessage = LanguageAll.Language.NotFound,
+        //            MoreInfo = LanguageAll.Language.NotFound,
+        //            Status = 0,
+        //            UserMessage = LanguageAll.Language.NotFound,
+        //            data = null
+        //        });
+        //    }
+        //    return Ok(new ResponseOK()
+        //    {
+        //        Code = 200,
+        //        InternalMessage = LanguageAll.Language.Success,
+        //        MoreInfo = LanguageAll.Language.Success,
+        //        Status = 0,
+        //        UserMessage = LanguageAll.Language.Success,
+        //        data = new
+        //        {
+        //            companyInfo = companyConfig.Companys[0].Info,
+        //            contractList = contract
+        //        }
+        //    });
+        //}
 
-        [HttpGet]
-        [Route("[action]/{CustomerCode}")]
-        public async Task<IActionResult> GetContractInfo(string CustomerCode)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
-            Expression<Func<Contract, bool>> expression = u => (u.UserId == UserId && u.CustomerCode == CustomerCode);
-            var contract = await _contract.GetManyAsync(expression);
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            if (contract.Count() < 1)
-            {
-                return Ok(new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.NotFound,
-                    MoreInfo = LanguageAll.Language.NotFound,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.NotFound,
-                    data = null
-                });
-            }
-            return Ok(new ResponseOK()
-            {
-                Code = 200,
-                InternalMessage = LanguageAll.Language.Success,
-                MoreInfo = LanguageAll.Language.Success,
-                Status = 0,
-                UserMessage = LanguageAll.Language.Success,
-                data = new
-                {
-                    companyInfo = companyConfig.Companys[0].Info,
-                    contractInfo = contract.ToList()[0]
-                }
-            });
-        }
-        #endregion
+        //[HttpGet]
+        //[Route("[action]/{CustomerCode}")]
+        //public async Task<IActionResult> GetContractInfo(string CustomerCode)
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    var UserId = (await _userManager.GetUserAsync(HttpContext.User)).Id;
+        //    Expression<Func<Contract, bool>> expression = u => (u.UserId == UserId && u.CustomerCode == CustomerCode);
+        //    var contract = await _contract.GetManyAsync(expression);
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    if (contract.Count() < 1)
+        //    {
+        //        return Ok(new ResponseOK()
+        //        {
+        //            Code = 400,
+        //            InternalMessage = LanguageAll.Language.NotFound,
+        //            MoreInfo = LanguageAll.Language.NotFound,
+        //            Status = 0,
+        //            UserMessage = LanguageAll.Language.NotFound,
+        //            data = null
+        //        });
+        //    }
+        //    return Ok(new ResponseOK()
+        //    {
+        //        Code = 200,
+        //        InternalMessage = LanguageAll.Language.Success,
+        //        MoreInfo = LanguageAll.Language.Success,
+        //        Status = 0,
+        //        UserMessage = LanguageAll.Language.Success,
+        //        data = new
+        //        {
+        //            companyInfo = companyConfig.Companys[0].Info,
+        //            contractInfo = contract.ToList()[0]
+        //        }
+        //    });
+        //}
+        //#endregion
 
         //[HttpPost]
         //[Route("[action]")]
@@ -338,113 +403,49 @@ namespace StaffAPI.Controllers
         //    return Ok(a);
         //}
 
-        [HttpPost]
-        [Route("[action]/{IsToken}")]
-        public async Task<IActionResult> GetProfile(int IsToken)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var a = await _profile.GetProfile(IsToken);
-            _logger.WriteLog(_configuration, $"GetProfile {IsToken}: {a.UserMessage}", $"GetProfile {IsToken}");
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return Ok(a);
-        }
+        //[HttpPost]
+        //[Route("[action]")]
+        //public async Task<IActionResult> LinkContract([FromBody] InvoiceInput inv)
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    var a = await _profile.LinkInvoice(inv);
+        //    _logger.WriteLog(_configuration, $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    if (a.Status == 0)
+        //    {
+        //        switch (a.Code)
+        //        {
+        //            case 400:
+        //                return StatusCode(StatusCodes.Status200OK, a);
+        //            default:
+        //                return StatusCode(StatusCodes.Status200OK, a);
 
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> SetProfile([FromBody] ProfileInputModel model)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            _logger.WriteLog(_configuration, $"0. SetProfile {Newtonsoft.Json.JsonConvert.SerializeObject(model)}");
-            if (ModelState.IsValid)
-            {
-                // Check Avatar and save to admin.nuocngoctuan.com                
-                if (!string.IsNullOrEmpty(model.Avatar))
-                {
-                    _logger.WriteLog(_configuration, $"1. SetProfile {model.Avatar}");
-                    var username = User.Claims.Where(u => u.Type == ClaimTypes.Name).FirstOrDefault()?.Value;
-                    if (string.IsNullOrEmpty(username)) username = "admin";
-                    string path = companyConfig.AvatarFolder;
-                    string fileName = username + ".jpg";
-                    _logger.WriteLog(_configuration, $"2. SetProfile {path}/{fileName}");
-                    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                    if (System.IO.File.Exists(path + @"/" + fileName)) System.IO.File.Delete(path + @"/" + fileName);
-                    System.IO.File.WriteAllBytes(path + @"/" + fileName, Convert.FromBase64String(model.Avatar));
-                    model.Avatar = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
-                    _logger.WriteLog(_configuration, $"3. SetProfile {model.Avatar}");
-                }
-                var a = await _profile.SetProfile(model);
-                _logger.WriteLog(_configuration, $"SetProfile: {a.UserMessage}", $"SetProfile");
-                _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-                if (a.Status == 0)
-                {
-                    switch (a.Code)
-                    {
-                        case 400:
-                            return StatusCode(StatusCodes.Status200OK, a);
-                        default:
-                            return StatusCode(StatusCodes.Status200OK, a);
+        //        }
+        //    }
+        //    return Ok(a);
+        //}
 
-                    }
-                }
-                return Ok(a);
-            }
-            else
-            {
-                return StatusCode(StatusCodes.Status200OK, new ResponseOK()
-                {
-                    Code = 400,
-                    InternalMessage = LanguageAll.Language.SetProfileFailEmail,
-                    MoreInfo = LanguageAll.Language.SetProfileFailEmail,
-                    Status = 0,
-                    UserMessage = LanguageAll.Language.SetProfileFailEmail,
-                    data = ModelState.ToList()
-                });
-            }
-        }
+        //[HttpPost]
+        //[Route("[action]")]
+        //public async Task<IActionResult> RemoveContract([FromBody] InvoiceInput inv)
+        //{
+        //    var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //    var a = await _profile.RemoveInvoice(inv);
+        //    _logger.WriteLog(_configuration, $"RemoveContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"RemoveContract {inv.CompanyID}/ {inv.CustomerCode}");
+        //    _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+        //    if (a.Status == 0)
+        //    {
+        //        switch (a.Code)
+        //        {
+        //            case 400:
+        //                return StatusCode(StatusCodes.Status200OK, a);
+        //            default:
+        //                return StatusCode(StatusCodes.Status200OK, a);
 
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> LinkContract([FromBody] InvoiceInput inv)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var a = await _profile.LinkInvoice(inv);
-            _logger.WriteLog(_configuration, $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"LinkContract {inv.CompanyID}/ {inv.CustomerCode}");
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            if (a.Status == 0)
-            {
-                switch (a.Code)
-                {
-                    case 400:
-                        return StatusCode(StatusCodes.Status200OK, a);
-                    default:
-                        return StatusCode(StatusCodes.Status200OK, a);
-
-                }
-            }
-            return Ok(a);
-        }
-
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> RemoveContract([FromBody] InvoiceInput inv)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            var a = await _profile.RemoveInvoice(inv);
-            _logger.WriteLog(_configuration, $"RemoveContract {inv.CompanyID}/ {inv.CustomerCode}: {a.UserMessage}", $"RemoveContract {inv.CompanyID}/ {inv.CustomerCode}");
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            if (a.Status == 0)
-            {
-                switch (a.Code)
-                {
-                    case 400:
-                        return StatusCode(StatusCodes.Status200OK, a);
-                    default:
-                        return StatusCode(StatusCodes.Status200OK, a);
-
-                }
-            }
-            return Ok(a);
-        }
+        //        }
+        //    }
+        //    return Ok(a);
+        //}
 
     }
 }

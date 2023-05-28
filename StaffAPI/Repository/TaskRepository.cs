@@ -6,11 +6,13 @@ using StaffAPI.Models.Tasks;
 using StaffAPI.Models.Tasks.DTO;
 using StaffAPI.Repository.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Utils.Models;
 using Utils.Repository.Interfaces;
+using static MongoDB.Libmongocrypt.CryptContext;
 
 namespace StaffAPI.Repository
 {
@@ -21,7 +23,7 @@ namespace StaffAPI.Repository
         private readonly ICompanyConfig _companyConfig;
         private readonly IWorkFlowConfig _workFlow;
         private readonly IInvoiceRepository _iInvoiceServices;
-        private readonly List<int> _status = new List<int>() { 1, 2, 3, -9 };
+        private readonly List<int> _status = new List<int>() { 0, 1, 2, 3, -9 };
         private readonly List<int> _paymentStatus = new List<int>() { 0, 1 };
         public TaskRepository(IDBSetting settings, ILogger<TaskRepository> Log, ICompanyConfig companyConfig, IInvoiceRepository iInvoiceServices, IWorkFlowConfig workFlow)
         {
@@ -81,7 +83,7 @@ namespace StaffAPI.Repository
                 };
             }
 
-            var w = _workFlow.WorkFlow.Where(u => u.Id == task.Service.Id).FirstOrDefault();
+            var w = _workFlow.WorkFlow.Where(u => u.Id == task.WorkFlowId).FirstOrDefault();
 
             if (w == null)
             {
@@ -219,9 +221,15 @@ namespace StaffAPI.Repository
 
             return default;
         }
+        private StaffDTO GetStaff(string StaffCode, List<StaffDTO> Staff)
+        {
+            StaffDTO a = null;
+            if (Staff != null) a = Staff.Where(u => u.StaffCode == StaffCode || u.Mobile == StaffCode || u.Mobile2 == StaffCode).FirstOrDefault();
+            return a;
+        }
         private TaskResultDTO Validate(TaskDTO task, StaffDTO staff, bool isAdd = true)
         {
-            var a = task.Staff.Where(u => u.StaffCode == staff.StaffCode);
+            StaffDTO a = GetStaff(staff.StaffCode, task.Staff);
             if (a != null && isAdd)
             {
                 return new TaskResultDTO()
@@ -293,28 +301,28 @@ namespace StaffAPI.Repository
 
         public async Task<TaskListResultDTO> GetAsync(TaskFilterDTO _filter)
         {
-            bool kt = false;
+            //bool kt = false;
             var filters = new List<FilterDefinition<TaskDTO>>();
 
             if (!String.IsNullOrEmpty(_filter.Keyword))
             {
                 var filter = Builders<TaskDTO>.Filter.Where(u => (u.Name.Contains(_filter.Keyword) || u.Content.Contains(_filter.Keyword)));
                 filters.Add(filter);
-                kt = true;
+                //kt = true;
             }
 
             if (!String.IsNullOrEmpty(_filter.CustomerCode))
             {
                 var filter = Builders<TaskDTO>.Filter.Where(u => u.Customer.CustomerCode == _filter.CustomerCode);
                 filters.Add(filter);
-                kt = true;
+                //kt = true;
             }
 
             if (_filter.Status.HasValue)
             {
                 var filter = Builders<TaskDTO>.Filter.Where(u => u.Status == _filter.Status.Value);
                 filters.Add(filter);
-                kt = true;
+                //kt = true;
             }
 
             if (_filter.IsExpired.HasValue)
@@ -323,13 +331,13 @@ namespace StaffAPI.Repository
                 {
                     var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= DateTime.Now);
                     filters.Add(filter);
-                    kt = true;
+                    //kt = true;
                 }
                 else
                 {
                     var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate >= DateTime.Today);
                     filters.Add(filter);
-                    kt = true;
+                    //kt = true;
                 }
             }
 
@@ -337,34 +345,50 @@ namespace StaffAPI.Repository
             {
                 var filter = Builders<TaskDTO>.Filter.Where(u => u.FromDate >= _filter.FromDate.Value);
                 filters.Add(filter);
-                kt = true;
+                //kt = true;
             }
 
             if (_filter.ToDate.HasValue)
             {
                 var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= _filter.ToDate.Value);
                 filters.Add(filter);
-                kt = true;
+                //kt = true;
             }
 
             if (!String.IsNullOrEmpty(_filter.IsPIC))
             {
-                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == _filter.IsPIC);
+                var arr = _filter.IsPIC.Split(":::", StringSplitOptions.None);
+                string PIC = arr[0];
+                int DepartmentId = int.Parse(arr[1]);
+                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == PIC);
                 filters.Add(filter);
-                kt = true;
+
+                var filter1 = Builders<TaskDTO>.Filter.Where(u => (
+                    !u.CurrentDepartmentId.HasValue || 
+                    u.CurrentDepartmentId.HasValue && (u.CurrentDepartmentId.Value == 0 || u.CurrentDepartmentId.Value == DepartmentId)
+                    ));
+                filters.Add(filter1);
+                //kt = true;
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsAssigne))
+            {
+                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == _filter.IsAssigne);
+                filters.Add(filter);
+                //kt = true;
             }
 
             if (!String.IsNullOrEmpty(_filter.IsOwner))
             {
                 var filter = Builders<TaskDTO>.Filter.Where(u => (u.Owner.StaffCode == _filter.IsOwner));
                 filters.Add(filter);
-                kt = true;
+                //kt = true;
             }
 
             int PageSize = 10;
             if (_filter.PageSize.HasValue) PageSize = _filter.PageSize.Value;
             int Page = 1;
-            if (_filter.Page.HasValue) PageSize = _filter.Page.Value;
+            if (_filter.Page.HasValue) Page = _filter.Page.Value;
             var complexFilter = Builders<TaskDTO>.Filter.And(filters);
             var a = (await _Task.FindAsync(complexFilter)).ToList();
 
@@ -500,6 +524,7 @@ namespace StaffAPI.Repository
             TaskResultDTO a2 = Validate(task, taskProcess);
             if (a2 != null) return a2;
 
+            if (task.TaskProcess == null) task.TaskProcess = new List<TaskProcessDTO>();
             task.TaskProcess.Add(taskProcess);
             task.Status = Status;
             await _Task.ReplaceOneAsync(task => task.Id == id, task);
@@ -525,11 +550,11 @@ namespace StaffAPI.Repository
 
             TaskResultDTO a2 = Validate(task, taskProcess);
             if (a2 != null) return a2;
-
+            if (task.TaskProcess == null) task.TaskProcess = new List<TaskProcessDTO>();
             task.TaskProcess.Add(taskProcess);
             //task.Status = Status;
 
-            await _Task.ReplaceOneAsync(task => task.Id == task.Id, task);
+            await _Task.ReplaceOneAsync(y => y.Id == task.Id, task);
             return new TaskResultDTO()
             {
                 Data = task,
@@ -552,11 +577,13 @@ namespace StaffAPI.Repository
 
             if (isAdd)
             {
+                if (task.Staff == null) task.Staff = new List<StaffDTO>();
                 task.Staff.Add(staff);
             }
             else
             {
-                task.Staff.Remove(staff);
+                var _a = GetStaff(staff.StaffCode, task.Staff);
+                task.Staff.Remove(_a);
             }
             await _Task.ReplaceOneAsync(task => task.Id == id, task);
             return new TaskResultDTO()

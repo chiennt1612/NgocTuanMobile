@@ -120,7 +120,7 @@ namespace StaffAPI.Services
             bool found = false;
             while ((i < cntStep) && !found)
             {
-                if (task.Department[i].StatusId.Value != 1) found = true;
+                if (task.Department[i].StatusId.Value == 0 || task.Department[i].StatusId.Value == 1 || task.Department[i].StatusId.Value == 3) found = true;
                 i++;
             }
             return i;
@@ -180,6 +180,9 @@ namespace StaffAPI.Services
             a = ValidateProcess(a, id, Status, NextDepartment, out indexDepartment);
             if (a.Code == 500) return a;
 
+            // 1. Next department
+            // -1. Prev department
+            // 0. Current department
             switch (NextDepartment)
             {
                 case 0:
@@ -189,10 +192,12 @@ namespace StaffAPI.Services
                 case 1:
                     task.Department[indexDepartment - 1].StatusId = Status;
                     task.Department[indexDepartment].StatusId = 1;
+                    task.CurrentDepartmentId = task.Department[indexDepartment].DepartmentId;
                     break;
                 case -1:
                     task.Department[indexDepartment - 1].StatusId = Status;
                     task.Department[indexDepartment - 2].StatusId = 1;
+                    task.CurrentDepartmentId = task.Department[indexDepartment - 2].DepartmentId;
                     break;
                 default:
                     break;

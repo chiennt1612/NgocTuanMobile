@@ -101,7 +101,7 @@ namespace StaffAPI.Services
                     UserMessage = LanguageAll.Language.Fail
                 };
         }
-        public async Task<ResponseOK> UndoPayInvoice(InvoiceInput inv)
+        public async Task<ResponseOK> UndoPayInvoice(CheckPayInput inv)
         {
             var a = await _invoice.UndoPayInvoice(inv);
             if (a.UndoPayStatus == "00")
@@ -179,6 +179,78 @@ namespace StaffAPI.Services
         {
             var a = await _invoice.getStaffInfo(inv);
             return a;
+        }
+        public async Task<ResponseOK> PayInvoiceByStaff(PayInputByStaff inv)
+        {
+            var a = await _invoice.PayInvoiceByStaff(inv);
+            if (a.PayStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = null,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
+        }
+        public async Task<ResponseOK> CheckPayInvoiceByStaff(CheckPayInputByStaff inv)
+        {
+            var a = await _invoice.CheckPayInvoiceByStaff(inv);
+            if (a.PayStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
+        }
+        public async Task<ResponseOK> UndoPayInvoiceByStaff(CheckPayInputByStaff inv)
+        {
+            var a = await _invoice.UndoPayInvoiceByStaff(inv);
+            if (a.UndoPayStatus == "00")
+                return new ResponseOK()
+                {
+                    Code = 200,
+                    data = a,
+                    InternalMessage = LanguageAll.Language.Success,
+                    MoreInfo = LanguageAll.Language.Success,
+                    Status = 1,
+                    UserMessage = LanguageAll.Language.Success
+                };
+            else
+                return new ResponseOK()
+                {
+                    Code = 404,
+                    data = null,
+                    InternalMessage = LanguageAll.Language.Fail,
+                    MoreInfo = LanguageAll.Language.Fail,
+                    Status = 0,
+                    UserMessage = LanguageAll.Language.Fail
+                };
         }
         #endregion
 

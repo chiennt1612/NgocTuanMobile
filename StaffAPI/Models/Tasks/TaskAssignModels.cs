@@ -8,6 +8,12 @@ namespace StaffAPI.Models.Tasks
         public StaffDTO Staff { get; set; }
     }
 
+    public class TaskUnAssignModels
+    {
+        public string TaskId { get; set; }
+        public string StaffCode { get; set; }
+    }
+
     public class TaskCasherModels
     {
         public string TaskId { get; set; }

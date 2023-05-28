@@ -13,7 +13,7 @@ namespace Utils.Repository.Interfaces
         Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv); //Index: 9
         Task<PayResult> PayInvoice(PayInput inv);                   //Index: 1
         Task<PayResult> CheckPayInvoice(CheckPayInput inv);         //Index: 2
-        Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv);       //Index: 3
+        Task<UndoPayResult> UndoPayInvoice(CheckPayInput inv);       //Index: 3
         #endregion
 
         #region Customer
@@ -29,6 +29,9 @@ namespace Utils.Repository.Interfaces
         // Staff "getInvoiceList", "payInvoice", "checkPayInvocie", "undoPayInvocie", "getStaffInfo", "getContractAllList", "", "", "", "getInvoiceByQRCode"
         Task<StaffInfoResult> getStaffInfo(StaffCodeInput inv);     //Index: 4
         //Task<ContractResult> GetContract(ContractInput inv);        //Index: 5
+        Task<PayResult> PayInvoiceByStaff(PayInputByStaff inv);                   //Index: 10
+        Task<PayResult> CheckPayInvoiceByStaff(CheckPayInputByStaff inv);         //Index: 11
+        Task<UndoPayResult> UndoPayInvoiceByStaff(CheckPayInputByStaff inv);       //Index: 12
         #endregion
     }
 }

@@ -129,6 +129,9 @@
   <data name="ChangedUserIsNull" xml:space="preserve">
     <value>Người sửa trống</value>
   </data>
+  <data name="ChangePasswordIsFail" xml:space="preserve">
+    <value>Đổi mật khẩu không thành công.</value>
+  </data>
   <data name="CompanyIDInvalid" xml:space="preserve">
     <value>Mã nhà máy nước không để trống</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
     <value>Xác nhận mật khẩu</value>
+  </data>
+  <data name="ConfirmPasswordIsWrong" xml:space="preserve">
+    <value>Mật khẩu xác nhận khác mật khẩu mới</value>
   </data>
   <data name="ContentIsNull" xml:space="preserve">
     <value>Chưa nhập nội dung công việc</value>
@@ -198,6 +204,9 @@
   <data name="ModifyDateIsNull" xml:space="preserve">
     <value>Ngày sửa đổi trống</value>
   </data>
+  <data name="NewPasswordIsSame" xml:space="preserve">
+    <value>Mật khẩu mới có chứa mật khẩu cũ hoặc mật khẩu cũ có chứa mật khẩu mới</value>
+  </data>
   <data name="NoPermission" xml:space="preserve">
     <value>Không có quyền</value>
   </data>
@@ -228,6 +237,27 @@
   <data name="PasswordLength" xml:space="preserve">
     <value>{0} bắt buộc ít nhất {2} và tối đa {1} ký tự.</value>
   </data>
+  <data name="PasswordMismatch" xml:space="preserve">
+    <value>Mật khẩu không đúng</value>
+  </data>
+  <data name="PasswordRequiresDigit" xml:space="preserve">
+    <value>Mật khẩu phải có chữ số ('0'-'9').</value>
+  </data>
+  <data name="PasswordRequiresLower" xml:space="preserve">
+    <value>Mật khẩu phải có chữ cái thường ('a'-'z').</value>
+  </data>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>Mật khẩu phải có ký tự đặc biệt</value>
+  </data>
+  <data name="PasswordRequiresUniqueChars" xml:space="preserve">
+    <value>Mật khẩu phái có {RequiredUniqueChars} ký tự khác nhau</value>
+  </data>
+  <data name="PasswordRequiresUpper" xml:space="preserve">
+    <value>Mật khẩu phải có chữ cái IN HOA ('A'-'Z').</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Mật khẩu phài dài hơn {RequiredLength}.</value>
+  </data>
   <data name="PaymentStatusIsWrong" xml:space="preserve">
     <value>Trạng thái thanh toán không đúng</value>
   </data>
@@ -237,11 +267,17 @@
   <data name="RefreshTokenInvalid" xml:space="preserve">
     <value>RefreshToken không hợp lệ</value>
   </data>
+  <data name="Remember" xml:space="preserve">
+    <value>Ghi nhớ</value>
+  </data>
   <data name="RemoveInvoiceSuccess" xml:space="preserve">
     <value>Đã hủy gán mã nhận hóa đơn</value>
   </data>
   <data name="RenewTokenFail" xml:space="preserve">
     <value>Tạo token mới không thành công</value>
+  </data>
+  <data name="ResetPasswordIsFail" xml:space="preserve">
+    <value>Lấy lại mật khẩu không thành công</value>
   </data>
   <data name="ServiceIsNull" xml:space="preserve">
     <value>Chưa chọn dịch vụ/Loại công việc</value>

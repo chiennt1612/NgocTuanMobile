@@ -824,12 +824,19 @@ namespace Utils
         public static async Task<string> Upload(string avatar, string fileName, string subfolder, string folder = "E:\\DOMAIN\\admin.nuocngoctuan.com\\wwwroot\\Upload\\Avatar", string fileExt = ".jpg")
         {
             if (string.IsNullOrEmpty(fileName)) fileName = "admin";
-            string path = folder + "\\" + subfolder;
+            string path = folder;
+
+            if (!String.IsNullOrEmpty(subfolder)) path = path + "\\" + subfolder;
             fileName = fileName + fileExt;
+
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             if (File.Exists(path + @"/" + fileName)) File.Delete(path + @"/" + fileName);
+
             await File.WriteAllBytesAsync(path + @"/" + fileName, Convert.FromBase64String(avatar));
-            avatar = $"https://admin.nuocngoctuan.com/Upload/Avatar/{subfolder}/" + fileName;
+            if (!String.IsNullOrEmpty(subfolder)) 
+                avatar = $"https://admin.nuocngoctuan.com/Upload/Avatar/{subfolder}/" + fileName;
+            else
+                avatar = $"https://admin.nuocngoctuan.com/Upload/Avatar/" + fileName;
             return avatar;
         }
         #endregion

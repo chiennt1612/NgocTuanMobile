@@ -9,4 +9,11 @@
         public bool IsSave { get; set; } = false;
         public bool IsAgree { get; set; } = true;
     }
+
+    public class PayCheckModel
+    {
+        public int CompanyID { get; set; } = 0;
+        public string OnePayID { get; set; }
+        public bool IsAgree { get; set; } = true;
+    }
 }

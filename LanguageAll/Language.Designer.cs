@@ -97,6 +97,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Đổi mật khẩu không thành công..
+        /// </summary>
+        public static string ChangePasswordIsFail {
+            get {
+                return ResourceManager.GetString("ChangePasswordIsFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mã nhà máy nước không để trống.
         /// </summary>
         public static string CompanyIDInvalid {
@@ -120,6 +129,15 @@ namespace LanguageAll {
         public static string ConfirmPassword {
             get {
                 return ResourceManager.GetString("ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu xác nhận khác mật khẩu mới.
+        /// </summary>
+        public static string ConfirmPasswordIsWrong {
+            get {
+                return ResourceManager.GetString("ConfirmPasswordIsWrong", resourceCulture);
             }
         }
         
@@ -304,6 +322,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu mới có chứa mật khẩu cũ hoặc mật khẩu cũ có chứa mật khẩu mới.
+        /// </summary>
+        public static string NewPasswordIsSame {
+            get {
+                return ResourceManager.GetString("NewPasswordIsSame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không có quyền.
         /// </summary>
         public static string NoPermission {
@@ -394,6 +421,69 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu không đúng.
+        /// </summary>
+        public static string PasswordMismatch {
+            get {
+                return ResourceManager.GetString("PasswordMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có chữ số (&apos;0&apos;-&apos;9&apos;)..
+        /// </summary>
+        public static string PasswordRequiresDigit {
+            get {
+                return ResourceManager.GetString("PasswordRequiresDigit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có chữ cái thường (&apos;a&apos;-&apos;z&apos;)..
+        /// </summary>
+        public static string PasswordRequiresLower {
+            get {
+                return ResourceManager.GetString("PasswordRequiresLower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có ký tự đặc biệt.
+        /// </summary>
+        public static string PasswordRequiresNonAlphanumeric {
+            get {
+                return ResourceManager.GetString("PasswordRequiresNonAlphanumeric", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phái có {RequiredUniqueChars} ký tự khác nhau.
+        /// </summary>
+        public static string PasswordRequiresUniqueChars {
+            get {
+                return ResourceManager.GetString("PasswordRequiresUniqueChars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có chữ cái IN HOA (&apos;A&apos;-&apos;Z&apos;)..
+        /// </summary>
+        public static string PasswordRequiresUpper {
+            get {
+                return ResourceManager.GetString("PasswordRequiresUpper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phài dài hơn {RequiredLength}..
+        /// </summary>
+        public static string PasswordTooShort {
+            get {
+                return ResourceManager.GetString("PasswordTooShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Trạng thái thanh toán không đúng.
         /// </summary>
         public static string PaymentStatusIsWrong {
@@ -421,6 +511,15 @@ namespace LanguageAll {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ghi nhớ.
+        /// </summary>
+        public static string Remember {
+            get {
+                return ResourceManager.GetString("Remember", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Đã hủy gán mã nhận hóa đơn.
         /// </summary>
         public static string RemoveInvoiceSuccess {
@@ -435,6 +534,15 @@ namespace LanguageAll {
         public static string RenewTokenFail {
             get {
                 return ResourceManager.GetString("RenewTokenFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lấy lại mật khẩu không thành công.
+        /// </summary>
+        public static string ResetPasswordIsFail {
+            get {
+                return ResourceManager.GetString("ResetPasswordIsFail", resourceCulture);
             }
         }
         

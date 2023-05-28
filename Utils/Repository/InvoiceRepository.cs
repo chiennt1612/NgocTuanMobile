@@ -90,12 +90,12 @@ namespace Utils.Repository
             }
             return a;
         }
-        public async Task<UndoPayResult> UndoPayInvoice(InvoiceInput inv)       //Index: 3
+        public async Task<UndoPayResult> UndoPayInvoice(CheckPayInput inv)       //Index: 3
         {
             UndoPayResult a = default;
             try
             {
-                a = await Tools.APIRequest<UndoPayResult, InvoiceInput>(ilogger,
+                a = await Tools.APIRequest<UndoPayResult, CheckPayInput>(ilogger,
                     companyConfig.Companys[inv.CompanyID].Config.APIUrl,
                     companyConfig.Companys[inv.CompanyID].Config.APIToken,
                     companyConfig.Companys[inv.CompanyID].Config.APIFunctions[3], inv);
@@ -216,6 +216,57 @@ namespace Utils.Repository
             return a;
         }
         // Pay invoice by cash
+        public async Task<PayResult> PayInvoiceByStaff(PayInputByStaff inv)                   //Index: 1
+        {
+            PayResult a = default;
+            try
+            {
+                a = await Tools.APIRequest<PayResult, PayInputByStaff>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[1], inv);
+                if (ilogger != null) ilogger.LogInformation($"PayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                if (ilogger != null) ilogger.LogError($"PayInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
+        public async Task<PayResult> CheckPayInvoiceByStaff(CheckPayInputByStaff inv)         //Index: 2
+        {
+            PayResult a = default;
+            try
+            {
+                a = await Tools.APIRequest<PayResult, CheckPayInputByStaff>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[2], inv);
+                if (ilogger != null) ilogger.LogInformation($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                if (ilogger != null) ilogger.LogError($"Check pay status invoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
+        public async Task<UndoPayResult> UndoPayInvoiceByStaff(CheckPayInputByStaff inv)       //Index: 3
+        {
+            UndoPayResult a = default;
+            try
+            {
+                a = await Tools.APIRequest<UndoPayResult, CheckPayInputByStaff>(ilogger,
+                    companyConfig.Companys[inv.CompanyID].Config.APIUrl,
+                    companyConfig.Companys[inv.CompanyID].Config.APIToken,
+                    companyConfig.Companys[inv.CompanyID].Config.APIFunctions[3], inv);
+                if (ilogger != null) ilogger.LogInformation($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is result {JsonConvert.SerializeObject(a)}");
+            }
+            catch (Exception ex)
+            {
+                if (ilogger != null) ilogger.LogError($"UndoPayInvoice {JsonConvert.SerializeObject(inv)} is error {ex.Message}");
+            }
+            return a;
+        }
         #endregion
     }
 }

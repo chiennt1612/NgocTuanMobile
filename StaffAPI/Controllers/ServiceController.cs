@@ -462,12 +462,12 @@ namespace StaffAPI.Controllers
                     string Img = "";
                     if (!string.IsNullOrEmpty(contact.Img))
                     {
-                        Img = Upload(contact.Img, "0");
+                        Img = await Utils.Tools.Upload(contact.Img, Guid.NewGuid().ToString().Replace("-", ""), "Service", companyConfig.AvatarFolder);//Upload(contact.Img, "0");
                     }
                     string Img2 = "";
                     if (!string.IsNullOrEmpty(contact.Img2))
                     {
-                        Img2 = Upload(contact.Img2, "1");
+                        Img2 = await Utils.Tools.Upload(contact.Img, Guid.NewGuid().ToString().Replace("-", ""), "Service", companyConfig.AvatarFolder);//Upload(contact.Img2, "1");
                     }
                     var _contact = new Contact()
                     {
@@ -592,7 +592,7 @@ namespace StaffAPI.Controllers
                     string Img = "";
                     if (!string.IsNullOrEmpty(contact.Img))
                     {
-                        Img = Upload(contact.Img, "0");
+                        Img = await Utils.Tools.Upload(contact.Img, Guid.NewGuid().ToString().Replace("-", ""), "Service", companyConfig.AvatarFolder);//Upload(contact.Img, "0");
                     }
                     var _contact = new Contact()
                     {
@@ -694,28 +694,6 @@ namespace StaffAPI.Controllers
                 UserMessage = LanguageAll.Language.Success,
                 data = rd
             });
-        }
-
-        private string Upload(string file, string fileNumber)
-        {
-            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
-            // Check Avatar and save to admin.nuocngoctuan.com                
-            if (!string.IsNullOrEmpty(file))
-            {
-                _logger.WriteLog(_configuration, $"1. Upload {file}");
-                var username = User.Claims.Where(u => u.Type == ClaimTypes.Name).FirstOrDefault()?.Value;
-                if (string.IsNullOrEmpty(username)) username = "admin";
-                string path = companyConfig.AvatarFolder + @"/" + username;
-                string fileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}_{fileNumber}.jpg";
-                _logger.WriteLog(_configuration, $"2. Upload {path}/{fileName}");
-                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                if (System.IO.File.Exists(path + @"/" + fileName)) System.IO.File.Delete(path + @"/" + fileName);
-                System.IO.File.WriteAllBytes(path + @"/" + fileName, Convert.FromBase64String(file));
-                file = @"https://admin.nuocngoctuan.com/Upload/Avatar/" + username + "/" + fileName;
-                _logger.WriteLog(_configuration, $"3. Upload {file}");
-            }
-            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
-            return file;
         }
     }
 }

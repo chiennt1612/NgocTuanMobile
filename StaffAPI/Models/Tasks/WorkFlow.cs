@@ -24,4 +24,10 @@ namespace StaffAPI.Models.Tasks
         public string Image { get; set; }
         public List<DepartmentDTO>? Flow { get; set; }
     }
+
+    public class TaskType
+    {
+        public long? TaskTypeId { get; set; }
+        public string TaskTypeName { get; set; }
+    }
 }

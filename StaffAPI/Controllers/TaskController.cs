@@ -23,6 +23,7 @@ using Utils.Models;
 using Utils.Repository.Interfaces;
 using StaffAPI.Models;
 using System.Collections;
+using StaffAPI.Helper;
 
 namespace StaffAPI.Controllers
 {
@@ -35,6 +36,7 @@ namespace StaffAPI.Controllers
     public class TaskController : ControllerBase
     {
         #region Properties
+        private readonly LoginConfiguration _loginConfiguration;
         private readonly UserManager<AppUser> _userManager;
         private readonly IDistributedCache _cache;
         private readonly ILogger<TaskController> _logger;
@@ -52,7 +54,7 @@ namespace StaffAPI.Controllers
         public TaskController(IConfiguration _configuration, IEmailSender _emailSender, IDistributedCache _cache,
             ILogger<TaskController> _logger, IStringLocalizer<TaskController> _localizer, IAllService _Service,
             UserManager<AppUser> userManager, ITaskService _TaskService, IWorkFlowConfig _WorkFlow, ICompanyConfig companyConfig,
-            IInvoiceRepository _invoice)
+            IInvoiceRepository _invoice, LoginConfiguration _loginConfiguration)
         {
             this._logger = _logger;
             this._Service = _Service;
@@ -65,6 +67,7 @@ namespace StaffAPI.Controllers
             this._logger.WriteLog(_configuration, "Starting invoice page");
             this.companyConfig = companyConfig;
             this._invoice = _invoice;
+            this._loginConfiguration = _loginConfiguration;
             _userManager = userManager;
 
             var b = _cache.GetAsync<List<string>>("InvoiceCacheKeys").GetAwaiter();
@@ -166,7 +169,7 @@ namespace StaffAPI.Controllers
             }
             return null;
         }
-        private ResponseOK Validate(Models.Tasks.Services _workFlow, CustomerDTO Customer)
+        private async Task<ResponseOK> Validate(Models.Tasks.Services _workFlow, CustomerDTO Customer)
         {
             if (_workFlow.Id != 99)
             {
@@ -182,10 +185,39 @@ namespace StaffAPI.Controllers
                         data = null
                     };
                 }
+
+                long workFlowId = 0;
+                if (_workFlow.Id.HasValue) workFlowId = _workFlow.Id.Value;
+                //The register work have not the customer infomation. This is input by manual
+                if (workFlowId == 1 || workFlowId == 2)
+                {
+                    Customer.CustomerType = _workFlow.CustomerType.HasValue ? _workFlow.CustomerType.Value.ToString() : "90";
+                    Customer.CustomerCode = "[RegisterNew]";
+                    Customer.WaterIndexCode = "[RegisterNew]";
+                }
+
                 if (_workFlow.CustomerType.HasValue)
                 {
                     string CustomerType = _workFlow.CustomerType.Value.ToString();
                     if (CustomerType != Customer.CustomerType.Substring(0, CustomerType.Length))
+                    {
+                        return new ResponseOK()
+                        {
+                            Code = 400,
+                            InternalMessage = LanguageAll.Language.CustomerIsWrong,
+                            MoreInfo = LanguageAll.Language.CustomerIsWrong,
+                            Status = 0,
+                            UserMessage = LanguageAll.Language.CustomerIsWrong,
+                            data = null
+                        };
+                    }                    
+                }
+
+                // Re-Validate customer information
+                if (workFlowId > 2)
+                {
+                    List<ContractList> contractList = await GetCustomer(Customer.CustomerCode);
+                    if (contractList.Count < 1)
                     {
                         return new ResponseOK()
                         {
@@ -217,7 +249,8 @@ namespace StaffAPI.Controllers
             }
             if (_workFlow.Id.Value != 99)
             {
-                if (!_WorkFlow.DepartmentAlow.Contains(staff.DepartmentCode))
+                if (!_WorkFlow.DepartmentAlow.Contains(staff.DepartmentCode) && 
+                    !(_loginConfiguration.MobileTest.Contains(staff.Mobile) || _loginConfiguration.MobileTest.Contains(staff.Mobile2)))
                 {
                     return new ResponseOK()
                     {
@@ -390,6 +423,7 @@ namespace StaffAPI.Controllers
                 Status = 0,
                 // 0. Un-payment
                 // 1. Payment
+                CurrentDepartmentId = 0,
                 PaymentStatus = 0,
                 Casher = null,
                 Attachment = null,
@@ -414,7 +448,20 @@ namespace StaffAPI.Controllers
             var r1 = Validate(_workFlow);
             if (r1 != null) return StatusCode(StatusCodes.Status200OK, r1);
 
-            if (_workFlow.Flow != null) task.Department = _workFlow.Flow;
+            if (_workFlow.Flow != null)
+            {
+                task.Department = new List<DepartmentDTO>();
+                for (var j = 0; j < _workFlow.Flow.Count(); j++)
+                {
+                    var _a = _workFlow.Flow[j];
+                    if (j == 0) _a.StatusId = 2;
+                    if (j == 1) {
+                        _a.StatusId = 1;
+                        task.CurrentDepartmentId = _workFlow.Flow[j].DepartmentId;
+                    }                    
+                    task.Department.Add(_a);
+                }
+            }
 
             var _service = await _Service.serviceServices.GetByIdAsync(_workFlow.ServiceId.Value);
             ServiceDTO Service = new ServiceDTO();
@@ -447,7 +494,7 @@ namespace StaffAPI.Controllers
             #endregion
 
             #region Customer  
-            r1 = Validate(_workFlow, taskInput.Customer);
+            r1 = await Validate(_workFlow, taskInput.Customer);
             if (r1 != null) return StatusCode(StatusCodes.Status200OK, r1);
 
             if (taskInput.Customer != null) task.Customer = taskInput.Customer;
@@ -546,7 +593,7 @@ namespace StaffAPI.Controllers
             #endregion
 
             #region Customer  
-            r1 = Validate(_workFlow, taskInput.Customer);
+            r1 = await Validate(_workFlow, taskInput.Customer);
             if (r1 != null) return StatusCode(StatusCodes.Status200OK, r1);
 
             if (taskInput.Customer != null) task.Customer = taskInput.Customer;
@@ -637,7 +684,8 @@ namespace StaffAPI.Controllers
                     FromDate = model.FromDate,
                     IsExpired = model.IsExpired,
                     IsOwner = null,
-                    IsPIC = user.UserName,
+                    IsPIC = null,
+                    IsAssigne = user.UserName,
                     Keyword = model.Keyword,
                     Page = model.Page,
                     PageSize = model.PageSize,
@@ -651,7 +699,39 @@ namespace StaffAPI.Controllers
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
         }
-        
+
+        // The list task need to work
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskNeedWork([FromBody] TaskFilterModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var user = await GetCurrentUserAsync(HttpContext.User);
+                TaskFilterDTO taskFilter = new TaskFilterDTO()
+                {
+                    CustomerCode = model.CustomerCode,
+                    FromDate = model.FromDate,
+                    IsExpired = model.IsExpired,
+                    IsOwner = null,
+                    IsPIC = user.UserName + ":::" + User.Claims.GetClaimValue("DepartmentId"),
+                    IsAssigne = null,
+                    Keyword = model.Keyword,
+                    Page = model.Page,
+                    PageSize = model.PageSize,
+                    Status = model.Status,
+                    ToDate = model.ToDate
+                };
+                var a = await _TaskService.GetTaskList(taskFilter);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+
         // Assign staff
         [HttpPost]
         [Route("[action]")]
@@ -662,6 +742,24 @@ namespace StaffAPI.Controllers
             if (ModelState.IsValid)
             {
                 var a = await _TaskService.AssignStaff(model.TaskId, model.Staff);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+
+        // Assign staff
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskUnAssign([FromBody] TaskUnAssignModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var _Staff = new StaffDTO() { StaffCode = model.StaffCode };
+                var a = await _TaskService.AssignStaff(model.TaskId, _Staff, false);
                 return Ok(a);
             }
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
@@ -739,6 +837,27 @@ namespace StaffAPI.Controllers
 
         #region Other
         // Finding the customer
+        #region private
+        private async Task<List<ContractList>> GetCustomer(string CustomerCode)
+        {
+            List<ContractList> ContractList = new List<ContractList>();
+            for (var i = 0; i < companyConfig.Companys.Count; i++)
+            {
+                var inv = new ContractInput()
+                {
+                    CompanyID = companyConfig.Companys[i].Info.CompanyId,
+                    Mobile = CustomerCode
+                };
+                var cust = await _TaskService.GetCustomer(inv);
+                if (cust.DataStatus == "00")
+                {
+                    ContractList.AddRange(cust.ItemsData.ContractList);
+                }
+            }
+            return ContractList;
+        }
+        #endregion
+
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> GetCustomer([FromBody] CustomerModel model)
@@ -747,20 +866,7 @@ namespace StaffAPI.Controllers
             _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
-                List<ContractList> ContractList = new List<ContractList>();
-                for (var i = 0; i < companyConfig.Companys.Count; i++)
-                {
-                    var inv = new ContractInput()
-                    {
-                        CompanyID = companyConfig.Companys[i].Info.CompanyId,
-                        Mobile = model.CustomerCode
-                    };
-                    var cust = await _TaskService.GetCustomer(inv);
-                    if (cust.DataStatus == "00")
-                    {
-                        ContractList.AddRange(cust.ItemsData.ContractList);
-                    }
-                }
+                List<ContractList> ContractList = await GetCustomer(model.CustomerCode);
                 if (ContractList.Count() > 0)
                     return Ok(new ResponseOK()
                     {
@@ -786,7 +892,7 @@ namespace StaffAPI.Controllers
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
         }
-        
+
         // Finding the staff
         [HttpPost]
         [Route("[action]")]
@@ -834,6 +940,33 @@ namespace StaffAPI.Controllers
             _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+
+        // Finding the Task type
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult GetTaskType()
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            List<TaskType> a = new List<TaskType>();
+            for (int i = 0; i < _WorkFlow.WorkFlow.Count(); i++)
+            {
+                a.Add(new TaskType()
+                {
+                    TaskTypeId = _WorkFlow.WorkFlow[i].Id,
+                    TaskTypeName = _WorkFlow.WorkFlow[i].ServiceName
+                });
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return Ok(new ResponseOK()
+            {
+                Code = 200,
+                InternalMessage = LanguageAll.Language.Success,
+                MoreInfo = LanguageAll.Language.Success,
+                Status = 1,
+                UserMessage = LanguageAll.Language.Success,
+                data = a
+            });
         }
         #endregion
 

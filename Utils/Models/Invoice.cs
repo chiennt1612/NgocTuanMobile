@@ -17,10 +17,18 @@ namespace Utils.Models
         public int CompanyID { get; set; } = 0;
         public string CustomerCode { get; set; }
     }
+    public class InvoiceInputByStaff : InvoiceInput
+    {
+        public string StaffCode { get; set; }
+    }
     public class CheckPayInput
     {
         public int CompanyID { get; set; } = 0;
         public string OnePayID { get; set; }
+    }
+    public class CheckPayInputByStaff : CheckPayInput
+    {
+        public string StaffCode { get; set; }
     }
     public class PayInput : InvoiceInput
     {
@@ -29,6 +37,10 @@ namespace Utils.Models
         public int InvoiceAmount { get; set; }
 
         public bool IsAgree { get; set; } = true;
+    }
+    public class PayInputByStaff : PayInput
+    {
+        public string StaffCode { get; set; }
     }
     public class InvoiceAllInput : InvoiceInput
     {

@@ -120,6 +120,18 @@
   <data name="AccountLockout" xml:space="preserve">
     <value>User account locked out</value>
   </data>
+  <data name="AuthenticatorCode" xml:space="preserve">
+    <value>AuthenticatorCode</value>
+  </data>
+  <data name="CasherIsExists" xml:space="preserve">
+    <value>CasherIsExists</value>
+  </data>
+  <data name="ChangedUserIsNull" xml:space="preserve">
+    <value>ChangedUserIsNull</value>
+  </data>
+  <data name="ChangePasswordIsFail" xml:space="preserve">
+    <value>Change Password Is Fail</value>
+  </data>
   <data name="CompanyIDInvalid" xml:space="preserve">
     <value>Company invalid</value>
   </data>
@@ -128,6 +140,30 @@
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
     <value>Confirm password</value>
+  </data>
+  <data name="ConfirmPasswordIsWrong" xml:space="preserve">
+    <value>ConfirmPasswordIsWrong</value>
+  </data>
+  <data name="ContentIsNull" xml:space="preserve">
+    <value>ContentIsNull</value>
+  </data>
+  <data name="ContentOfTaskIsNull" xml:space="preserve">
+    <value>ContentOfTaskIsNull</value>
+  </data>
+  <data name="CreateDateIsNull" xml:space="preserve">
+    <value>CreateDateIsNull</value>
+  </data>
+  <data name="CustomerIsNull" xml:space="preserve">
+    <value>CustomerIsNull</value>
+  </data>
+  <data name="CustomerIsWrong" xml:space="preserve">
+    <value>CustomerIsWrong</value>
+  </data>
+  <data name="DateFromIsWrong" xml:space="preserve">
+    <value>DateFromIsWrong</value>
+  </data>
+  <data name="DateToIsWrong" xml:space="preserve">
+    <value>DateToIsWrong</value>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
     <value>Delete is success</value>
@@ -165,11 +201,23 @@
   <data name="ModelStateInValid" xml:space="preserve">
     <value>ModelState InValid</value>
   </data>
+  <data name="ModifyDateIsNull" xml:space="preserve">
+    <value>ModifyDateIsNull</value>
+  </data>
+  <data name="NewPasswordIsSame" xml:space="preserve">
+    <value>NewPasswordIsSame</value>
+  </data>
+  <data name="NoPermission" xml:space="preserve">
+    <value>NoPermission</value>
+  </data>
   <data name="NotFound" xml:space="preserve">
     <value>Not found</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
     <value>Older password</value>
+  </data>
+  <data name="OTPCode" xml:space="preserve">
+    <value>OTPCode</value>
   </data>
   <data name="OTPInvalid" xml:space="preserve">
     <value>OTP invalid</value>
@@ -180,11 +228,38 @@
   <data name="OTPWait" xml:space="preserve">
     <value>Please login after 3 minutes</value>
   </data>
+  <data name="OwnerIsNull" xml:space="preserve">
+    <value>OwnerIsNull</value>
+  </data>
   <data name="Password" xml:space="preserve">
     <value>Password</value>
   </data>
   <data name="PasswordLength" xml:space="preserve">
     <value>The {0} must be at least {2} and at max {1} characters long.</value>
+  </data>
+  <data name="PasswordMismatch" xml:space="preserve">
+    <value>Incorrect password.</value>
+  </data>
+  <data name="PasswordRequiresDigit" xml:space="preserve">
+    <value>Passwords must have at least one digit ('0'-'9').</value>
+  </data>
+  <data name="PasswordRequiresLower" xml:space="preserve">
+    <value>Passwords must have at least one lowercase ('a'-'z').</value>
+  </data>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>Passwords must have at least one non alphanumeric character.</value>
+  </data>
+  <data name="PasswordRequiresUniqueChars" xml:space="preserve">
+    <value>Passwords must use at least {RequiredUniqueChars} different characters.</value>
+  </data>
+  <data name="PasswordRequiresUpper" xml:space="preserve">
+    <value>Passwords must have at least one uppercase ('A'-'Z').</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Passwords must be at least {RequiredLength} characters.</value>
+  </data>
+  <data name="PaymentStatusIsWrong" xml:space="preserve">
+    <value>Payment status is wrong</value>
   </data>
   <data name="RecoveryCode" xml:space="preserve">
     <value>Recovery code</value>
@@ -200,6 +275,12 @@
   </data>
   <data name="RenewTokenFail" xml:space="preserve">
     <value>Renew token fail</value>
+  </data>
+  <data name="ResetPasswordIsFail" xml:space="preserve">
+    <value>Reset password is fail</value>
+  </data>
+  <data name="ServiceIsNull" xml:space="preserve">
+    <value>Service is null</value>
   </data>
   <data name="ServiceNotFound" xml:space="preserve">
     <value>Service id not found</value>
@@ -219,8 +300,26 @@
   <data name="SetProfileSuccess" xml:space="preserve">
     <value>Success</value>
   </data>
+  <data name="StaffIsExists" xml:space="preserve">
+    <value>Staff is exists</value>
+  </data>
+  <data name="StaffIsNull" xml:space="preserve">
+    <value>Staff is null</value>
+  </data>
+  <data name="StaffNotExists" xml:space="preserve">
+    <value>Staff is not exists</value>
+  </data>
+  <data name="StatusIsWrong" xml:space="preserve">
+    <value>Work status is wrong</value>
+  </data>
   <data name="Success" xml:space="preserve">
     <value>Success</value>
+  </data>
+  <data name="TaskNameIsNull" xml:space="preserve">
+    <value>Taskname is null</value>
+  </data>
+  <data name="TaskNotFound" xml:space="preserve">
+    <value>Task does not found</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Unauthorized</value>

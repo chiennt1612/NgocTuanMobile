@@ -31,6 +31,7 @@ namespace StaffAPI.Models.Tasks.DTO
         public List<StaffDTO>? Staff { get; set; }
         public CustomerDTO? Customer { get; set; }
         public List<DepartmentDTO>? Department { get; set; }
+        public int? CurrentDepartmentId { get; set; }
         public List<TaskProcessDTO>? TaskProcess { get; set; }
         public string Content { get; set; }
         public StaffDTO? Owner { get; set; }

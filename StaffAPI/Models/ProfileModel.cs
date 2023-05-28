@@ -4,6 +4,58 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StaffAPI.Models
 {
+    #region Staff
+    public class StaffProfileInputModel
+    {
+        [StringLength(200, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Email { get; set; }
+
+        [StringLength(200, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Address { get; set; }
+
+        [StringLength(128, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Fullname { get; set; }
+
+        [StringLength(20, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string PersonID { get; set; }
+
+        public DateTime? IssueDate { get; set; }
+
+        [StringLength(126, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string IssuePlace { get; set; }
+
+        public string Avatar { get; set; }
+    }
+
+    public class StaffProfileOutputModel
+    {
+        [StringLength(20, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string PhoneNumber { get; set; }
+
+        [StringLength(200, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Email { get; set; }
+
+        [StringLength(200, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Address { get; set; }
+
+        [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        [StringLength(128, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string Fullname { get; set; }
+
+        [StringLength(20, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string PersonID { get; set; }
+
+        public DateTime? IssueDate { get; set; }
+
+        [StringLength(126, ErrorMessageResourceName = "StringLengthTooLong", ErrorMessageResourceType = typeof(EntityFramework.API.Resources.EntityValidation))]
+        public string IssuePlace { get; set; }
+
+        public string DeviceId { get; set; }
+        public bool IsGetNotice { get; set; } = false;
+        public string Avatar { get; set; }
+    }
+    #endregion
+    #region Customer
     public class ProfileInputModel
     {
         public bool IsCompany { get; set; }
@@ -81,5 +133,5 @@ namespace StaffAPI.Models
             IsCompany = false;
         }
     }
-
+    #endregion
 }

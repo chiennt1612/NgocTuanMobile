@@ -48,6 +48,7 @@ namespace StaffAPI.Controllers
         private readonly LoginConfiguration _loginConfiguration;
         private readonly IAllService _iInvoiceServices;
         private readonly IUserDeviceRepository _iUserDeviceRepository;
+        private readonly IdentityOptions _identityOptions;
         private ICompanyConfig companyConfig { get; set; }
         private HtmlXSSFilter htmlXSS { get; set; }
         private FireBaseConfig fireBaseConfig { get; set; }
@@ -65,7 +66,8 @@ namespace StaffAPI.Controllers
             IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
             LoginConfiguration loginConfiguration, IAllService iInvoiceServices,
             IUserDeviceRepository iUserDeviceRepository,
-            SmtpConfiguration smtpConfiguration, ICompanyConfig companyConfig)
+            SmtpConfiguration smtpConfiguration, ICompanyConfig companyConfig,
+            IdentityOptions identityOptions)
         {
             _userManager = userManager;
             _configuration = configuration;
@@ -83,6 +85,7 @@ namespace StaffAPI.Controllers
             fireBaseConfig = this._configuration.GetSection(nameof(FireBaseConfig)).Get<FireBaseConfig>();
             fireBaseAPIConfig = this._configuration.GetSection(nameof(FireBaseAPIConfig)).Get<FireBaseAPIConfig>();
             _smtpConfiguration = smtpConfiguration;
+            _identityOptions = identityOptions;
         }
 
 
@@ -555,7 +558,14 @@ namespace StaffAPI.Controllers
                     var password = user.UserName.Password(_configuration["Password:Default"]);
                     var resetPass = await _userManager.ResetPasswordAsync(user, code, password);
                     if (resetPass.Succeeded)
+                    {
                         return await SendSMSPassword(user, new LoginModel() { Username = user.UserName }, password);
+                    }
+                    else
+                    {
+                        return StatusCode(StatusCodes.Status200OK,
+                            new ResponseBase(LanguageAll.Language.NewPasswordIsSame, $"{model.Username}: {LanguageAll.Language.NewPasswordIsSame}!", LanguageAll.Language.NewPasswordIsSame));
+                    }                    
                 }
             }
 
@@ -574,6 +584,16 @@ namespace StaffAPI.Controllers
             _logger.LogInformation($"Login. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
             if (ModelState.IsValid)
             {
+                if(model.ConfirmPassword != model.NewPassword)
+                {
+                    return StatusCode(StatusCodes.Status200OK,
+                        new ResponseBase(LanguageAll.Language.ConfirmPasswordIsWrong, $"{model.Username}: {LanguageAll.Language.ConfirmPasswordIsWrong}!", LanguageAll.Language.ConfirmPasswordIsWrong));
+                }
+                if (model.NewPassword.Contains(model.OldPassword) || model.OldPassword.Contains(model.NewPassword))
+                {
+                    return StatusCode(StatusCodes.Status200OK,
+                        new ResponseBase(LanguageAll.Language.NewPasswordIsSame, $"{model.Username}: {LanguageAll.Language.NewPasswordIsSame}!", LanguageAll.Language.NewPasswordIsSame));
+                }
                 var user = await FindUser(model.Username);
                 if (user != null)
                 {
@@ -581,6 +601,41 @@ namespace StaffAPI.Controllers
                     if (changePasswordResult.Succeeded)
                     {
                         return await SendSMSPassword(user, new LoginModel() { Username = user.UserName }, model.NewPassword);
+                    }
+                    else
+                    {
+                        string errorMsg = LanguageAll.Language.ChangePasswordIsFail;
+                        foreach(var items in changePasswordResult.Errors)
+                        {
+                            switch (items.Code)
+                            {
+                                case "PasswordMismatch":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordMismatch;
+                                    break;
+                                case "PasswordRequiresDigit":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordRequiresDigit;
+                                    break;
+                                case "PasswordRequiresUpper":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordRequiresUpper;
+                                    break;
+                                case "PasswordRequiresLower":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordRequiresLower;
+                                    break;
+                                case "PasswordTooShort":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordTooShort.Replace(@"{RequiredLength}", _identityOptions.Password.RequiredLength.ToString());
+                                    break;
+                                case "PasswordRequiresNonAlphanumeric":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordRequiresNonAlphanumeric;
+                                    break;
+                                case "PasswordRequiresUniqueChars":
+                                    errorMsg = errorMsg + @"\n" + LanguageAll.Language.PasswordRequiresUniqueChars.Replace(@"{RequiredUniqueChars}", _identityOptions.Password.RequiredUniqueChars.ToString());
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        return StatusCode(StatusCodes.Status200OK,
+                            new ResponseBase(errorMsg, $"{model.Username}/ {model.NewPassword}: {errorMsg}!", errorMsg));
                     }
                 }
             }

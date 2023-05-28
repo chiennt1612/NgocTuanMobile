@@ -16,6 +16,7 @@ namespace StaffAPI.Models.Tasks.DTO
         public DateTime? ToDate { get; set; }
 
         public string IsPIC { get; set; }
+        public string IsAssigne { get; set; }
         public string IsOwner { get; set; }
 
         public int? Page { get; set; }

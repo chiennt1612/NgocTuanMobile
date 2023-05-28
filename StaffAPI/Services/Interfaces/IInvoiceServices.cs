@@ -11,7 +11,7 @@ namespace StaffAPI.Services.Interfaces
         Task<InvoiceQRCode> getInvoiceByQRCode(InvQrCodeInput inv);
         Task<ResponseOK> PayInvoice(PayInput inv);
         Task<ResponseOK> CheckPayInvoice(CheckPayInput inv);
-        Task<ResponseOK> UndoPayInvoice(InvoiceInput inv);
+        Task<ResponseOK> UndoPayInvoice(CheckPayInput inv);
         #endregion
 
         #region Customer
@@ -24,6 +24,9 @@ namespace StaffAPI.Services.Interfaces
 
         #region Staff
         Task<StaffInfoResult> getStaffInfo(StaffCodeInput inv);
+        Task<ResponseOK> PayInvoiceByStaff(PayInputByStaff inv);
+        Task<ResponseOK> CheckPayInvoiceByStaff(CheckPayInputByStaff inv);
+        Task<ResponseOK> UndoPayInvoiceByStaff(CheckPayInputByStaff inv);
         #endregion
 
 
