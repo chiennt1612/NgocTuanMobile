@@ -24,6 +24,8 @@ using Utils.Repository.Interfaces;
 using StaffAPI.Models;
 using System.Collections;
 using StaffAPI.Helper;
+using EntityFramework.API.Entities.Ordering;
+using System.Net.Mail;
 
 namespace StaffAPI.Controllers
 {
@@ -401,6 +403,25 @@ namespace StaffAPI.Controllers
             }
             return null;
         }
+        private async Task<List<string>> Attachments(List<StaffAPI.Models.Tasks.Attachment>? attachments, string subFolder, string folder)
+        {
+            if (attachments == null) return default;
+            if (attachments.Count() == 0) return default;
+            List<string> a = new List<string>();
+            foreach (var item in attachments)
+            {
+                int i = item.FileName.LastIndexOf(".");
+                string fileName = item.FileName;
+                string fileExtension = ".jpg";
+                if (i > 1 && fileName.Length > 2)
+                {
+                    fileExtension = item.FileName.Substring(i);
+                    fileName = item.FileName.Substring(0, i);
+                }
+                a.Add(await Tools.Upload(item.FileData, fileName, subFolder, folder, fileExtension));
+            }
+            return a;
+        }
         #endregion
 
         #region Create/Update Task
@@ -716,7 +737,7 @@ namespace StaffAPI.Controllers
                     FromDate = model.FromDate,
                     IsExpired = model.IsExpired,
                     IsOwner = null,
-                    IsPIC = user.UserName + ":::" + User.Claims.GetClaimValue("DepartmentId"),
+                    IsPIC = ":::" + User.Claims.GetClaimValue("DepartmentId") + ":::",
                     IsAssigne = null,
                     Keyword = model.Keyword,
                     Page = model.Page,
@@ -731,7 +752,71 @@ namespace StaffAPI.Controllers
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
         }
+        // The list task processing
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskProcessing([FromBody] TaskFilterModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var user = await GetCurrentUserAsync(HttpContext.User);
+                TaskFilterDTO taskFilter = new TaskFilterDTO()
+                {
+                    CustomerCode = model.CustomerCode,
+                    FromDate = model.FromDate,
+                    IsExpired = model.IsExpired,
+                    IsOwner = null,
+                    IsPIC = user.UserName + ":::" + User.Claims.GetClaimValue("DepartmentId") + ":::",
+                    IsAssigne = null,
+                    Keyword = model.Keyword,
+                    Page = model.Page,
+                    PageSize = model.PageSize,
+                    Status = model.Status,
+                    ToDate = model.ToDate
+                };
+                var a = await _TaskService.GetTaskList(taskFilter);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+        // The list task processed
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TaskProcessed([FromBody] TaskFilterModels model)
+        {
+            var _startTime = _logger.DebugStart(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _logger.LogInformation($"Register. ModelState: {ModelState.IsValid}\nmodel: {JsonConvert.SerializeObject(model)}");
+            if (ModelState.IsValid)
+            {
+                var user = await GetCurrentUserAsync(HttpContext.User);
+                TaskFilterDTO taskFilter = new TaskFilterDTO()
+                {
+                    CustomerCode = model.CustomerCode,
+                    FromDate = model.FromDate,
+                    IsExpired = model.IsExpired,
+                    IsOwner = null,
+                    IsPIC = user.UserName + ":::" + User.Claims.GetClaimValue("DepartmentId") + ":::2",
+                    IsAssigne = null,
+                    Keyword = model.Keyword,
+                    Page = model.Page,
+                    PageSize = model.PageSize,
+                    Status = model.Status,
+                    ToDate = model.ToDate
+                };
+                var a = await _TaskService.GetTaskList(taskFilter);
+                return Ok(a);
+            }
+            _logger.DebugEnd(_configuration, $"Class {this.GetType().Name}/ Function {MethodBase.GetCurrentMethod().ReflectedType.Name}", _startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
+        }
+        #endregion
 
+        #region Processing task
         // Assign staff
         [HttpPost]
         [Route("[action]")]
@@ -749,7 +834,7 @@ namespace StaffAPI.Controllers
                 new ResponseBase(LanguageAll.Language.NotFound, LanguageAll.Language.NotFound, LanguageAll.Language.NotFound));
         }
 
-        // Assign staff
+        // Unassign staff
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> TaskUnAssign([FromBody] TaskUnAssignModels model)
@@ -798,7 +883,8 @@ namespace StaffAPI.Controllers
                     Id = Guid.NewGuid().ToString(),
                     CreateDate = DateTime.Now,
                     Content = model.Content,
-                    Staff = await GetStaff(HttpContext.User)
+                    Staff = await GetStaff(HttpContext.User),
+                    Attachments = await Attachments(model.Attachments, "TaskProcess", companyConfig.AvatarFolder)
                 };
 
                 var a = await _TaskService.TaskProcess(model.TaskId, taskProcess, model.Status);
@@ -823,7 +909,8 @@ namespace StaffAPI.Controllers
                     Id = Guid.NewGuid().ToString(),
                     CreateDate = DateTime.Now,
                     Content = model.Content,
-                    Staff = await GetStaff(HttpContext.User)
+                    Staff = await GetStaff(HttpContext.User),
+                    Attachments = await Attachments(model.Attachments, "TaskProcess", companyConfig.AvatarFolder)
                 };
                 TaskResultDTO a = await _TaskService.TaskProcess(model.TaskId, taskProcess, model.NextDepartment.Value, _WorkFlow, model.Status);
 

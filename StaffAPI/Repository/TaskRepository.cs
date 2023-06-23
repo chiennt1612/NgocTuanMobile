@@ -272,6 +272,211 @@ namespace StaffAPI.Repository
             }
             return null;
         }
+        private string GetStepName(TaskDTO task)
+        {
+            Models.Tasks.Services a = _workFlow.WorkFlow.Where(u => u.Id == task.WorkFlowId).FirstOrDefault();
+            if (a == null) return "N/A";
+            if (a.Flow == null) return "N/A";
+            if (a.Flow.Count() < 1) return "N/A";
+            DepartmentDTO b = a.Flow.Where(u => u.DepartmentId == task.CurrentDepartmentId).FirstOrDefault();
+            if (b == null) return "N/A";
+            return b.TaskName;
+        }
+        private void AddStaffIfNull(TaskDTO task, StaffInfo _staff)
+        {
+            StaffDTO staff = new StaffDTO()
+            {
+                Address = _staff.Address,
+                DepartmentCode = _staff.DepartmentCode,
+                DepartmentId = _staff.DepartmentId,
+                DepartmentName = _staff.DepartmentName,
+                Email = _staff.Email,
+                Mobile = _staff.Mobile,
+                Mobile2 = _staff.Mobile2,
+                POSCode = _staff.POSCode,
+                POSId = _staff.POSId,
+                POSName = _staff.POSName,
+                StaffCode = _staff.StaffCode,
+                StaffName = _staff.StaffName,
+                TaxCode = _staff.TaxCode,
+                TypeCode = _staff.TypeCode,
+                TypeName = _staff.TypeName
+            };
+            var a = Validate(task, staff);
+            if (a != null) return;
+            if (task.Staff == null) task.Staff = new List<StaffDTO>();
+            task.Staff.Add(staff);
+        }
+        private List<FilterDefinition<TaskDTO>> CreateFilterFolow(TaskFilterDTO _filter)
+        {
+            var filters = new List<FilterDefinition<TaskDTO>>();
+            if (!String.IsNullOrEmpty(_filter.Keyword))
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => (u.Name.Contains(_filter.Keyword) || u.Content.Contains(_filter.Keyword)));
+                filters.Add(filter);
+            }
+
+            if (!String.IsNullOrEmpty(_filter.CustomerCode))
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.Customer.CustomerCode == _filter.CustomerCode);
+                filters.Add(filter);
+            }
+
+            if (_filter.Status.HasValue)
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.Status == _filter.Status.Value);
+                filters.Add(filter);
+            }
+
+            if (_filter.IsExpired.HasValue)
+            {
+                if (_filter.IsExpired.Value)
+                {
+                    var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= DateTime.Now);
+                    filters.Add(filter);
+                }
+                else
+                {
+                    var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate >= DateTime.Today);
+                    filters.Add(filter);
+                }
+            }
+
+            if (_filter.FromDate.HasValue)
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.FromDate >= _filter.FromDate.Value);
+                filters.Add(filter);
+            }
+
+            if (_filter.ToDate.HasValue)
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= _filter.ToDate.Value);
+                filters.Add(filter);
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsPIC))
+            {
+                var arr = _filter.IsPIC.Split(":::", StringSplitOptions.None);
+                string PIC = arr[0];
+                int DepartmentId = 0;
+                int Status = 0;
+                if (arr.Length > 1) int.TryParse(arr[1], out DepartmentId);
+                if (arr.Length > 2) int.TryParse(arr[2], out Status);
+
+                if (!String.IsNullOrEmpty(PIC))
+                {
+                    var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == PIC);
+                    filters.Add(filter);
+                }
+
+                if (DepartmentId > 0)
+                {
+                    var filter1 = Builders<TaskDTO>.Filter.Where(u => (
+                    !u.CurrentDepartmentId.HasValue ||
+                    u.CurrentDepartmentId.HasValue && (u.CurrentDepartmentId.Value == 0 || u.CurrentDepartmentId.Value == DepartmentId)
+                    ));
+                    filters.Add(filter1);
+                }
+
+                if (DepartmentId > 0 && (Status == -9 || Status == 2))
+                {
+                    var filter1 = Builders<TaskDTO>.Filter.ElemMatch(u => u.Department, u1 => (u1.DepartmentId == DepartmentId) && (u1.StatusId.Value == Status));
+                    filters.Add(filter1);
+                }
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsAssigne))
+            {
+                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == _filter.IsAssigne);
+                filters.Add(filter);
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsOwner))
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => (u.Owner.StaffCode == _filter.IsOwner));
+                filters.Add(filter);
+            }
+
+            return filters;
+        }
+
+        private List<FilterDefinition<TaskDTO>> CreateFilterNotFolow(TaskFilterDTO _filter)
+        {
+            var filters = new List<FilterDefinition<TaskDTO>>();
+            if (!String.IsNullOrEmpty(_filter.Keyword))
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => (u.Name.Contains(_filter.Keyword) || u.Content.Contains(_filter.Keyword)));
+                filters.Add(filter);
+            }
+
+            if (_filter.Status.HasValue)
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.Status == _filter.Status.Value);
+                filters.Add(filter);
+            }
+
+            if (_filter.IsExpired.HasValue)
+            {
+                if (_filter.IsExpired.Value)
+                {
+                    var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= DateTime.Now);
+                    filters.Add(filter);
+                }
+                else
+                {
+                    var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate >= DateTime.Today);
+                    filters.Add(filter);
+                }
+            }
+
+            if (_filter.FromDate.HasValue)
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.FromDate >= _filter.FromDate.Value);
+                filters.Add(filter);
+            }
+
+            if (_filter.ToDate.HasValue)
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= _filter.ToDate.Value);
+                filters.Add(filter);
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsPIC))
+            {
+                var arr = _filter.IsPIC.Split(":::", StringSplitOptions.None);
+                string PIC = arr[0];
+                int DepartmentId = 0;
+                int Status = 0;
+                if (arr.Length > 1) int.TryParse(arr[1], out DepartmentId);
+                if (arr.Length > 2) int.TryParse(arr[2], out Status);
+
+                if (!String.IsNullOrEmpty(PIC))
+                {
+                    var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == PIC);
+                    filters.Add(filter);
+                }
+
+                if (Status == -9 || Status == 2)
+                {
+                    var filter = Builders<TaskDTO>.Filter.Where(u => u.Status == _filter.Status.Value);
+                    filters.Add(filter);
+                }
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsAssigne))
+            {
+                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == _filter.IsAssigne);
+                filters.Add(filter);
+            }
+
+            if (!String.IsNullOrEmpty(_filter.IsOwner))
+            {
+                var filter = Builders<TaskDTO>.Filter.Where(u => (u.Owner.StaffCode == _filter.IsOwner));
+                filters.Add(filter);
+            }
+
+            return filters;
+        }
         #endregion
 
         public async Task<TaskResultDTO> CreateAsync(TaskDTO task)
@@ -301,96 +506,23 @@ namespace StaffAPI.Repository
 
         public async Task<TaskListResultDTO> GetAsync(TaskFilterDTO _filter)
         {
-            //bool kt = false;
-            var filters = new List<FilterDefinition<TaskDTO>>();
+            var a = new List<TaskDTO>();
 
-            if (!String.IsNullOrEmpty(_filter.Keyword))
-            {
-                var filter = Builders<TaskDTO>.Filter.Where(u => (u.Name.Contains(_filter.Keyword) || u.Content.Contains(_filter.Keyword)));
-                filters.Add(filter);
-                //kt = true;
-            }
+            var filters1 = CreateFilterFolow(_filter);
+            var complexFilter1 = Builders<TaskDTO>.Filter.And(filters1);
+            var a1 = (await _Task.FindAsync(complexFilter1)).ToList();
 
-            if (!String.IsNullOrEmpty(_filter.CustomerCode))
-            {
-                var filter = Builders<TaskDTO>.Filter.Where(u => u.Customer.CustomerCode == _filter.CustomerCode);
-                filters.Add(filter);
-                //kt = true;
-            }
+            var filters2 = CreateFilterNotFolow(_filter);
+            var complexFilter2 = Builders<TaskDTO>.Filter.And(filters2);
+            var a2 = (await _Task.FindAsync(complexFilter2)).ToList();
 
-            if (_filter.Status.HasValue)
-            {
-                var filter = Builders<TaskDTO>.Filter.Where(u => u.Status == _filter.Status.Value);
-                filters.Add(filter);
-                //kt = true;
-            }
-
-            if (_filter.IsExpired.HasValue)
-            {
-                if (_filter.IsExpired.Value)
-                {
-                    var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= DateTime.Now);
-                    filters.Add(filter);
-                    //kt = true;
-                }
-                else
-                {
-                    var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate >= DateTime.Today);
-                    filters.Add(filter);
-                    //kt = true;
-                }
-            }
-
-            if (_filter.FromDate.HasValue)
-            {
-                var filter = Builders<TaskDTO>.Filter.Where(u => u.FromDate >= _filter.FromDate.Value);
-                filters.Add(filter);
-                //kt = true;
-            }
-
-            if (_filter.ToDate.HasValue)
-            {
-                var filter = Builders<TaskDTO>.Filter.Where(u => u.ToDate <= _filter.ToDate.Value);
-                filters.Add(filter);
-                //kt = true;
-            }
-
-            if (!String.IsNullOrEmpty(_filter.IsPIC))
-            {
-                var arr = _filter.IsPIC.Split(":::", StringSplitOptions.None);
-                string PIC = arr[0];
-                int DepartmentId = int.Parse(arr[1]);
-                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == PIC);
-                filters.Add(filter);
-
-                var filter1 = Builders<TaskDTO>.Filter.Where(u => (
-                    !u.CurrentDepartmentId.HasValue || 
-                    u.CurrentDepartmentId.HasValue && (u.CurrentDepartmentId.Value == 0 || u.CurrentDepartmentId.Value == DepartmentId)
-                    ));
-                filters.Add(filter1);
-                //kt = true;
-            }
-
-            if (!String.IsNullOrEmpty(_filter.IsAssigne))
-            {
-                var filter = Builders<TaskDTO>.Filter.ElemMatch(u => u.Staff, u1 => u1.StaffCode == _filter.IsAssigne);
-                filters.Add(filter);
-                //kt = true;
-            }
-
-            if (!String.IsNullOrEmpty(_filter.IsOwner))
-            {
-                var filter = Builders<TaskDTO>.Filter.Where(u => (u.Owner.StaffCode == _filter.IsOwner));
-                filters.Add(filter);
-                //kt = true;
-            }
+            a.AddRange(a1);
+            a.AddRange(a2);
 
             int PageSize = 10;
             if (_filter.PageSize.HasValue) PageSize = _filter.PageSize.Value;
             int Page = 1;
-            if (_filter.Page.HasValue) Page = _filter.Page.Value;
-            var complexFilter = Builders<TaskDTO>.Filter.And(filters);
-            var a = (await _Task.FindAsync(complexFilter)).ToList();
+            if (_filter.Page.HasValue) Page = _filter.Page.Value;            
 
             if (a.Count() > 0)
             {
@@ -500,7 +632,7 @@ namespace StaffAPI.Repository
             TaskResultDTO a1 = Validate((task.PaymentStatus.HasValue ? task.PaymentStatus.Value : 0), true);
             if (a1 != null) return a1;
 
-            await _Task.ReplaceOneAsync(task => task.Id == id, task);
+            await _Task.ReplaceOneAsync(u => u.Id == id, task);
             return new TaskResultDTO()
             {
                 Data = task,
@@ -524,10 +656,14 @@ namespace StaffAPI.Repository
             TaskResultDTO a2 = Validate(task, taskProcess);
             if (a2 != null) return a2;
 
+            taskProcess.TaskName = GetStepName(task);
+
+            AddStaffIfNull(task, taskProcess.Staff);
+
             if (task.TaskProcess == null) task.TaskProcess = new List<TaskProcessDTO>();
             task.TaskProcess.Add(taskProcess);
             task.Status = Status;
-            await _Task.ReplaceOneAsync(task => task.Id == id, task);
+            await _Task.ReplaceOneAsync(u => u.Id == id, task);
             return new TaskResultDTO()
             {
                 Data = task,
@@ -550,6 +686,11 @@ namespace StaffAPI.Repository
 
             TaskResultDTO a2 = Validate(task, taskProcess);
             if (a2 != null) return a2;
+
+            taskProcess.TaskName = GetStepName(task);
+
+            AddStaffIfNull(task, taskProcess.Staff);
+
             if (task.TaskProcess == null) task.TaskProcess = new List<TaskProcessDTO>();
             task.TaskProcess.Add(taskProcess);
             //task.Status = Status;
@@ -585,7 +726,7 @@ namespace StaffAPI.Repository
                 var _a = GetStaff(staff.StaffCode, task.Staff);
                 task.Staff.Remove(_a);
             }
-            await _Task.ReplaceOneAsync(task => task.Id == id, task);
+            await _Task.ReplaceOneAsync(u => u.Id == id, task);
             return new TaskResultDTO()
             {
                 Data = task,
@@ -608,7 +749,7 @@ namespace StaffAPI.Repository
 
             task.Casher = staff;
 
-            await _Task.ReplaceOneAsync(task => task.Id == id, task);
+            await _Task.ReplaceOneAsync(u => u.Id == id, task);
             return new TaskResultDTO()
             {
                 Data = task,

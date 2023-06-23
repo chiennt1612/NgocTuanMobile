@@ -1,4 +1,5 @@
 ﻿using StaffAPI.Models.Tasks.DTO;
+using System.Collections.Generic;
 
 namespace StaffAPI.Models.Tasks
 {
@@ -25,6 +26,13 @@ namespace StaffAPI.Models.Tasks
         public string TaskId { set; get; }
         public string Content { set; get; }
         public int Status { get; set; }
+        public List<Attachment>? Attachments { get; set; }
+    }
+
+    public class Attachment
+    {
+        public string FileName { get; set; }
+        public string FileData { get; set; }
     }
 
     public class TaskProcessDepartmentModels
@@ -32,7 +40,7 @@ namespace StaffAPI.Models.Tasks
         public string TaskId { set; get; }
         public string Content { set; get; }
         public int Status { get; set; }
-
+        public List<Attachment>? Attachments { get; set; }
         // 1. Next department
         // -1. Prev department
         // 0. Current department
